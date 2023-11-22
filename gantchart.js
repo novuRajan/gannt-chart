@@ -1,16 +1,16 @@
 
 // Sample data for tasks with start and end dates and progress
 const tasks = [
-  {id:1, name: 'Task 1', start: '2023-10-03', end: '2023-10-10', progress: 50 },
-  {id:2, name: 'Task 2', start: '2023-10-04', end: '2023-10-10', progress: 75 },
-  {id:3, name: 'Task 3', start: '2023-10-05', end: '2023-10-12', progress: 25 },
-  {id:4, name: 'Task 3', start: '2023-10-06', end: '2023-10-12', progress: 25 },
-  {id:5, name: 'Task 1', start: '2023-10-07', end: '2023-10-14', progress: 50 },
-  {id:6, name: 'Task 1', start: '2023-10-08', end: '2023-10-15', progress: 50 },
-  // {id:7, name: 'Task 1', start: '2023-10-09', end: '2023-10-16', progress: 50 },
-  {id:8, name: 'Task 1', start: '2023-10-10', end: '2023-10-17', progress: 50 },
-  {id:9, name: 'Task 1', start: '2023-10-11', end: '2024-11-18', progress: 58 },
-  // {id:10, name: 'Task 10', start: '2023-10-12', end: '2023-10-18', progress: 50 },
+  {id:1, name: 'Task 1', start: '2023-10-03', end: '2023-10-12', progress: 50, dependencies: [] },
+  {id:2, name: 'Task 2', start: '2023-10-04', end: '2023-10-10', progress: 75, dependencies: [1] },
+  {id:3, name: 'Task 3', start: '2023-10-05', end: '2023-10-12', progress: 25, dependencies: [2] },
+  {id:4, name: 'Task 4', start: '2023-10-06', end: '2023-10-12', progress: 25, dependencies: [] },
+  {id:5, name: 'Task 5', start: '2023-10-07', end: '2023-10-14', progress: 50, dependencies: [3] },
+  {id:6, name: 'Task 6', start: '2023-10-08', end: '2023-10-15', progress: 50, dependencies: [] },
+  {id:7, name: 'Task 7', start: '2023-10-09', end: '2023-10-16', progress: 50, dependencies: [] },
+  {id:8, name: 'Task 8', start: '2023-10-10', end: '2023-10-17', progress: 50, dependencies: [6] },
+  {id:9, name: 'Task 9', start: '2023-10-11', end: '2023-10-20', progress: 58, dependencies: [8] },
+  {id:10, name: 'Task 10', start: '2023-10-12', end: '2023-10-18', progress: 50, dependencies: [] },
   // Add more tasks as needed
 ];
 
@@ -96,8 +96,13 @@ function createGanttChart(tasks) {
 
   // Create task bars and progress indicators
   tasks.forEach((task, index) => {
-    const startOffset = (new Date(task.start) - startingDate) / (24 * 60 * 60 * 1000) * 50;
+    // const startOffset = (new Date(task.start) - startingDate) / (24 * 60 * 60 * 1000) * 50;
+    // const duration = (new Date(task.end) - new Date(task.start)) / (24 * 60 * 60 * 1000) * 50;
+    const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end)));
+    const startOffset = Math.max((dependentTaskEnd - startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start) - startingDate) / (24 * 60 * 60 * 1000) * 50);
+
     const duration = (new Date(task.end) - new Date(task.start)) / (24 * 60 * 60 * 1000) * 50;
+
 
     // Create task bar
     const rect = document.createElementNS(svgNS, 'rect');

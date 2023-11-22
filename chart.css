@@ -1,25 +1,26 @@
 #chart {
-    min-width: 100% ;
-    position: relative;
-    overflow-x: auto;
-    /* background: red; */
-    height: 400px;
-    overflow-y: auto;
-  }
-  
-  .month-heading {
-    font-size: 14px;
-    fill: #333;
-    font-weight: bold;
-  }
-  
-  .date-scale {
-    font-size: 12px;
-    fill: #333;
-  }
-  
-  .grid-line {
-    stroke: #ccc;
-    stroke-width: 1;
-  }
+  background-color: red;
+  min-width: 100% ;
+  position: relative;
+  overflow-x: auto;
+  /* background: red; */
+  height: 400px;
+  overflow-y: auto;
+}
+
+.month-heading {
+  font-size: 14px;
+  fill: #333;
+  font-weight: bold;
+}
+
+.date-scale {
+  font-size: 12px;
+  fill: #333;
+}
+
+.grid-line {
+  stroke: #ccc;
+  stroke-width: 1;
+}
   
