@@ -1,17 +1,16 @@
 
 // Sample data for tasks with start and end dates and progress
 const tasks = [
-  { name: 'Task 1', start: '2023-11-01', end: '2023-11-03', progress: 50 },
-  { name: 'Task 2', start: '2023-11-02', end: '2023-11-06', progress: 75 },
-  { name: 'Task 3', start: '2023-12-05', end: '2023-12-20', progress: 25 },
-  { name: 'Task 3', start: '2023-12-05', end: '2024-03-07', progress: 25 },
-  { name: 'Task 1', start: '2023-11-01', end: '2023-11-03', progress: 50 },
-  { name: 'Task 1', start: '2023-11-01', end: '2023-11-03', progress: 50 },
-  { name: 'Task 1', start: '2023-11-01', end: '2024-11-03', progress: 50 },
-  { name: 'Task 1', start: '2023-11-01', end: '2023-11-03', progress: 50 },
-  { name: 'Task 1', start: '2023-11-01', end: '2023-11-03', progress: 50 },
-  { name: 'Task 1', start: '2023-11-01', end: '2023-11-03', progress: 50 },
-
+  {id:1, name: 'Task 1', start: '2023-10-03', end: '2023-10-10', progress: 50 },
+  {id:2, name: 'Task 2', start: '2023-10-04', end: '2023-10-10', progress: 75 },
+  {id:3, name: 'Task 3', start: '2023-10-05', end: '2023-10-12', progress: 25 },
+  {id:4, name: 'Task 3', start: '2023-10-06', end: '2023-10-12', progress: 25 },
+  {id:5, name: 'Task 1', start: '2023-10-07', end: '2023-10-14', progress: 50 },
+  {id:6, name: 'Task 1', start: '2023-10-08', end: '2023-10-15', progress: 50 },
+  // {id:7, name: 'Task 1', start: '2023-10-09', end: '2023-10-16', progress: 50 },
+  {id:8, name: 'Task 1', start: '2023-10-10', end: '2023-10-17', progress: 50 },
+  {id:9, name: 'Task 1', start: '2023-10-11', end: '2024-11-18', progress: 58 },
+  // {id:10, name: 'Task 10', start: '2023-10-12', end: '2023-10-18', progress: 50 },
   // Add more tasks as needed
 ];
 
@@ -20,7 +19,7 @@ function createGanttChart(tasks) {
   const chartContainer = document.getElementById('chart');
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('min-width', '50%');
+  svg.setAttribute('min-width', '100%');
   svg.setAttribute('height', '100%');
 
   // Convert start and end dates to Date objects
@@ -30,9 +29,21 @@ function createGanttChart(tasks) {
   // Find the minimum and maximum dates to set the chart width
   const minDate = new Date(Math.min(...startDates));
   const startingDate = new Date(minDate);
-  startingDate.setDate(minDate.getDate() - 5);
+  startingDate.setDate(minDate.getDate() - 5); // used to show 5 days earlier date can be changed according to the need 
   const maxDate = new Date(Math.max(...endDates));
-  const chartWidth = (maxDate - minDate) / (24 * 60 * 60 * 1000) * 53; // Adjust the scale as needed
+  const dateDiff = (maxDate - minDate) / (24 * 60 * 60 * 1000);
+
+  if(dateDiff >100)
+  {
+    multiplier = 54;
+  }
+  else if (dateDiff > 30) {
+    multiplier = 60; // Use a larger scale if the date difference is greater than 30 days
+  } else {
+    multiplier = 120; // Use the default scale
+  }
+
+  const chartWidth = dateDiff * multiplier;
 
   svg.setAttribute('viewBox', `0 0 ${chartWidth} ${tasks.length * 40 + 40}`);
 

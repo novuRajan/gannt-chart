@@ -1,9 +1,6 @@
 #chart {
-    width: auto;
+    min-width: 100% ;
     position: relative;
-    left: 4px;
-    right: 5px;
-    padding: 0px 0px 20px 20px;
     overflow-x: auto;
     /* background: red; */
     height: 400px;
