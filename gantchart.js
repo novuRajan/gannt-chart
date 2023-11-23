@@ -1,18 +1,3 @@
-// Sample data for tasks with start and end dates and progress
-const tasks = [
-  {id:1, name: 'Task 1', start: '2023-10-03', end: '2023-10-12', progress: 50, dependencies: [] },
-  {id:2, name: 'Task 2', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [1] },
-  {id:3, name: 'Task 3', start: '2023-10-05', end: '2023-10-30', progress: 25, dependencies: [] },
-  {id:4, name: 'Task 4', start: '2023-10-06', end: '2023-10-12', progress: 25, dependencies: [] },
-  {id:5, name: 'Task 5', start: '2023-10-07', end: '2023-10-14', progress: 50, dependencies: [] },
-  {id:6, name: 'Task 6', start: '2023-10-08', end: '2023-10-18', progress: 50, dependencies: [] },
-  {id:7, name: 'Task 7', start: '2023-10-09', end: '2023-10-16', progress: 50, dependencies: [] },
-  {id:8, name: 'Task 8', start: '2023-10-10', end: '2023-10-17', progress: 50, dependencies: [] },
-  {id:9, name: 'Task 9', start: '2023-10-11', end: '2023-10-20', progress: 58, dependencies: [1] },
-  {id:10, name: 'Task 10', start: '2023-10-12', end: '2023-10-18', progress: 50, dependencies: [] },
-  // Add more tasks as needed
-];
-
 const svgNS = 'http://www.w3.org/2000/svg';
 var taskCount;
 
@@ -141,6 +126,3 @@ function createTaskBars(svg, tasks, dateInfo) {
     svg.appendChild(text);
   });
 }
-
-// Call the function with sample data
-createGanttChart(tasks);
