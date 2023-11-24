@@ -1,16 +1,27 @@
 const svgNS = 'http://www.w3.org/2000/svg';
 var taskCount;
+
+
 // Function to create external tooltip
 const tooltip = document.createElement('div');
 tooltip.className = "bar-hover"
-// tooltip.style.position = 'absolute';
-// tooltip.style.display = 'none';
 document.body.appendChild(tooltip);
+
+
 // Function to create Gantt chart
 function createGanttChart(tasks) {
   const chartContainer = document.getElementById('chart');
-  const svg = createSVG(tasks);
-  chartContainer.appendChild(svg);
+  let svg = chartContainer.querySelector('svg');
+
+  // Check if the SVG element already exists
+  if (!svg) {
+    // If not, create a new SVG element
+    svg = createSVG(tasks);
+    chartContainer.appendChild(svg);
+  }
+
+  // Update the content of the existing or new SVG element
+  updateGanttChartContent(svg, tasks);
 }
 
 function createSVG(tasks) {
@@ -157,3 +168,25 @@ function showTaskDetails(task,allTasks) {
 function hideTaskDetails() {
   tooltip.style.display = 'none';
 }
+
+
+// Function to update the Gantt chart with new data
+function updateGanttChartContent(svg, tasks) {
+  // Clear existing content
+  while (svg.firstChild) {
+    svg.removeChild(svg.firstChild);
+  }
+
+  // Update the content with the new tasks
+  const dateInfo = calculateDateInfo(tasks);
+  const chartWidth = calculateChartWidth(dateInfo);
+
+  svg.setAttribute('viewBox', `0 0 ${chartWidth} ${tasks.length * 40 + 40}`);
+
+  createGridLines(svg, chartWidth, tasks.length);
+  createMonthHeadings(svg, dateInfo, chartWidth);
+  createDateScale(svg, dateInfo, chartWidth, tasks.length);
+  createTaskBars(svg, tasks, dateInfo);
+}
+
+
