@@ -131,16 +131,24 @@ function createTaskBars(svg, tasks, dateInfo) {
     svg.appendChild(text);
 
     // Add event listeners for both rectangle and progress bar
-    rect.addEventListener('mouseover', () => showTaskDetails(task));
+    rect.addEventListener('mouseover', () => showTaskDetails(task,tasks));
     rect.addEventListener('mouseout', hideTaskDetails);
 
-    progressRect.addEventListener('mouseover', () => showTaskDetails(task));
+    progressRect.addEventListener('mouseover', () => showTaskDetails(task,tasks));
     progressRect.addEventListener('mouseout', hideTaskDetails);
 
   });
 }
-function showTaskDetails(task) {
-  tooltip.innerHTML = `Task Name: ${task.name}<br>Start: ${task.start}<br>End: ${task.end}`;
+function showTaskDetails(task,allTasks) {
+  const dependentTaskNames = task.dependencies.map(depId => allTasks[depId - 1].name);
+  const dependentTaskInfo = dependentTaskNames.length > 0 ? `Dependencies: ${dependentTaskNames.join(', ')}` : 'No dependencies';
+
+  tooltip.innerHTML = `
+    Task: ${task.name}<br>
+    Start: ${task.start}<br>
+    End: ${task.end}<br>
+    ${dependentTaskInfo}
+  `;
   tooltip.style.left = `${event.pageX}px`;
   tooltip.style.top = `${event.pageY}px`;
   tooltip.style.display = 'block';
