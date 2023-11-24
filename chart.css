@@ -23,4 +23,9 @@
   stroke: #ccc;
   stroke-width: 1;
 }
+.bar-hover {
+  position: absolute;
+  background-color: orange;
+  display: block;
+}
   

@@ -1,6 +1,11 @@
 const svgNS = 'http://www.w3.org/2000/svg';
 var taskCount;
-
+// Function to create external tooltip
+const tooltip = document.createElement('div');
+tooltip.className = "bar-hover"
+// tooltip.style.position = 'absolute';
+// tooltip.style.display = 'none';
+document.body.appendChild(tooltip);
 // Function to create Gantt chart
 function createGanttChart(tasks) {
   const chartContainer = document.getElementById('chart');
@@ -124,5 +129,23 @@ function createTaskBars(svg, tasks, dateInfo) {
     text.setAttribute('y', index * 40 + 60);
     text.textContent = task.name;
     svg.appendChild(text);
+
+    // Add event listeners for both rectangle and progress bar
+    rect.addEventListener('mouseover', () => showTaskDetails(task));
+    rect.addEventListener('mouseout', hideTaskDetails);
+
+    progressRect.addEventListener('mouseover', () => showTaskDetails(task));
+    progressRect.addEventListener('mouseout', hideTaskDetails);
+
   });
+}
+function showTaskDetails(task) {
+  tooltip.innerHTML = `Task Name: ${task.name}<br>Start: ${task.start}<br>End: ${task.end}`;
+  tooltip.style.left = `${event.pageX}px`;
+  tooltip.style.top = `${event.pageY}px`;
+  tooltip.style.display = 'block';
+}
+
+function hideTaskDetails() {
+  tooltip.style.display = 'none';
 }
