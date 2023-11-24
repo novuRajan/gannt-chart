@@ -141,7 +141,7 @@ function createTaskBars(svg, tasks, dateInfo) {
 }
 function showTaskDetails(task,allTasks) {
   const dependentTaskNames = task.dependencies.map(depId => allTasks[depId - 1].name);
-  const dependentTaskInfo = dependentTaskNames.length > 0 ? `Dependencies: ${dependentTaskNames.join(', ')}` : 'No dependencies';
+  const dependentTaskInfo = dependentTaskNames.length > 0 ? `Dependencies: ${dependentTaskNames.join(', ')}` : '';
 
   tooltip.innerHTML = `
     Task: ${task.name}<br>
