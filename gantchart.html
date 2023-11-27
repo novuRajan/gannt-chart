@@ -21,6 +21,9 @@
       <label for="editEndDate">End Date:</label>
       <input type="date" id="editEndDate" name="editEndDate" required>
 
+      <label for="editProgress">Progress</label>
+      <input type="number" min="1" max="100"oninput="setCustomValidity('')" oninvalid="setCustomValidity('Please enter a number between 1 and 10.')" id="editProgress" name="editProgress" required>
+
       <button type="button" onclick="saveEditedTask()">Save Changes</button>
       <button type="button" onclick="closeEditModal()">Cancel</button>
     </form>

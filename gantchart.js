@@ -162,18 +162,20 @@ function createTaskBars(svg, tasks, dateInfo) {
   });
 }
 // Function to handle task editing
-// Function to handle task editing
 function editTask(event, task, allTasks) {
   const editTaskForm = document.getElementById('editTaskForm');
   const editTaskNameInput = document.getElementById('editTaskName');
   const editStartDateInput = document.getElementById('editStartDate');
   const editEndDateInput = document.getElementById('editEndDate');
+  const editProgress = document.getElementById('editProgress');
   const editModal = document.getElementById('editModal');
 
+  console.log(task);
   // Set the current task details in the form
   editTaskNameInput.value = task.name;
   editStartDateInput.value = task.start;
   editEndDateInput.value = task.end;
+  editProgress.value = task.progress;
 
   // Store the task ID in a data attribute of the form
   editTaskForm.setAttribute('data-task-id', task.id);
@@ -191,12 +193,14 @@ function saveEditedTask() {
   const editTaskNameInput = document.getElementById('editTaskName');
   const editStartDateInput = document.getElementById('editStartDate');
   const editEndDateInput = document.getElementById('editEndDate');
+  const editProgress = document.getElementById('editProgress');
   const editModal = document.getElementById('editModal');
 
   // Retrieve the edited values
   const editedTaskName = editTaskNameInput.value;
   const editedStartDate = editStartDateInput.value;
   const editedEndDate = editEndDateInput.value;
+  const progress = editProgress.value;
 
   // Retrieve the task ID from the data attribute
   const taskId = parseInt(editTaskForm.getAttribute('data-task-id'), 10);
@@ -207,6 +211,7 @@ function saveEditedTask() {
     testTask[editedTaskIndex].name = editedTaskName;
     testTask[editedTaskIndex].start = editedStartDate;
     testTask[editedTaskIndex].end = editedEndDate;
+    testTask[editedTaskIndex].progress = progress > 100 ? 100 : progress;
   }
   // console.log(testTask);
   // Update the Gantt chart with the new data
