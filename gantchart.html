@@ -9,6 +9,22 @@
 
 <body>
   <div id="chart" xmlns="http://www.w3.org/2000/svg"></div>
+  <div id="editModal" class="modal">
+    <h2>Edit Task</h2>
+    <form id="editTaskForm">
+      <label for="editTaskName">Task Name:</label>
+      <input type="text" id="editTaskName" name="editTaskName" required>
+
+      <label for="editStartDate">Start Date:</label>
+      <input type="date" id="editStartDate" name="editStartDate" required>
+
+      <label for="editEndDate">End Date:</label>
+      <input type="date" id="editEndDate" name="editEndDate" required>
+
+      <button type="button" onclick="saveEditedTask()">Save Changes</button>
+      <button type="button" onclick="closeEditModal()">Cancel</button>
+    </form>
+  </div>
 
   <form id="taskForm">
     <label for="taskName">Task Name:</label>
@@ -30,48 +46,10 @@
     const testTask = [
       {id:1, name: 'Task 1', start: '2023-10-08', end: '2023-10-12', progress: 50, dependencies: [] },
       {id:2, name: 'Task 2', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [1] },
-      {id:3, name: 'Task 3', start: '2023-10-05', end: '2023-10-10', progress: 25, dependencies: [1] },
-      {id:4, name: 'Task 4', start: '2023-10-06', end: '2023-10-12', progress: 25, dependencies: [] },
-      {id:5, name: 'Task 5', start: '2023-10-07', end: '2023-10-14', progress: 50, dependencies: [] },
-      {id:6, name: 'Task 6', start: '2023-10-08', end: '2023-10-18', progress: 50, dependencies: [] },
-      {id:7, name: 'Task 7', start: '2023-10-09', end: '2023-10-16', progress: 50, dependencies: [] },
-      {id:8, name: 'Task 8', start: '2023-10-10', end: '2023-10-17', progress: 50, dependencies: [4,2,3] },
-      {id:9, name: 'Task 9', start: '2023-10-11', end: '2023-10-20', progress: 58, dependencies: [] },
-      {id:10, name: 'Task 10', start: '2023-10-12', end: '2023-10-18', progress: 50, dependencies: [] },
-      {id:11, name: 'Task 11', start: '2023-10-12', end: '2023-10-18', progress: 60, dependencies: [] },
-      // Add more tasks as needed
     ];
     let taskupdated = updateTaskStartEndDates(testTask);
     // Call the function with sample data
     createGanttChart(taskupdated);
-    function addTask() {
-      const taskName = document.getElementById('taskName').value;
-      const startDate = document.getElementById('startDate').value;
-      const endDate = document.getElementById('endDate').value;
-
-      // Ensure the required fields are not empty
-      if (!taskName || !startDate || !endDate) {
-        alert('Please fill in all fields.');
-        return;
-      }
-
-      const newTask = {
-        id: testTask.length + 1, // Incremental ID
-        name: taskName,
-        start: startDate,
-        end: endDate,
-        progress: 0, // You can set the progress as needed
-        dependencies: [] // You can set dependencies as needed
-      };
-
-      // Add the new task to the existing tasks
-      testTask.push(newTask);
-
-      // Update the Gantt chart with the new data
-      let taskupdated = updateTaskStartEndDates(testTask);
-      // Call the function with sample data
-      createGanttChart(taskupdated);
-    }
   </script>
 </body>
 </html>

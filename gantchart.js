@@ -148,8 +148,82 @@ function createTaskBars(svg, tasks, dateInfo) {
     progressRect.addEventListener('mouseover', () => showTaskDetails(task,tasks));
     progressRect.addEventListener('mouseout', hideTaskDetails);
 
+    // Add a contextmenu event listener for right-click to enable task editing
+    rect.addEventListener('contextmenu', (event) => {
+      event.preventDefault(); // Prevent the default context menu
+      editTask(event, task, tasks);
+    });
+    progressRect.addEventListener('contextmenu', (event) => {
+      event.preventDefault(); // Prevent the default context menu
+      editTask(event, task, tasks);
+    });
+
+
   });
 }
+// Function to handle task editing
+// Function to handle task editing
+function editTask(event, task, allTasks) {
+  const editTaskForm = document.getElementById('editTaskForm');
+  const editTaskNameInput = document.getElementById('editTaskName');
+  const editStartDateInput = document.getElementById('editStartDate');
+  const editEndDateInput = document.getElementById('editEndDate');
+  const editModal = document.getElementById('editModal');
+
+  // Set the current task details in the form
+  editTaskNameInput.value = task.name;
+  editStartDateInput.value = task.start;
+  editEndDateInput.value = task.end;
+
+  // Store the task ID in a data attribute of the form
+  editTaskForm.setAttribute('data-task-id', task.id);
+
+  // Display the modal
+  editModal.style.display = 'block';
+
+  // Prevent the contextmenu event from propagating further
+  event.preventDefault();
+}
+
+// Function to save edited task
+function saveEditedTask() {
+  const editTaskForm = document.getElementById('editTaskForm');
+  const editTaskNameInput = document.getElementById('editTaskName');
+  const editStartDateInput = document.getElementById('editStartDate');
+  const editEndDateInput = document.getElementById('editEndDate');
+  const editModal = document.getElementById('editModal');
+
+  // Retrieve the edited values
+  const editedTaskName = editTaskNameInput.value;
+  const editedStartDate = editStartDateInput.value;
+  const editedEndDate = editEndDateInput.value;
+
+  // Retrieve the task ID from the data attribute
+  const taskId = parseInt(editTaskForm.getAttribute('data-task-id'), 10);
+
+  // Find the task in the array and update its properties
+  const editedTaskIndex = testTask.findIndex(task => task.id === taskId);
+  if (editedTaskIndex !== -1) {
+    testTask[editedTaskIndex].name = editedTaskName;
+    testTask[editedTaskIndex].start = editedStartDate;
+    testTask[editedTaskIndex].end = editedEndDate;
+  }
+  // console.log(testTask);
+  // Update the Gantt chart with the new data
+  let taskupdated = updateTaskStartEndDates(testTask);
+  // Call the function with sample data
+  createGanttChart(taskupdated);
+
+  // Close the modal
+  closeEditModal();
+}
+
+// Function to close the edit modal
+function closeEditModal() {
+  const editModal = document.getElementById('editModal');
+  editModal.style.display = 'none';
+}
+
 function showTaskDetails(task,allTasks) {
   const dependentTaskNames = task.dependencies.map(depId => allTasks[depId - 1].name);
   const dependentTaskInfo = dependentTaskNames.length > 0 ? `Dependencies: ${dependentTaskNames.join(', ')}` : '';
@@ -187,6 +261,36 @@ function updateGanttChartContent(svg, tasks) {
   createMonthHeadings(svg, dateInfo, chartWidth);
   createDateScale(svg, dateInfo, chartWidth, tasks.length);
   createTaskBars(svg, tasks, dateInfo);
+}
+
+//function to update the task array
+function addTask() {
+  const taskName = document.getElementById('taskName').value;
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
+
+  // Ensure the required fields are not empty
+  if (!taskName || !startDate || !endDate) {
+    alert('Please fill in all fields.');
+    return;
+  }
+
+  const newTask = {
+    id: testTask.length + 1, // Incremental ID
+    name: taskName,
+    start: startDate,
+    end: endDate,
+    progress: 0, // You can set the progress as needed
+    dependencies: [] // You can set dependencies as needed
+  };
+
+  // Add the new task to the existing tasks
+  testTask.push(newTask);
+
+  // Update the Gantt chart with the new data
+  let taskupdated = updateTaskStartEndDates(testTask);
+  // Call the function with sample data
+  createGanttChart(taskupdated);
 }
 
 
