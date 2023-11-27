@@ -298,4 +298,52 @@ function addTask() {
   createGanttChart(taskupdated);
 }
 
+// Function to handle task editing
+function editTask(event, task, allTasks) {
+  const editTaskForm = document.getElementById('editTaskForm');
+  const editTaskNameInput = document.getElementById('editTaskName');
+  const editStartDateInput = document.getElementById('editStartDate');
+  const editEndDateInput = document.getElementById('editEndDate');
+  const editProgress = document.getElementById('editProgress');
+  const editDependenciesSelect = document.getElementById('editDependencies');
+  const editModal = document.getElementById('editModal');
+
+  // Set the current task details in the form
+  editTaskNameInput.value = task.name;
+  editStartDateInput.value = task.start;
+  editEndDateInput.value = task.end;
+  editProgress.value = task.progress;
+
+  // Clear existing options
+  editDependenciesSelect.innerHTML = '';
+
+  // Display dependencies in the modal as select options
+  allTasks.forEach(availableTask => {
+    // Check if the available task is not the current task and not dependent on the current task
+    if (availableTask.id !== task.id && !isTaskDependent(task, availableTask, allTasks)) {
+      const option = document.createElement('option');
+      option.value = availableTask.id;
+      option.textContent = availableTask.name;
+      if (task.dependencies.includes(availableTask.id)) {
+        // If the task is already a dependency, mark it as selected
+        option.selected = true;
+      }
+      editDependenciesSelect.appendChild(option);
+    }
+  });
+
+  // Store the task ID in a data attribute of the form
+  editTaskForm.setAttribute('data-task-id', task.id);
+
+  // Display the modal
+  editModal.style.display = 'block';
+
+  // Prevent the contextmenu event from propagating further
+  event.preventDefault();
+}
+
+// Function to check if a task is dependent on another task
+function isTaskDependent(currentTask, otherTask, allTasks) {
+  return otherTask.dependencies.includes(currentTask.id) || otherTask.dependencies.some(depId => isTaskDependent(currentTask, allTasks[depId - 1], allTasks));
+}
 
