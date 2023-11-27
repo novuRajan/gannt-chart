@@ -187,42 +187,6 @@ function editTask(event, task, allTasks) {
   event.preventDefault();
 }
 
-// Function to save edited task
-function saveEditedTask() {
-  const editTaskForm = document.getElementById('editTaskForm');
-  const editTaskNameInput = document.getElementById('editTaskName');
-  const editStartDateInput = document.getElementById('editStartDate');
-  const editEndDateInput = document.getElementById('editEndDate');
-  const editProgress = document.getElementById('editProgress');
-  const editModal = document.getElementById('editModal');
-
-  // Retrieve the edited values
-  const editedTaskName = editTaskNameInput.value;
-  const editedStartDate = editStartDateInput.value;
-  const editedEndDate = editEndDateInput.value;
-  const progress = editProgress.value;
-
-  // Retrieve the task ID from the data attribute
-  const taskId = parseInt(editTaskForm.getAttribute('data-task-id'), 10);
-
-  // Find the task in the array and update its properties
-  const editedTaskIndex = testTask.findIndex(task => task.id === taskId);
-  if (editedTaskIndex !== -1) {
-    testTask[editedTaskIndex].name = editedTaskName;
-    testTask[editedTaskIndex].start = editedStartDate;
-    testTask[editedTaskIndex].end = editedEndDate;
-    testTask[editedTaskIndex].progress = progress > 100 ? 100 : progress;
-  }
-  // console.log(testTask);
-  // Update the Gantt chart with the new data
-  let taskupdated = updateTaskStartEndDates(testTask);
-  // Call the function with sample data
-  createGanttChart(taskupdated);
-
-  // Close the modal
-  closeEditModal();
-}
-
 // Function to close the edit modal
 function closeEditModal() {
   const editModal = document.getElementById('editModal');
@@ -345,5 +309,46 @@ function editTask(event, task, allTasks) {
 // Function to check if a task is dependent on another task
 function isTaskDependent(currentTask, otherTask, allTasks) {
   return otherTask.dependencies.includes(currentTask.id) || otherTask.dependencies.some(depId => isTaskDependent(currentTask, allTasks[depId - 1], allTasks));
+}
+
+// Function to save edited task
+function saveEditedTask() {
+  const editTaskForm = document.getElementById('editTaskForm');
+  const editTaskNameInput = document.getElementById('editTaskName');
+  const editStartDateInput = document.getElementById('editStartDate');
+  const editEndDateInput = document.getElementById('editEndDate');
+  const editProgress = document.getElementById('editProgress');
+  const editDependenciesSelect = document.getElementById('editDependencies');
+  const editModal = document.getElementById('editModal');
+
+  // Retrieve the edited values
+  const editedTaskName = editTaskNameInput.value;
+  const editedStartDate = editStartDateInput.value;
+  const editedEndDate = editEndDateInput.value;
+  const progress = editProgress.value;
+
+  // Retrieve the task ID from the data attribute
+  const taskId = parseInt(editTaskForm.getAttribute('data-task-id'), 10);
+
+  // Retrieve the selected dependencies from the updated select element
+  const selectedDependencies = Array.from(editDependenciesSelect.selectedOptions).map(option => parseInt(option.value, 10));
+
+  // Find the task in the array and update its properties
+  const editedTaskIndex = testTask.findIndex(task => task.id === taskId);
+  if (editedTaskIndex !== -1) {
+    testTask[editedTaskIndex].name = editedTaskName;
+    testTask[editedTaskIndex].start = editedStartDate;
+    testTask[editedTaskIndex].end = editedEndDate;
+    testTask[editedTaskIndex].progress = progress > 100 ? 100 : progress;
+    testTask[editedTaskIndex].dependencies = selectedDependencies;
+  }
+
+  // Update the Gantt chart with the new data
+  let taskUpdated = updateTaskStartEndDates(testTask);
+  // Call the function with sample data
+  createGanttChart(taskUpdated);
+
+  // Close the modal
+  closeEditModal();
 }
 
