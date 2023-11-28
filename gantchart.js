@@ -158,43 +158,52 @@ function createTaskBars(svg, tasks, dateInfo) {
       editTask(event, task, tasks);
     });
 
-      // Add event listeners for dragging to edit start and end dates
-let isDragging = false;
-let initialX;
-let initialWidth;
+    // Add event listeners for dragging to edit start and end dates
+    let isDragging = false;
+    let initialX;
+    let initialWidth;
 
-rect.addEventListener('mousedown', (event) => {
-  isDragging = true;
-  initialX = event.clientX;
-  initialWidth = parseFloat(rect.getAttribute('width'));
+    rect.addEventListener('mousedown', (event) => {
+      isDragging = true;
+      initialX = event.clientX;
+      initialWidth = parseFloat(rect.getAttribute('width'));
 
-  // Prevent text selection during drag
-  event.preventDefault();
-});
+      // Prevent text selection during drag
+      event.preventDefault();
+    });
 
-document.addEventListener('mousemove', throttle((event) => {
-  if (isDragging) {
-    const deltaX = event.clientX - initialX;
-    const newWidth = Math.max(0, initialWidth + deltaX);
-    rect.setAttribute('width', newWidth);
-    progressRect.setAttribute('width', (newWidth * task.progress) / 100);
-  }
+    document.addEventListener('mousemove', throttle((event) => {
+      if (isDragging) {
+        const deltaX = event.clientX - initialX;
+        const newWidth = Math.max(0, initialWidth + deltaX);
+        rect.setAttribute('width', newWidth);
+        progressRect.setAttribute('width', (newWidth * task.progress) / 100);
+      }
 
-  // Prevent text selection during drag
-  event.preventDefault();
-}, 100));
+      // Prevent text selection during drag
+      event.preventDefault();
+    }, 100));
 
-document.addEventListener('mouseup', () => {
-  if (isDragging) {
-    isDragging = false;
-    const newStartDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000));
-    const newEndDate = new Date(newStartDate.getTime() + (parseFloat(rect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000));
-    task.start = newStartDate.toISOString().split('T')[0];
-    task.end = newEndDate.toISOString().split('T')[0];
-    let taskUpdated = updateTaskStartEndDates(tasks);
-    createGanttChart(taskUpdated);
-  }
-});
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+
+        // Find the task in the array and update its properties
+        const updatedTaskIndex = testTask.findIndex(t => t.id === task.id);
+        if (updatedTaskIndex !== -1) {
+          const newStartDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000));
+          const newEndDate = new Date(newStartDate.getTime() + (parseFloat(rect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000));
+
+          // Update the properties of the task in the array
+          testTask[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
+          testTask[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
+
+          // Update the Gantt chart with the new data
+          let taskUpdated = updateTaskStartEndDates(testTask);
+          createGanttChart(taskUpdated);
+        }
+      }
+    });
   })
 }
 function throttle(func, limit) {
@@ -208,31 +217,6 @@ function throttle(func, limit) {
       setTimeout(() => (inThrottle = false), limit);
     }
   };
-}
-// Function to handle task editing
-function editTask(event, task, allTasks) {
-  const editTaskForm = document.getElementById('editTaskForm');
-  const editTaskNameInput = document.getElementById('editTaskName');
-  const editStartDateInput = document.getElementById('editStartDate');
-  const editEndDateInput = document.getElementById('editEndDate');
-  const editProgress = document.getElementById('editProgress');
-  const editModal = document.getElementById('editModal');
-
-  console.log(task);
-  // Set the current task details in the form
-  editTaskNameInput.value = task.name;
-  editStartDateInput.value = task.start;
-  editEndDateInput.value = task.end;
-  editProgress.value = task.progress;
-
-  // Store the task ID in a data attribute of the form
-  editTaskForm.setAttribute('data-task-id', task.id);
-
-  // Display the modal
-  editModal.style.display = 'block';
-
-  // Prevent the contextmenu event from propagating further
-  event.preventDefault();
 }
 
 // Function to close the edit modal
