@@ -159,39 +159,42 @@ function createTaskBars(svg, tasks, dateInfo) {
     });
 
       // Add event listeners for dragging to edit start and end dates
-      let isDragging = false;
-      let initialX;
-      let initialWidth;
-  
-      rect.addEventListener('mousedown', (event) => {
-        isDragging = true;
-        initialX = event.clientX;
-        initialWidth = parseFloat(rect.getAttribute('width'));
-      });
-  
-      document.addEventListener('mousemove', throttle((event) => {
-        if (isDragging) {
-          const deltaX = event.clientX - initialX;
-          const newWidth = Math.max(0, initialWidth + deltaX);
-          rect.setAttribute('width', newWidth);
-          progressRect.setAttribute('width', (newWidth * task.progress) / 100);
-        }
-      }, 100)); // Throttle to 10 updates per second
-  
-      document.addEventListener('mouseup', () => {
-        if (isDragging) {
-          isDragging = false;
-          // Update the task's start and end dates based on the new position of the bar
-          const newStartDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000));
-          const newEndDate = new Date(newStartDate.getTime() + (parseFloat(rect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000));
-          task.start = newStartDate.toISOString().split('T')[0];
-          task.end = newEndDate.toISOString().split('T')[0];
-          // Update the Gantt chart with the new data
-          let taskUpdated = updateTaskStartEndDates(tasks);
-          // Call the function with sample data
-          createGanttChart(taskUpdated);
-        }
-    });
+let isDragging = false;
+let initialX;
+let initialWidth;
+
+rect.addEventListener('mousedown', (event) => {
+  isDragging = true;
+  initialX = event.clientX;
+  initialWidth = parseFloat(rect.getAttribute('width'));
+
+  // Prevent text selection during drag
+  event.preventDefault();
+});
+
+document.addEventListener('mousemove', throttle((event) => {
+  if (isDragging) {
+    const deltaX = event.clientX - initialX;
+    const newWidth = Math.max(0, initialWidth + deltaX);
+    rect.setAttribute('width', newWidth);
+    progressRect.setAttribute('width', (newWidth * task.progress) / 100);
+  }
+
+  // Prevent text selection during drag
+  event.preventDefault();
+}, 100));
+
+document.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    const newStartDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000));
+    const newEndDate = new Date(newStartDate.getTime() + (parseFloat(rect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000));
+    task.start = newStartDate.toISOString().split('T')[0];
+    task.end = newEndDate.toISOString().split('T')[0];
+    let taskUpdated = updateTaskStartEndDates(tasks);
+    createGanttChart(taskUpdated);
+  }
+});
   })
 }
 function throttle(func, limit) {
