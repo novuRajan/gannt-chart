@@ -158,41 +158,62 @@ function createTaskBars(svg, tasks, dateInfo) {
       editTask(event, task, tasks);
     });
 
-    // Add event listeners for dragging to edit start and end dates
+   // Add event listeners for dragging to edit start and end dates
     let isDragging = false;
     let initialX;
     let initialWidth;
+    let isDragStart;
 
     rect.addEventListener('mousedown', (event) => {
       isDragging = true;
       initialX = event.clientX;
       initialWidth = parseFloat(rect.getAttribute('width'));
+      isDragStart = event.clientX < rect.getBoundingClientRect().left + initialWidth / 2;
 
       // Prevent text selection during drag
       event.preventDefault();
     });
-    
+
     progressRect.addEventListener('mousedown', (event) => {
       isDragging = true;
       initialX = event.clientX;
       initialWidth = parseFloat(rect.getAttribute('width'));
+      isDragStart = event.clientX < rect.getBoundingClientRect().left + initialWidth / 2;
 
       // Prevent text selection during drag
       event.preventDefault();
     });
 
-    document.addEventListener('mousemove', throttle((event) => {
+    document.addEventListener('mousemove',  throttle((event) =>{
+
       if (isDragging) {
+        
         const deltaX = event.clientX - initialX;
-        const newWidth = Math.max(0, initialWidth + deltaX);
-        rect.setAttribute('width', newWidth);
-        progressRect.setAttribute('width', (newWidth * task.progress) / 100);
-      }
-
-      // Prevent text selection during drag
-      event.preventDefault();
-    }, 100));
-
+    
+        if (isDragStart) {
+          // Dragging start handle
+          const newStartOffset = parseFloat(rect.getAttribute('x')) + deltaX;
+          const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
+          const newWidth = (endDate - new Date(dateInfo.startingDate.getTime() + newStartOffset / 50 * (24 * 60 * 60 * 1000))) / (24 * 60 * 60 * 1000) * 50;
+    
+          rect.setAttribute('x', newStartOffset); 
+          rect.setAttribute('width', newWidth);
+    
+        } else {
+          // Dragging end handle
+          const newEndOffset = parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width')) + deltaX;  
+          const startDate = new Date(dateInfo.startingDate.getTime() + parseFloat(rect.getAttribute('x')) / 50 * (24 * 60 * 60 * 1000));
+          const newWidth = (new Date(dateInfo.startingDate.getTime() + newEndOffset / 50 * (24 * 60 * 60 * 1000)) - startDate) / (24 * 60 * 60 * 1000) * 50;
+    
+          rect.setAttribute('width', newWidth);
+        }
+    
+        // Update progress bar
+        progressRect.setAttribute('width', newWidth * task.progress / 100);
+    
+      } 
+    
+    },1));
     document.addEventListener('mouseup', () => {
       if (isDragging) {
         isDragging = false;

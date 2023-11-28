@@ -50,11 +50,10 @@
     // Sample data for tasks with start and end dates and progress
     const testTask = [
       {id:1, name: 'Task 1', start: '2023-10-08', end: '2023-10-12', progress: 50, dependencies: [] },
-      {id:2, name: 'Task 2', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [1] },
-      {id:3, name: 'Task 3', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [2] },
+      {id:2, name: 'Task 2', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
+      {id:3, name: 'Task 3', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
       {id:4, name: 'Task 4', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
       {id:5, name: 'Task 5', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
-      
     ];
     let taskupdated = updateTaskStartEndDates(testTask);
     // Call the function with sample data
