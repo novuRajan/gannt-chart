@@ -168,12 +168,6 @@ function createTaskBars(svg, tasks, dateInfo) {
         initialX = event.clientX;
         initialWidth = parseFloat(rect.getAttribute('width'));
       });
-      
-      progressRect.addEventListener('mousedown', (event) => {
-        isDragging = true;
-        initialX = event.clientX;
-        initialWidth = parseFloat(rect.getAttribute('width'));
-      });
   
       document.addEventListener('mousemove', throttle((event) => {
         if (isDragging) {
