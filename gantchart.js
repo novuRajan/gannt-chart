@@ -171,6 +171,15 @@ function createTaskBars(svg, tasks, dateInfo) {
       // Prevent text selection during drag
       event.preventDefault();
     });
+    
+    progressRect.addEventListener('mousedown', (event) => {
+      isDragging = true;
+      initialX = event.clientX;
+      initialWidth = parseFloat(rect.getAttribute('width'));
+
+      // Prevent text selection during drag
+      event.preventDefault();
+    });
 
     document.addEventListener('mousemove', throttle((event) => {
       if (isDragging) {
@@ -206,6 +215,7 @@ function createTaskBars(svg, tasks, dateInfo) {
     });
   })
 }
+
 function throttle(func, limit) {
   let inThrottle;
   return function () {
