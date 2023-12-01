@@ -233,7 +233,7 @@ function createTaskBars(svg, tasks, dateInfo) {
       const deltaX = (clientX - initialX) * 0.6; // Adjust the sensitivity factor (0.5 is just an example)
     
       if (isDragStart) {
-        const deltaX = event.movementX * 2.2 ; // Adjusting sentivity for start point 
+        const deltaX = event.movementX * 3; // Adjusting sentivity for start point 
         // Dragging start handle
         const newStartOffset = parseFloat(taskRect.getAttribute('x')) + deltaX;
         const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
