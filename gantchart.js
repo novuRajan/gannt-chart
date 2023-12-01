@@ -157,6 +157,14 @@ function createTaskBars(svg, tasks, dateInfo) {
       event.preventDefault(); // Prevent the default context menu
       editTask(event, task, tasks);
     });
+
+    // Add event listeners for both rectangle and progress bar
+    rect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
+    rect.addEventListener('mouseout', hideTaskDetails);
+
+    progressRect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
+    progressRect.addEventListener('mouseout', hideTaskDetails);
+
     let isDragging = false;
     let initialX;
     let initialWidth;
@@ -165,13 +173,6 @@ function createTaskBars(svg, tasks, dateInfo) {
     // Variables to store the current task and progress bar
     let currentTaskRect;
     let currentProgressRect;
-
-    // Add event listeners for both rectangle and progress bar
-    rect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
-    rect.addEventListener('mouseout', hideTaskDetails);
-
-    progressRect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
-    progressRect.addEventListener('mouseout', hideTaskDetails);
 
     // Add a contextmenu event listener for right-click to enable task editing
     rect.addEventListener('contextmenu', (event) => {
@@ -224,22 +225,20 @@ function createTaskBars(svg, tasks, dateInfo) {
       // Set the current task and progress bar
       currentTaskRect = rect;
       currentProgressRect = progressRect;
-
       // Prevent text selection during drag
       event.preventDefault();
     }
 
     function updateTaskBarPosition(clientX, taskRect, progressRect) {
-      const deltaX = clientX - initialX;
+      const deltaX = (clientX - initialX) * 0.6; // Adjust the sensitivity factor (0.5 is just an example)
     
       if (isDragStart) {
-        console.log('drag start');
+        const deltaX = event.movementX * 2.2 ; // Adjusting sentivity for start point 
         // Dragging start handle
         const newStartOffset = parseFloat(taskRect.getAttribute('x')) + deltaX;
         const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
         const newWidth = (endDate - new Date(dateInfo.startingDate.getTime() + newStartOffset / 50 * (24 * 60 * 60 * 1000))) / (24 * 60 * 60 * 1000) * 50;
     
-        // Ensure the new start offset does not go beyond the current end position
         const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
         const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
         const adjustedWidth = maxStartOffset - adjustedStartOffset;
@@ -247,19 +246,17 @@ function createTaskBars(svg, tasks, dateInfo) {
         taskRect.setAttribute('x', adjustedStartOffset);
         taskRect.setAttribute('width', adjustedWidth);
     
-        // Update progress bar
         progressRect.setAttribute('x', adjustedStartOffset);
         progressRect.setAttribute('width', adjustedWidth * task.progress / 100);
       } else {
-        console.log('drag from end');
         // Dragging end handle
         const newWidth = initialWidth + deltaX;
     
         taskRect.setAttribute('width', newWidth);
-        // Update progress bar
         progressRect.setAttribute('width', newWidth * task.progress / 100);
       }
     }
+    
   })
 }
 
