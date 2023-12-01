@@ -1,5 +1,5 @@
 body.dragging {
-  cursor: grab;
+  cursor: e-resize ;
 }
 
 #chart {
