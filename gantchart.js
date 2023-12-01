@@ -159,92 +159,91 @@ function createTaskBars(svg, tasks, dateInfo) {
     });
 
    // Add event listeners for dragging to edit start and end dates
-    let isDragging = false;
-    let initialX;
-    let initialWidth;
-    let isDragStart;
+     // Add event listeners for dragging to edit start and end dates
+  let isDragging = false;
+  let initialX;
+  let initialWidth;
+  let isDragStart;
 
-    rect.addEventListener('mousedown', (event) => {
-      isDragging = true;
-      initialX = event.clientX;
-      initialWidth = parseFloat(rect.getAttribute('width'));
-      isDragStart = event.clientX < rect.getBoundingClientRect().left + initialWidth / 2;
+  rect.addEventListener('mousedown', (event) => {
+    document.body.classList.add('dragging');
+    isDragging = true;
+    initialX = event.clientX;
+    initialWidth = parseFloat(rect.getAttribute('width'));
+    isDragStart = event.clientX < rect.getBoundingClientRect().left + initialWidth / 2;
 
-      // Prevent text selection during drag
-      event.preventDefault();
-    });
+    // Prevent text selection during drag
+    event.preventDefault();
+  });
 
-    progressRect.addEventListener('mousedown', (event) => {
-      isDragging = true;
-      initialX = event.clientX;
-      initialWidth = parseFloat(rect.getAttribute('width'));
-      isDragStart = event.clientX < rect.getBoundingClientRect().left + initialWidth / 2;
+  progressRect.addEventListener('mousedown', (event) => {
+    document.body.classList.add('dragging');
+    isDragging = true;
+    initialX = event.clientX;
+    initialWidth = parseFloat(rect.getAttribute('width'));
+    isDragStart = event.clientX < rect.getBoundingClientRect().left + initialWidth / 2;
 
-      // Prevent text selection during drag
-      event.preventDefault();
-    });
+    // Prevent text selection during drag
+    event.preventDefault();
+  });
 
-    document.addEventListener('mousemove',  throttle((event) =>{
+  document.addEventListener('mousemove', throttle((event) => {
+    if (isDragging) {
+      const deltaX = event.clientX - initialX;
 
-      if (isDragging) {
-        
-        const deltaX = event.clientX - initialX;
-    
-        if (isDragStart) {
-          // Dragging start handle
-          const newStartOffset = parseFloat(rect.getAttribute('x')) + deltaX;
-          const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
-          const newWidth = (endDate - new Date(dateInfo.startingDate.getTime() + newStartOffset / 50 * (24 * 60 * 60 * 1000))) / (24 * 60 * 60 * 1000) * 50;
+      if (isDragStart) {
+        // Dragging start handle
+        const newStartOffset = parseFloat(rect.getAttribute('x')) + deltaX;
+        const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
+        const newWidth = (endDate - new Date(dateInfo.startingDate.getTime() + newStartOffset / 50 * (24 * 60 * 60 * 1000))) / (24 * 60 * 60 * 1000) * 50;
 
-          // Ensure the new start offset does not go beyond the current end position
-          const maxStartOffset = parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width'));
-          const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
-          const adjustedWidth = maxStartOffset - adjustedStartOffset;
+        // Ensure the new start offset does not go beyond the current end position
+        const maxStartOffset = parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width'));
+        const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
+        const adjustedWidth = maxStartOffset - adjustedStartOffset;
 
-          rect.setAttribute('x', adjustedStartOffset);
-          rect.setAttribute('width', adjustedWidth);
+        rect.setAttribute('x', adjustedStartOffset);
+        rect.setAttribute('width', adjustedWidth);
 
-          // Update progress bar
-          progressRect.setAttribute('x', adjustedStartOffset);
-          progressRect.setAttribute('width', adjustedWidth * task.progress / 100);
-    
-        } else {
-          // Dragging end handle
-          const newEndOffset = parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width')) + deltaX;  
-          const startDate = new Date(dateInfo.startingDate.getTime() + parseFloat(rect.getAttribute('x')) / 50 * (24 * 60 * 60 * 1000));
-          const newWidth = (new Date(dateInfo.startingDate.getTime() + newEndOffset / 50 * (24 * 60 * 60 * 1000)) - startDate) / (24 * 60 * 60 * 1000) * 50;
-    
-          rect.setAttribute('width', newWidth);
-          // Update progress bar
-          progressRect.setAttribute('width', newWidth * task.progress / 100);
-        }
-    
-        
-    
-      } 
-    
-    },100));
-    document.addEventListener('mouseup', () => {
-      if (isDragging) {
-        isDragging = false;
+        // Update progress bar
+        progressRect.setAttribute('x', adjustedStartOffset);
+        progressRect.setAttribute('width', adjustedWidth * task.progress / 100);
 
-        // Find the task in the array and update its properties
-        const updatedTaskIndex = testTask.findIndex(t => t.id === task.id);
-        if (updatedTaskIndex !== -1) {
-          const newStartDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000));
-          const newEndDate = new Date(newStartDate.getTime() + (parseFloat(rect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000));
+      } else {
+        // Dragging end handle
+        const newEndOffset = parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width')) + deltaX;
+        const startDate = new Date(dateInfo.startingDate.getTime() + parseFloat(rect.getAttribute('x')) / 50 * (24 * 60 * 60 * 1000));
+        const newWidth = (new Date(dateInfo.startingDate.getTime() + newEndOffset / 50 * (24 * 60 * 60 * 1000)) - startDate) / (24 * 60 * 60 * 1000) * 50;
 
-          // Update the properties of the task in the array
-          testTask[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
-          testTask[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
-
-          // Update the Gantt chart with the new data
-          let taskUpdated = updateTaskStartEndDates(testTask);
-          createGanttChart(taskUpdated);
-        }
+        rect.setAttribute('width', newWidth);
+        // Update progress bar
+        progressRect.setAttribute('width', newWidth * task.progress / 100);
       }
-    });
-  })
+    }
+  }, 16));
+
+  document.addEventListener('mouseup', () => {
+    document.body.classList.remove('dragging');
+    if (isDragging) {
+      isDragging = false;
+
+      // Find the task in the array and update its properties
+      const updatedTaskIndex = testTask.findIndex(t => t.id === task.id);
+      if (updatedTaskIndex !== -1) {
+        const newStartDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000));
+        const newEndDate = new Date(newStartDate.getTime() + (parseFloat(rect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000));
+
+        // Update the properties of the task in the array
+        testTask[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
+        testTask[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
+
+        // Update the Gantt chart with the new data
+        let taskUpdated = updateTaskStartEndDates(testTask);
+        createGanttChart(taskUpdated);
+      }
+    }
+  });
+})
 }
 
 function throttle(func, limit) {

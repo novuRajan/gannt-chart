@@ -1,3 +1,7 @@
+body.dragging {
+  cursor: grab;
+}
+
 #chart {
   background-color: red;
   min-width: 100% ;
