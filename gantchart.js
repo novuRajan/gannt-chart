@@ -195,9 +195,18 @@ function createTaskBars(svg, tasks, dateInfo) {
           const newStartOffset = parseFloat(rect.getAttribute('x')) + deltaX;
           const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
           const newWidth = (endDate - new Date(dateInfo.startingDate.getTime() + newStartOffset / 50 * (24 * 60 * 60 * 1000))) / (24 * 60 * 60 * 1000) * 50;
-    
-          rect.setAttribute('x', newStartOffset); 
-          rect.setAttribute('width', newWidth);
+
+          // Ensure the new start offset does not go beyond the current end position
+          const maxStartOffset = parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width'));
+          const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
+          const adjustedWidth = maxStartOffset - adjustedStartOffset;
+
+          rect.setAttribute('x', adjustedStartOffset);
+          rect.setAttribute('width', adjustedWidth);
+
+          // Update progress bar
+          progressRect.setAttribute('x', adjustedStartOffset);
+          progressRect.setAttribute('width', adjustedWidth * task.progress / 100);
     
         } else {
           // Dragging end handle
@@ -206,14 +215,15 @@ function createTaskBars(svg, tasks, dateInfo) {
           const newWidth = (new Date(dateInfo.startingDate.getTime() + newEndOffset / 50 * (24 * 60 * 60 * 1000)) - startDate) / (24 * 60 * 60 * 1000) * 50;
     
           rect.setAttribute('width', newWidth);
+          // Update progress bar
+          progressRect.setAttribute('width', newWidth * task.progress / 100);
         }
     
-        // Update progress bar
-        progressRect.setAttribute('width', newWidth * task.progress / 100);
+        
     
       } 
     
-    },1));
+    },100));
     document.addEventListener('mouseup', () => {
       if (isDragging) {
         isDragging = false;
