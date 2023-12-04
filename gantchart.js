@@ -221,19 +221,36 @@ function createTaskBars(svg, tasks, dateInfo) {
       initialX = event.clientX;
       initialWidth = parseFloat(rect.getAttribute('width'));
       isDragStart = event.clientX < rect.getBoundingClientRect().left + initialWidth / 2;
-
+    
       // Set the current task and progress bar
       currentTaskRect = rect;
       currentProgressRect = progressRect;
       // Prevent text selection during drag
       event.preventDefault();
+    
+      // Check if the task is dependent on another task
+      if (isTaskDependentOnOtherTask(currentTaskRect, tasks) && isDragStart) {
+        alert('Task is dependent on another task. Start date cannot be changed.');
+        document.body.classList.remove('dragging'); // remove dragging class
+        isDragging = false; // Cancel the drag operation
+      }
     }
+    
+    // Function to check if a task is dependent on another task
+    function isTaskDependentOnOtherTask(taskRect, tasks) {
+      const index = taskRect.getAttribute('y') / 40 - 1; // Assuming each task has a height of 40
+      const dependentTaskIds = tasks[index].dependencies;
+    
+      // Check if the task is dependent on another task
+      return dependentTaskIds.length > 0;
+    }
+    
 
     function updateTaskBarPosition(clientX, taskRect, progressRect) {
       const deltaX = (clientX - initialX) * 0.6; // Adjust the sensitivity factor (0.5 is just an example)
     
       if (isDragStart) {
-        const deltaX = event.movementX * 1.5; // Adjusting sentivity for start point 
+        const deltaX = event.movementX * 4; // Adjusting sentivity for start point 
         // Dragging start handle
         const newStartOffset = parseFloat(taskRect.getAttribute('x')) + deltaX;
         const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
