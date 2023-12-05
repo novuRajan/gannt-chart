@@ -199,18 +199,18 @@ function createTaskBars(svg, tasks, dateInfo) {
       if (isDragging) {
         isDragging = false;
         // Find the task in the array and update its properties
-        const updatedTaskIndex = testTask.findIndex(t => t.id === task.id);
+        const updatedTaskIndex = tasks.findIndex(t => t.id === task.id);
         if (updatedTaskIndex !== -1) {
           const newStartDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000));
           const newEndDate = new Date(newStartDate.getTime() + (parseFloat(rect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000));
 
           // Update the properties of the task in the array
-          testTask[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
-          testTask[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
+          tasks[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
+          tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
 
           // Update the Gantt chart with the new data
-          let taskUpdated = updateTaskStartEndDates(testTask);
-          createGanttChart(taskUpdated);
+          updateTaskStartEndDates(tasks);
+          createGanttChart(tasks);
         }
       }
     });
@@ -229,7 +229,7 @@ function createTaskBars(svg, tasks, dateInfo) {
       event.preventDefault();
     
       // Check if the task is dependent on another task
-      if (isTaskDependentOnOtherTask(dependentTask,currentTaskRect, tasks) && isDragStart) {
+      if (isTaskDependentOnOtherTaskDate(dependentTask,currentTaskRect, tasks) && isDragStart) {
         alert('Task is dependent on another task. Start date cannot be changed.');
         document.body.classList.remove('dragging'); // remove dragging class
         isDragging = false; // Cancel the drag operation
@@ -237,20 +237,21 @@ function createTaskBars(svg, tasks, dateInfo) {
     }
     
     // Function to check if a task is dependent on another task
-    function isTaskDependentOnOtherTask(dependentTask,taskRect, tasks) {
-      // get the dependent task id
-      const tasksWithDesiredIds = testTask.filter(task =>
+    function isTaskDependentOnOtherTaskDate(dependentTask,taskRect, tasks) {
+      console.log('taskRect',rect);
+      console.log('task',dependentTask.dependencies)
+      const tasksWithDesiredIds = tasks.filter(task =>
         dependentTask.dependencies.includes(task.id)
       );
-      const endDates = tasksWithDesiredIds.map(task => new Date(task.end));    // get the end date
-      const maxDate = new Date(Math.max(...endDates)); // get max end dates 
-      if(maxDate >= new Date(dependentTask.start))
-      {
-        const index = taskRect.getAttribute('y') / 40 - 1; // Assuming each task has a height of 40
-        const dependentTaskIds = tasks[index].dependencies;
-        // Check if the task is dependent on another task
-        return dependentTaskIds.length > 0;
-      }     
+      const endDates = tasksWithDesiredIds.map(task => new Date(task.end));    
+      const maxDate = new Date(Math.max(...endDates));
+      console.log('taskDependent',tasksWithDesiredIds)
+      console.log(tasks)
+      const index = taskRect.getAttribute('y') / 40 - 1; // Assuming each task has a height of 40
+      const dependentTaskIds = tasks[index].dependencies;
+    
+      // Check if the task is dependent on another task
+      return dependentTaskIds.length > 0;
     }
     
 
@@ -261,6 +262,8 @@ function createTaskBars(svg, tasks, dateInfo) {
         const deltaX = event.movementX * 4; // Adjusting sentivity for start point 
         // Dragging start handle
         const newStartOffset = parseFloat(taskRect.getAttribute('x')) + deltaX;
+        const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
+        const newWidth = (endDate - new Date(dateInfo.startingDate.getTime() + newStartOffset / 50 * (24 * 60 * 60 * 1000))) / (24 * 60 * 60 * 1000) * 50;
     
         const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
         const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
@@ -323,6 +326,7 @@ function hideTaskDetails() {
 
 
 // Function to update the Gantt chart with new data
+
 function updateGanttChartContent(svg, tasks) {
   // Clear existing content
   while (svg.firstChild) {
@@ -342,7 +346,7 @@ function updateGanttChartContent(svg, tasks) {
 }
 
 //function to update the task array
-function addTask() {
+function addTask(tasks) {
   const taskName = document.getElementById('taskName').value;
   const startDate = document.getElementById('startDate').value;
   const endDate = document.getElementById('endDate').value;
@@ -354,7 +358,7 @@ function addTask() {
   }
 
   const newTask = {
-    id: testTask.length + 1, // Incremental ID
+    id: tasks.length + 1, // Incremental ID
     name: taskName,
     start: startDate,
     end: endDate,
@@ -363,12 +367,12 @@ function addTask() {
   };
 
   // Add the new task to the existing tasks
-  testTask.push(newTask);
+  tasks.push(newTask);
 
   // Update the Gantt chart with the new data
-  let taskupdated = updateTaskStartEndDates(testTask);
+  updateTaskStartEndDates(tasks);
   // Call the function with sample data
-  createGanttChart(taskupdated);
+  createGanttChart(tasks);
 }
 
 // Function to handle task editing
@@ -421,7 +425,7 @@ function isTaskDependent(currentTask, otherTask, allTasks) {
 }
 
 // Function to save edited task
-function saveEditedTask() {
+function saveEditedTask(tasks) {
   const editTaskForm = document.getElementById('editTaskForm');
   const editTaskNameInput = document.getElementById('editTaskName');
   const editStartDateInput = document.getElementById('editStartDate');
@@ -443,19 +447,19 @@ function saveEditedTask() {
   const selectedDependencies = Array.from(editDependenciesSelect.selectedOptions).map(option => parseInt(option.value, 10));
 
   // Find the task in the array and update its properties
-  const editedTaskIndex = testTask.findIndex(task => task.id === taskId);
+  const editedTaskIndex = tasks.findIndex(task => task.id === taskId);
   if (editedTaskIndex !== -1) {
-    testTask[editedTaskIndex].name = editedTaskName;
-    testTask[editedTaskIndex].start = editedStartDate;
-    testTask[editedTaskIndex].end = editedEndDate;
-    testTask[editedTaskIndex].progress = progress > 100 ? 100 : progress;
-    testTask[editedTaskIndex].dependencies = selectedDependencies;
+    tasks[editedTaskIndex].name = editedTaskName;
+    tasks[editedTaskIndex].start = editedStartDate;
+    tasks[editedTaskIndex].end = editedEndDate;
+    tasks[editedTaskIndex].progress = progress > 100 ? 100 : progress;
+    tasks[editedTaskIndex].dependencies = selectedDependencies;
   }
 
   // Update the Gantt chart with the new data
-  let taskUpdated = updateTaskStartEndDates(testTask);
+  updateTaskStartEndDates(tasks);
   // Call the function with sample data
-  createGanttChart(taskUpdated);
+  createGanttChart(tasks);
 
   // Close the modal
   closeEditModal();

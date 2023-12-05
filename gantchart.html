@@ -26,7 +26,7 @@
 
       <select id="editDependencies" multiple></select>
 
-      <button type="button" onclick="saveEditedTask()">Save Changes</button>
+      <button type="button" onclick="saveEditedTask(data)">Save Changes</button>
       <button type="button" onclick="closeEditModal()">Cancel</button>
     </form>
   </div>
@@ -41,23 +41,23 @@
     <label for="endDate">End Date:</label>
     <input type="date" id="endDate" name="endDate" required>
 
-    <button type="button" onclick="addTask()">Add Task</button>
+    <button type="button" onclick="addTask(data)">Add Task</button>
   </form>
 
   <script src="./gantchart.js"></script>
   <script src="./updatechart.js"></script>
   <script>
     // Sample data for tasks with start and end dates and progress
-    const testTask = [
+    const data = [
       {id:1, name: 'Task 1', start: '2023-10-08', end: '2023-10-12', progress: 50, dependencies: [] },
       {id:2, name: 'Task 2', start: '2023-10-13', end: '2023-10-18', progress: 75, dependencies: [1] },
       {id:3, name: 'Task 3', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
       {id:4, name: 'Task 4', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
       {id:5, name: 'Task 5', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
     ];
-    let taskupdated = updateTaskStartEndDates(testTask);
+    updateTaskStartEndDates(data);
     // Call the function with sample data
-    createGanttChart(taskupdated);
+    createGanttChart(data);
   </script>
 </body>
 </html>
