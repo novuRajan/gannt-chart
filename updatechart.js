@@ -18,16 +18,14 @@ function updateTaskDates(task, taskMap) {
     const duration = (new Date(currentTaskCopy.end) - new Date(currentTaskCopy.start)) / (24 * 60 * 60 * 1000);
 
     // Check if the start date of the dependent task is after the max end date
-    if (new Date(dependentTask.start) > maxEndDate) {
       // Update the start date of the current task based on the maximum end date of dependent tasks
       currentTaskCopy.start = maxEndDate.toISOString().split('T')[0];
 
       // Update the end date of the current task based on its duration
       currentTaskCopy.end = new Date(new Date(currentTaskCopy.start).setDate(new Date(currentTaskCopy.start).getDate() + duration)).toISOString().split('T')[0];
-    }
 
-    // Update the taskMap with the updated task
-    taskMap.set(currentTaskCopy.id, currentTaskCopy);
+      // Update the taskMap with the updated task
+      taskMap.set(currentTaskCopy.id, currentTaskCopy);
   });
 }
 
