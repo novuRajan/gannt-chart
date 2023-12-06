@@ -185,12 +185,12 @@ function createTaskBars(svg, tasks, dateInfo) {
     });
 
     // Add event listeners for dragging to edit start and end dates
-    rect.addEventListener('mousedown', (event) => startDrag(task,event, rect));
-    progressRect.addEventListener('mousedown', (event) => startDrag(task,event, rect));
+    rect.addEventListener('mousedown', (event) => startDrag(event, rect));
+    progressRect.addEventListener('mousedown', (event) => startDrag(event, rect));
 
     document.addEventListener('mousemove', throttle((event) => {
       if (isDragging) {
-        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect);
+        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect,task , tasks);
       }
     }, 16));
 
@@ -215,7 +215,7 @@ function createTaskBars(svg, tasks, dateInfo) {
       }
     });
 
-    function startDrag(dependentTask,event, rect) {
+    function startDrag(event, rect) {
       document.body.classList.add('dragging');
       isDragging = true;
       initialX = event.clientX;
@@ -227,53 +227,73 @@ function createTaskBars(svg, tasks, dateInfo) {
       currentProgressRect = progressRect;
       // Prevent text selection during drag
       event.preventDefault();
-    
-      // Check if the task is dependent on another task
-      if (isTaskDependentOnOtherTaskDate(dependentTask,currentTaskRect, tasks) && isDragStart) {
-        alert('Task is dependent on another task. Start date cannot be changed.');
-        document.body.classList.remove('dragging'); // remove dragging class
-        isDragging = false; // Cancel the drag operation
-      }
+  
     }
     
     // Function to check if a task is dependent on another task
-    function isTaskDependentOnOtherTaskDate(dependentTask,taskRect, tasks) {
-      console.log('taskRect',rect);
-      console.log('task',dependentTask.dependencies)
+    function isExceedingDepenentEndDate(sartDate,dependentTask, tasks) {
       const tasksWithDesiredIds = tasks.filter(task =>
         dependentTask.dependencies.includes(task.id)
       );
       const endDates = tasksWithDesiredIds.map(task => new Date(task.end));    
-      const maxDate = new Date(Math.max(...endDates));
-      console.log('taskDependent',tasksWithDesiredIds)
-      console.log(tasks)
-      const index = taskRect.getAttribute('y') / 40 - 1; // Assuming each task has a height of 40
-      const dependentTaskIds = tasks[index].dependencies;
-    
-      // Check if the task is dependent on another task
-      return dependentTaskIds.length > 0;
+      const maxDate = new Date(Math.max(...endDates))
+      console.log('startDate',sartDate)
+      console.log('maxDate', maxDate)
+      if(maxDate > sartDate)
+      {
+        return 1;
+      }
+      else{
+        return 0;
+      }
     }
     
 
-    function updateTaskBarPosition(clientX, taskRect, progressRect) {
+    function updateTaskBarPosition(clientX, taskRect, progressRect,dependentTask,tasks) {
       const deltaX = (clientX - initialX) * 0.6; // Adjust the sensitivity factor (0.5 is just an example)
     
       if (isDragStart) {
-        const deltaX = event.movementX * 4; // Adjusting sentivity for start point 
+        const increment = event.movementX * 2.5; // Adjusting sentivity for start point 
         // Dragging start handle
-        const newStartOffset = parseFloat(taskRect.getAttribute('x')) + deltaX;
+        let newStartOffset = parseFloat(taskRect.getAttribute('x')) + increment;
+        console.log('newStartoffset',newStartOffset)
+        const startDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x'))) / 50 * (24 * 60 * 60 * 1000));
+        
+
+        if(isExceedingDepenentEndDate(startDate,dependentTask,tasks))
+        {
+          // isDragging = false;
+          alert('Start Date has exceed to its dependent EndDate');
+          document.body.classList.remove('dragging');
+          isDragging = false ;
+          const updatedTaskIndex = tasks.findIndex(t => t.id === task.id);
+          if (updatedTaskIndex !== -1) {
+            const newEndDate = new Date(startDate.getTime() + (parseFloat(rect.getAttribute('width')) / 51) * (24 * 60 * 60 * 1000));
+
+            // Update the properties of the task in the array
+            tasks[updatedTaskIndex].start = startDate.toISOString().split('T')[0];
+            tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
+
+            // Update the Gantt chart with the new data
+            updateTaskStartEndDates(tasks);
+            createGanttChart(tasks);
+          }
+        }
+        
         const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
-        const newWidth = (endDate - new Date(dateInfo.startingDate.getTime() + newStartOffset / 50 * (24 * 60 * 60 * 1000))) / (24 * 60 * 60 * 1000) * 50;
-    
+        
         const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
+        console.log('max',maxStartOffset)
+        console.log('newstartoffset',newStartOffset)
         const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
         const adjustedWidth = maxStartOffset - adjustedStartOffset;
-    
+        console.log('adjust',adjustedStartOffset)
         taskRect.setAttribute('x', adjustedStartOffset);
         taskRect.setAttribute('width', adjustedWidth);
     
         progressRect.setAttribute('x', adjustedStartOffset);
         progressRect.setAttribute('width', adjustedWidth * task.progress / 100);
+        
       } else {
         // Dragging end handle
         const newWidth = initialWidth + deltaX;

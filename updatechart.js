@@ -32,5 +32,4 @@ function updateTaskStartEndDates(tasks) {
     updateTaskDates(task, taskMap);
   });
 
-  // No need to return anything, as tasks array has been modified in place
 }
