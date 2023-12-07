@@ -69,7 +69,9 @@
         progress: 75, 
         dependencies: [1] ,
         subTask : [
-        {id:1, name: 'sub2 task', start: '2023-10-13', end: '2023-10-15', progress: 50, dependencies: []},
+        {id:1, name: 'sub2 task', start: '2023-10-14', end: '2023-10-15', progress: 50, dependencies: []},
+        {id:2, name: 'sub2 end', start: '2023-10-10', end: '2023-10-15', progress: 50, dependencies: []},
+        {id:3, name: 'dep', start: '2023-10-10', end: '2023-10-12', progress: 50, dependencies: []},
         ],
       },
       { id:3, name: 'Task 3', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] ,
@@ -83,6 +85,7 @@
         ], },
       // { id:5, name: 'Task 5', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: []  },
     ];
+    //function to update the task with is sub task
     updateTaskStartEndDates(data);
     // Call the function with sample data
     createGanttChart(data);

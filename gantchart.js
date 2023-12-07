@@ -534,7 +534,6 @@ function saveEditedTask(tasks) {
   updateTaskStartEndDates(tasks);
   // Call the function with sample data
   createGanttChart(tasks);
-
   // Close the modal
   closeEditModal();
 }
