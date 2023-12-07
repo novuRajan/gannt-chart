@@ -38,7 +38,6 @@ function createSVG(tasks) {
   const dateInfo = calculateDateInfo(tasks);
   const chartWidth = calculateChartWidth(dateInfo);
   length = getTotalLength(tasks)
-  console.log('total length',length)
 
   svg.setAttribute('viewBox', `0 0 ${chartWidth} ${length * 40 + 40}`);
 
@@ -126,7 +125,6 @@ function createTaskBars(svg, tasks, dateInfo) {
     const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end)));
     const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
     const duration = (new Date(task.end) - new Date(task.start)) / (24 * 60 * 60 * 1000) * 50;
-    console.log("index",index);
     // index = index+1
     const rect = document.createElementNS(svgNS, 'rect');
     rect.setAttribute('x', startOffset);
@@ -150,7 +148,6 @@ function createTaskBars(svg, tasks, dateInfo) {
     text.setAttribute('y', customIndex * 40 + 60);
     text.textContent = task.name;
     svg.appendChild(text);
-    console.log(task.name)
     // Render subtasks
     if (task.subTask && task.subTask.length > 0) {
       task.subTask.forEach((subtask, subIndex) => {
@@ -285,8 +282,6 @@ function createTaskBars(svg, tasks, dateInfo) {
       );
       const endDates = tasksWithDesiredIds.map(task => new Date(task.end));    
       const maxDate = new Date(Math.max(...endDates))
-      console.log('startDate',sartDate)
-      console.log('maxDate', maxDate)
       if(maxDate > sartDate)
       {
         return 1;
@@ -303,7 +298,6 @@ function createTaskBars(svg, tasks, dateInfo) {
         const increment = event.movementX * 2.5; // Adjusting sentivity for start point 
         // Dragging start handle
         let newStartOffset = parseFloat(taskRect.getAttribute('x')) + increment;
-        console.log('newStartoffset',newStartOffset)
         const startDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x'))) / 50 * (24 * 60 * 60 * 1000));
         
 
@@ -330,11 +324,8 @@ function createTaskBars(svg, tasks, dateInfo) {
         const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
         
         const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
-        console.log('max',maxStartOffset)
-        console.log('newstartoffset',newStartOffset)
         const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
         const adjustedWidth = maxStartOffset - adjustedStartOffset;
-        console.log('adjust',adjustedStartOffset)
         taskRect.setAttribute('x', adjustedStartOffset);
         taskRect.setAttribute('width', adjustedWidth);
     
@@ -353,10 +344,8 @@ function createTaskBars(svg, tasks, dateInfo) {
     customIndex = customIndex + 1; 
     if(task.subTask && task.subTask.length > 0)
     {
-      console.log("subtask length",task.subTask.length);
       customIndex = customIndex   + task.subTask.length;
     }
-    console.log('custom index',customIndex)
   })
 }
 
@@ -534,6 +523,7 @@ function saveEditedTask(tasks) {
   updateTaskStartEndDates(tasks);
   // Call the function with sample data
   createGanttChart(tasks);
+
   // Close the modal
   closeEditModal();
 }

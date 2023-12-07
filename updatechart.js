@@ -41,13 +41,17 @@ function updateSubTaskStartEndDate(task)
    // Check if the task has subtasks
    if (task.subTask && task.subTask.length > 0) {
     subTaskMap=new Map(task.subTask.map(subtask => [subtask.id, subtask]));
-    console.log('task',task)
     task.subTask.forEach(subTask => {
       subDuration = (new Date(subTask.end) - new Date(subTask.start)) / (24 * 60 * 60 * 1000);
       // Example condition: If subtask start date is less than task start date, update it
       if (new Date(subTask.start) < new Date(task.start)) {
         subTask.start = task.start;
         subTask.end = new Date(new Date(subTask.start).setDate(new Date(task.start).getDate() + subDuration)).toISOString().split('T')[0];
+      }
+      else 
+      {
+        gap = (new Date(subTask.start) - new Date(task.start)) / (24 * 60 * 60 * 1000);
+        subTask.start = new Date(new Date(subTask.start).setDate(new Date(task.start).getDate() + gap)).toISOString().split('T')[0];
       }
       updateTaskDates(subTask,subTaskMap)
       if(subTask.end > task.end)
