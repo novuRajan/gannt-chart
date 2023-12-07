@@ -181,6 +181,12 @@ function createTaskBars(svg, tasks, dateInfo) {
         subText.textContent = subtask.name;
         subText.setAttribute('font-size', '10px'); // Adjust the font size as neede
         svg.appendChild(subText);
+        subRect.addEventListener('mouseover', () => showTaskDetails(subtask,task.subTask));
+        subRect.addEventListener('mouseout', hideTaskDetails);
+
+        subProgressRect.addEventListener('mouseover', () => showTaskDetails(subtask,task.subTask));
+        subProgressRect.addEventListener('mouseout', hideTaskDetails);
+
       });
     }
     // Add event listeners for both rectangle and progress bar
