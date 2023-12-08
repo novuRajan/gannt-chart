@@ -33,7 +33,7 @@ function createGanttChart(tasks) {
 function createSVG(tasks) {
   const svg = document.createElementNS(svgNS, 'svg');
   svg.setAttribute('min-width', '100%');
-  svg.setAttribute('height', '100%');
+  svg.setAttribute('height', '200%');
 
   const dateInfo = calculateDateInfo(tasks);
   const chartWidth = calculateChartWidth(dateInfo);
@@ -291,7 +291,7 @@ function createTaskBars(svg, tasks, dateInfo) {
       }
     }
 
-    function updateTaskBarPosition(clientX, taskRect, progressRect,dependentTask,tasks) {
+    function updateTaskBarPosition(clientX, taskRect, progress,dependentTask,tasks) {
       const deltaX = (clientX - initialX) * 0.6; // Adjust the sensitivity factor (0.5 is just an example)
     
       if (isDragStart) {
@@ -329,15 +329,15 @@ function createTaskBars(svg, tasks, dateInfo) {
         taskRect.setAttribute('x', adjustedStartOffset);
         taskRect.setAttribute('width', adjustedWidth);
     
-        progressRect.setAttribute('x', adjustedStartOffset);
-        progressRect.setAttribute('width', adjustedWidth * task.progress / 100);
+        progress.setAttribute('x', adjustedStartOffset);
+        progress.setAttribute('width', adjustedWidth * task.progress / 100);
         
       } else {
         // Dragging end handle
         const newWidth = initialWidth + deltaX;
     
         taskRect.setAttribute('width', newWidth);
-        progressRect.setAttribute('width', newWidth * task.progress / 100);
+        progress.setAttribute('width', newWidth * task.progress / 100);
       }
     }
     // task below the sub task
