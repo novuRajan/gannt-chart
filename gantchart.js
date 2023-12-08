@@ -431,7 +431,7 @@ function addTask(tasks) {
 
   // Add the new task to the existing tasks
   tasks.push(newTask);
-
+  length = length + 1; //after adding of each task length should be increased
   // Update the Gantt chart with the new data
   updateTaskStartEndDates(tasks);
   // Call the function with sample data
