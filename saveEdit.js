@@ -35,7 +35,7 @@ function addTask(tasks) {
 }
   
 // Function to handle task editing
-function editTask(event, task, allTasks) {
+function editTask(event, task, tasks, allTasks = null) {
     const editTaskForm = document.getElementById('editTaskForm');
     const editTaskNameInput = document.getElementById('editTaskName');
     const editStartDateInput = document.getElementById('editStartDate');
@@ -43,7 +43,7 @@ function editTask(event, task, allTasks) {
     const editProgress = document.getElementById('editProgress');
     const editDependenciesSelect = document.getElementById('editDependencies');
     const editModal = document.getElementById('editModal');
-
+    const saveChangesBtn = document.getElementById('saveChangesBtn');
     // Set the current task details in the form
     editTaskNameInput.value = task.name;
     editStartDateInput.value = task.start;
@@ -54,9 +54,9 @@ function editTask(event, task, allTasks) {
     editDependenciesSelect.innerHTML = '';
 
     // Display dependencies in the modal as select options
-    allTasks.forEach(availableTask => {
+    tasks.forEach(availableTask => {
         // Check if the available task is not the current task and not dependent on the current task
-        if (availableTask.id !== task.id && !isTaskDependent(task, availableTask, allTasks)) {
+        if (availableTask.id !== task.id && !isTaskDependent(task, availableTask, tasks)) {
         const option = document.createElement('option');
         option.value = availableTask.id;
         option.textContent = availableTask.name;
@@ -73,6 +73,15 @@ function editTask(event, task, allTasks) {
 
     // Display the modal
     editModal.style.display = 'block';
+    console.log('ahha');
+    // Attach a click event listener to the "Save Changes" button
+    saveChangesBtn.addEventListener('click', function saveChangesHandler() {
+        console.log('Save Changes clicked');
+        // Call your function to save the edited task data
+        saveEditedTask(tasks, allTasks);
+        // Close the modal after saving changes
+        closeEditModal();
+    }, { once: true });
 
     // Prevent the contextmenu event from propagating further
     event.preventDefault();
@@ -84,7 +93,9 @@ function isTaskDependent(currentTask, otherTask, allTasks) {
 }
   
 // Function to save edited task
-function saveEditedTask(tasks) {
+function saveEditedTask(tasks,alltasks=null) {
+    console.log("after save",tasks);
+    console.log('after all task',alltasks);
     const editTaskForm = document.getElementById('editTaskForm');
     const editTaskNameInput = document.getElementById('editTaskName');
     const editStartDateInput = document.getElementById('editStartDate');
@@ -118,7 +129,13 @@ function saveEditedTask(tasks) {
     // Update the Gantt chart with the new data
     updateTaskStartEndDates(tasks);
     // Call the function with sample data
-    createGanttChart(tasks);
+    if(alltasks)
+    {
+        createGanttChart(alltasks);
+    }
+    else{
+        createGanttChart(tasks);
+    }
 
     // Close the modal
     closeEditModal();

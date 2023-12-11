@@ -178,6 +178,8 @@ function createTaskBars(svg, tasks, dateInfo) {
         subText.textContent = subtask.name;
         subText.setAttribute('font-size', '10px'); // Adjust the font size as neede
         svg.appendChild(subText);
+
+        subText.addEventListener('mouseover', () => showTaskDetails(subtask,task.subTask));
         subRect.addEventListener('mouseover', () => showTaskDetails(subtask,task.subTask));
         subRect.addEventListener('mouseout', hideTaskDetails);
 
@@ -187,27 +189,36 @@ function createTaskBars(svg, tasks, dateInfo) {
         // Add a contextmenu event listener for right-click to enable task editing
         subRect.addEventListener('contextmenu', (event) => {
           event.preventDefault(); // Prevent the default context menu
-          editTask(event, task, tasks);
+          editTask(event, subtask, task.subTask , tasks);
         });
         subProgressRect.addEventListener('contextmenu', (event) => {
           event.preventDefault(); // Prevent the default context menu
-          editTask(event, task, tasks);
+          editTask(event, subtask, task.subTask , tasks);
+        });
+        subText.addEventListener('contextmenu', (event) => {
+          event.preventDefault(); // Prevent the default context menu
+          editTask(event, subtask, task.subTask , tasks);
         });
       });
     }
     // Add event listeners for both rectangle and progress bar
+    text.addEventListener('mouseover', () => showTaskDetails(task,tasks));
     rect.addEventListener('mouseover', () => showTaskDetails(task,tasks));
     rect.addEventListener('mouseout', hideTaskDetails);
 
     progressRect.addEventListener('mouseover', () => showTaskDetails(task,tasks));
     progressRect.addEventListener('mouseout', hideTaskDetails);
 
-    // Add a contextmenu event listener for right-click to enable task editing
-    rect.addEventListener('contextmenu', (event) => {
+     // Add a contextmenu event listener for right-click to enable task editing
+     rect.addEventListener('contextmenu', (event) => {
       event.preventDefault(); // Prevent the default context menu
       editTask(event, task, tasks);
     });
     progressRect.addEventListener('contextmenu', (event) => {
+      event.preventDefault(); // Prevent the default context menu
+      editTask(event, task, tasks);
+    });
+    text.addEventListener('contextmenu', (event) => {
       event.preventDefault(); // Prevent the default context menu
       editTask(event, task, tasks);
     });
@@ -221,19 +232,10 @@ function createTaskBars(svg, tasks, dateInfo) {
     let currentTaskRect;
     let currentProgressRect;
 
-    // Add a contextmenu event listener for right-click to enable task editing
-    rect.addEventListener('contextmenu', (event) => {
-      event.preventDefault(); // Prevent the default context menu
-      editTask(event, task, tasks);
-    });
-    progressRect.addEventListener('contextmenu', (event) => {
-      event.preventDefault(); // Prevent the default context menu
-      editTask(event, task, tasks);
-    });
-
     // Add event listeners for dragging to edit start and end dates
     rect.addEventListener('mousedown', (event) => startDrag(event, rect , progressRect));
     progressRect.addEventListener('mousedown', (event) => startDrag(event, rect ,progressRect));
+    text.addEventListener('mousedown', (event) => startDrag(event, rect ,progressRect));
 
     document.addEventListener('mousemove', throttle((event) => {
       if (isDragging) {
