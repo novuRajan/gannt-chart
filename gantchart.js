@@ -29,6 +29,20 @@ function createSVG(tasks) {
   svg.setAttribute('min-width', '100%');
   svg.setAttribute('height', '100%');
 
+  const defs = document.createElementNS(svgNS, 'defs');
+  const marker = document.createElementNS(svgNS, 'marker');
+  marker.setAttribute('id', 'arrowhead');
+  marker.setAttribute('markerWidth', '10');
+  marker.setAttribute('markerHeight', '7');
+  marker.setAttribute('refX', '0');
+  marker.setAttribute('refY', '3.5');
+  marker.setAttribute('orient', 'auto');
+  const polygon = document.createElementNS(svgNS, 'polygon');
+  polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
+  marker.appendChild(polygon);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
   const dateInfo = calculateDateInfo(tasks);
   const chartWidth = calculateChartWidth(dateInfo);
 
@@ -125,6 +139,43 @@ function createTaskBars(svg, tasks, dateInfo) {
     rect.setAttribute('height', 30);
     rect.setAttribute('fill', '#3498db');
     svg.appendChild(rect);
+
+    const dependentTaskIds = task.dependencies;
+    if (dependentTaskIds.length > 0) {
+      dependentTaskIds.forEach(dependentTaskId => {
+        const dependentTask = tasks.find(t => t.id === dependentTaskId);
+        if (dependentTask) {
+          const dependentTaskEndX = (new Date(dependentTask.end) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50;
+          const dependentTaskEndY = index * 40 + 30; // Adjust based on your task bar height
+    
+          const taskStartX = (new Date(task.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50;
+          const taskStartY = index * 40 + 40 + 5; // Adjust based on your task bar height
+    
+// Draw upper horizontal line
+const upperHorizontalLine = document.createElementNS(svgNS, 'line');
+upperHorizontalLine.setAttribute('x1', taskStartX);
+upperHorizontalLine.setAttribute('y1', taskStartY);
+upperHorizontalLine.setAttribute('x2', dependentTaskEndX);
+upperHorizontalLine.setAttribute('y2', taskStartY);
+upperHorizontalLine.setAttribute('stroke', 'black');
+
+// Draw vertical line
+const verticalLine = document.createElementNS(svgNS, 'line');
+verticalLine.setAttribute('x1', dependentTaskEndX);
+verticalLine.setAttribute('y1', taskStartY);
+verticalLine.setAttribute('x2', dependentTaskEndX);
+verticalLine.setAttribute('y2', dependentTaskEndY);
+verticalLine.setAttribute('stroke', 'black');
+
+// Append upper horizontal line before vertical line
+svg.appendChild(upperHorizontalLine);
+svg.appendChild(verticalLine);
+
+    
+
+        }
+      });
+    }
 
     const progressWidth = (duration * task.progress) / 100;
     const progressRect = document.createElementNS(svgNS, 'rect');
@@ -464,4 +515,45 @@ function saveEditedTask(tasks) {
   // Close the modal
   closeEditModal();
 }
+
+
+
+function drawDependencyLine(svg, x1, y1, x2, y2, color) {
+  const line = document.createElementNS(svgNS, 'line');
+  const arrowSize = 5; // Size of the arrowhead
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  
+  // Draw the main line
+  line.setAttribute('x1', x1);
+  line.setAttribute('y1', y1);
+  line.setAttribute('x2', x2);
+  line.setAttribute('y2', y2);
+  line.setAttribute('stroke', color);
+  line.setAttribute('marker-end', 'url(#arrowhead)');
+  svg.appendChild(line);
+
+  // Draw the arrowhead
+  const arrow = document.createElementNS(svgNS, 'polygon');
+  arrow.setAttribute('points', `${x2 - arrowSize * Math.cos(angle - Math.PI / 6)},${y2 - arrowSize * Math.sin(angle - Math.PI / 6)} 
+                                 ${x2},${y2} 
+                                 ${x2 - arrowSize * Math.cos(angle + Math.PI / 6)},${y2 - arrowSize * Math.sin(angle + Math.PI / 6)}`);
+  arrow.setAttribute('fill', color);
+  svg.appendChild(arrow);
+}
+// function drawDependencyLine(svg, dependentTask, task, dateInfo) {
+//   const dependentTaskEndX = calculateXPosition(dependentTask.end, dateInfo);
+//   const dependentTaskEndY = calculateYPosition(dependentTask.id - 1, tasks.length);
+
+//   const taskStartX = calculateXPosition(task.start, dateInfo);
+//   const taskStartY = calculateYPosition(task.id - 1, tasks.length);
+
+//   const line = document.createElementNS(svgNS, 'path');
+//   line.setAttribute('d', `M${dependentTaskEndX},${dependentTaskEndY} H${taskStartX} V${taskStartY}`);
+//   line.setAttribute('stroke', 'black');
+//   line.setAttribute('fill', 'transparent');
+//   line.setAttribute('marker-end', 'url(#arrowhead)'); // Add arrowhead marker
+
+//   svg.appendChild(line);
+// }
+
 
