@@ -184,6 +184,15 @@ function createTaskBars(svg, tasks, dateInfo) {
         subProgressRect.addEventListener('mouseover', () => showTaskDetails(subtask,task.subTask));
         subProgressRect.addEventListener('mouseout', hideTaskDetails);
 
+        // Add a contextmenu event listener for right-click to enable task editing
+        subRect.addEventListener('contextmenu', (event) => {
+          event.preventDefault(); // Prevent the default context menu
+          editTask(event, task, tasks);
+        });
+        subProgressRect.addEventListener('contextmenu', (event) => {
+          event.preventDefault(); // Prevent the default context menu
+          editTask(event, task, tasks);
+        });
       });
     }
     // Add event listeners for both rectangle and progress bar
@@ -202,13 +211,6 @@ function createTaskBars(svg, tasks, dateInfo) {
       event.preventDefault(); // Prevent the default context menu
       editTask(event, task, tasks);
     });
-
-    // Add event listeners for both rectangle and progress bar
-    rect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
-    rect.addEventListener('mouseout', hideTaskDetails);
-
-    progressRect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
-    progressRect.addEventListener('mouseout', hideTaskDetails);
 
     let isDragging = false;
     let initialX;
@@ -230,12 +232,12 @@ function createTaskBars(svg, tasks, dateInfo) {
     });
 
     // Add event listeners for dragging to edit start and end dates
-    rect.addEventListener('mousedown', (event) => startDrag(event, rect));
-    progressRect.addEventListener('mousedown', (event) => startDrag(event, rect));
+    rect.addEventListener('mousedown', (event) => startDrag(event, rect , progressRect));
+    progressRect.addEventListener('mousedown', (event) => startDrag(event, rect ,progressRect));
 
     document.addEventListener('mousemove', throttle((event) => {
       if (isDragging) {
-        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect,task , tasks);
+        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect, task , tasks);
       }
     }, 16));
 
@@ -260,16 +262,16 @@ function createTaskBars(svg, tasks, dateInfo) {
       }
     });
 
-    function startDrag(event, rect) {
+    function startDrag(event, taskRect, taskProgressRect) {
       document.body.classList.add('dragging');
       isDragging = true;
       initialX = event.clientX;
-      initialWidth = parseFloat(rect.getAttribute('width'));
-      isDragStart = event.clientX < rect.getBoundingClientRect().left + initialWidth / 2;
+      initialWidth = parseFloat(taskRect.getAttribute('width'));
+      isDragStart = event.clientX < taskRect.getBoundingClientRect().left + initialWidth / 2;
     
       // Set the current task and progress bar
-      currentTaskRect = rect;
-      currentProgressRect = progressRect;
+      currentTaskRect = taskRect;
+      currentProgressRect = taskProgressRect;
       // Prevent text selection during drag
       event.preventDefault();
   
@@ -291,7 +293,9 @@ function createTaskBars(svg, tasks, dateInfo) {
       }
     }
 
-    function updateTaskBarPosition(clientX, taskRect, progress,dependentTask,tasks) {
+    function updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks) {
+      console.log('task',dependentTask)
+      console.log('tasks',tasks)
       const deltaX = (clientX - initialX) * 0.6; // Adjust the sensitivity factor (0.5 is just an example)
     
       if (isDragStart) {
@@ -330,14 +334,14 @@ function createTaskBars(svg, tasks, dateInfo) {
         taskRect.setAttribute('width', adjustedWidth);
     
         progress.setAttribute('x', adjustedStartOffset);
-        progress.setAttribute('width', adjustedWidth * task.progress / 100);
+        progress.setAttribute('width', adjustedWidth * dependentTask.progress / 100);
         
       } else {
         // Dragging end handle
         const newWidth = initialWidth + deltaX;
-    
+        console.log('task',dependentTask)
         taskRect.setAttribute('width', newWidth);
-        progress.setAttribute('width', newWidth * task.progress / 100);
+        progress.setAttribute('width', newWidth * dependentTask.progress / 100);
       }
     }
     // task below the sub task
@@ -361,33 +365,6 @@ function throttle(func, limit) {
     }
   };
 }
-
-// Function to close the edit modal
-function closeEditModal() {
-  const editModal = document.getElementById('editModal');
-  editModal.style.display = 'none';
-}
-
-function showTaskDetails(task,allTasks) {
-  const dependentTaskNames = task.dependencies.map(depId => allTasks[depId - 1].name);
-  const dependentTaskInfo = dependentTaskNames.length > 0 ? `Dependencies: ${dependentTaskNames.join(', ')}` : '';
-
-  tooltip.innerHTML = `
-    Task: ${task.name}<br>
-    Start: ${task.start}<br>
-    End: ${task.end}<br>
-    ${dependentTaskInfo}
-  `;
-  tooltip.style.left = `${event.pageX}px`;
-  tooltip.style.top = `${event.pageY}px`;
-  tooltip.style.display = 'block';
-}
-
-function hideTaskDetails() {
-  tooltip.style.display = 'none';
-}
-
-
 // Function to update the Gantt chart with new data
 
 function updateGanttChartContent(svg, tasks) {
@@ -408,123 +385,5 @@ function updateGanttChartContent(svg, tasks) {
   createTaskBars(svg, tasks, dateInfo);
 }
 
-//function to update the task array
-function addTask(tasks) {
-  const taskName = document.getElementById('taskName').value;
-  const startDate = document.getElementById('startDate').value;
-  const endDate = document.getElementById('endDate').value;
 
-  // Ensure the required fields are not empty
-  if (!taskName || !startDate || !endDate) {
-    alert('Please fill in all fields.');
-    return;
-  }
-
-  const newTask = {
-    id: tasks.length + 1, // Incremental ID
-    name: taskName,
-    start: startDate,
-    end: endDate,
-    progress: 0, // You can set the progress as needed
-    dependencies: [] // You can set dependencies as needed
-  };
-
-  // Add the new task to the existing tasks
-  tasks.push(newTask);
-  length = length + 1; //after adding of each task length should be increased
-  // Update the Gantt chart with the new data
-  updateTaskStartEndDates(tasks);
-  // Call the function with sample data
-  createGanttChart(tasks);
-}
-
-// Function to handle task editing
-function editTask(event, task, allTasks) {
-  const editTaskForm = document.getElementById('editTaskForm');
-  const editTaskNameInput = document.getElementById('editTaskName');
-  const editStartDateInput = document.getElementById('editStartDate');
-  const editEndDateInput = document.getElementById('editEndDate');
-  const editProgress = document.getElementById('editProgress');
-  const editDependenciesSelect = document.getElementById('editDependencies');
-  const editModal = document.getElementById('editModal');
-
-  // Set the current task details in the form
-  editTaskNameInput.value = task.name;
-  editStartDateInput.value = task.start;
-  editEndDateInput.value = task.end;
-  editProgress.value = task.progress;
-
-  // Clear existing options
-  editDependenciesSelect.innerHTML = '';
-
-  // Display dependencies in the modal as select options
-  allTasks.forEach(availableTask => {
-    // Check if the available task is not the current task and not dependent on the current task
-    if (availableTask.id !== task.id && !isTaskDependent(task, availableTask, allTasks)) {
-      const option = document.createElement('option');
-      option.value = availableTask.id;
-      option.textContent = availableTask.name;
-      if (task.dependencies.includes(availableTask.id)) {
-        // If the task is already a dependency, mark it as selected
-        option.selected = true;
-      }
-      editDependenciesSelect.appendChild(option);
-    }
-  });
-
-  // Store the task ID in a data attribute of the form
-  editTaskForm.setAttribute('data-task-id', task.id);
-
-  // Display the modal
-  editModal.style.display = 'block';
-
-  // Prevent the contextmenu event from propagating further
-  event.preventDefault();
-}
-
-// Function to check if a task is dependent on another task
-function isTaskDependent(currentTask, otherTask, allTasks) {
-  return otherTask.dependencies.includes(currentTask.id) || otherTask.dependencies.some(depId => isTaskDependent(currentTask, allTasks[depId - 1], allTasks));
-}
-
-// Function to save edited task
-function saveEditedTask(tasks) {
-  const editTaskForm = document.getElementById('editTaskForm');
-  const editTaskNameInput = document.getElementById('editTaskName');
-  const editStartDateInput = document.getElementById('editStartDate');
-  const editEndDateInput = document.getElementById('editEndDate');
-  const editProgress = document.getElementById('editProgress');
-  const editDependenciesSelect = document.getElementById('editDependencies');
-  const editModal = document.getElementById('editModal');
-
-  // Retrieve the edited values
-  const editedTaskName = editTaskNameInput.value;
-  const editedStartDate = editStartDateInput.value;
-  const editedEndDate = editEndDateInput.value;
-  const progress = editProgress.value;
-
-  // Retrieve the task ID from the data attribute
-  const taskId = parseInt(editTaskForm.getAttribute('data-task-id'), 10);
-
-  // Retrieve the selected dependencies from the updated select element
-  const selectedDependencies = Array.from(editDependenciesSelect.selectedOptions).map(option => parseInt(option.value, 10));
-
-  // Find the task in the array and update its properties
-  const editedTaskIndex = tasks.findIndex(task => task.id === taskId);
-  if (editedTaskIndex !== -1) {
-    tasks[editedTaskIndex].name = editedTaskName;
-    tasks[editedTaskIndex].start = editedStartDate;
-    tasks[editedTaskIndex].end = editedEndDate;
-    tasks[editedTaskIndex].progress = progress > 100 ? 100 : progress;
-    tasks[editedTaskIndex].dependencies = selectedDependencies;
-  }
-
-  // Update the Gantt chart with the new data
-  updateTaskStartEndDates(tasks);
-  // Call the function with sample data
-  createGanttChart(tasks);
-
-  // Close the modal
-  closeEditModal();
-}
 
