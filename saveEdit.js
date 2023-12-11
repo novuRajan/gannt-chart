@@ -102,7 +102,6 @@ function saveEditedTask(tasks,alltasks=null) {
     const editEndDateInput = document.getElementById('editEndDate');
     const editProgress = document.getElementById('editProgress');
     const editDependenciesSelect = document.getElementById('editDependencies');
-    const editModal = document.getElementById('editModal');
 
     // Retrieve the edited values
     const editedTaskName = editTaskNameInput.value;
@@ -131,6 +130,7 @@ function saveEditedTask(tasks,alltasks=null) {
     // Call the function with sample data
     if(alltasks)
     {
+        updateTaskStartEndDates(alltasks);
         createGanttChart(alltasks);
     }
     else{
