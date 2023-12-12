@@ -199,6 +199,22 @@ function createTaskBars(svg, tasks, dateInfo) {
           event.preventDefault(); // Prevent the default context menu
           editTask(event, subtask, task.subTask , tasks);
         });
+        subRect.addEventListener('mousedown', (event) => {
+          startDrag(event, subRect , subProgressRect)
+        });
+        subProgressRect.addEventListener('mousedown', (event) => startDrag(event, subRect ,subProgressRect));
+        subText.addEventListener('mousedown', (event) => {
+          startDrag(event, subRect ,subProgressRect)
+        });
+        subRect.addEventListener('mouseup', (event) => {
+          event.preventDefault();
+          handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo , tasks);
+        });
+      
+        subProgressRect.addEventListener('mouseup', (event) => {
+          event.preventDefault();
+          handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo , tasks);
+        });
       });
     }
     // Add event listeners for both rectangle and progress bar
@@ -209,8 +225,8 @@ function createTaskBars(svg, tasks, dateInfo) {
     progressRect.addEventListener('mouseover', () => showTaskDetails(task,tasks));
     progressRect.addEventListener('mouseout', hideTaskDetails);
 
-     // Add a contextmenu event listener for right-click to enable task editing
-     rect.addEventListener('contextmenu', (event) => {
+    // Add a contextmenu event listener for right-click to enable task editing
+    rect.addEventListener('contextmenu', (event) => {
       event.preventDefault(); // Prevent the default context menu
       editTask(event, task, tasks);
     });
@@ -231,38 +247,63 @@ function createTaskBars(svg, tasks, dateInfo) {
     // Variables to store the current task and progress bar
     let currentTaskRect;
     let currentProgressRect;
-
-    // Add event listeners for dragging to edit start and end dates
-    rect.addEventListener('mousedown', (event) => startDrag(event, rect , progressRect));
-    progressRect.addEventListener('mousedown', (event) => startDrag(event, rect ,progressRect));
-    text.addEventListener('mousedown', (event) => startDrag(event, rect ,progressRect));
-
-    document.addEventListener('mousemove', throttle((event) => {
+    const throttledMouseMove = throttle((event) => {
+      console.log('mousemoive');
       if (isDragging) {
-        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect, task , tasks);
+        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect, task, tasks);
       }
-    }, 16));
-
-    document.addEventListener('mouseup', () => {
+    }, 16);
+    // Add event listeners for dragging to edit start and end dates
+    rect.addEventListener('mousedown', (event) => {
+      startDrag(event, rect , progressRect)
+    });
+    progressRect.addEventListener('mousedown', (event) => startDrag(event, rect ,progressRect));
+    text.addEventListener('mousedown', (event) => {
+      startDrag(event, rect ,progressRect)
+  
+    });
+  
+    document.addEventListener('mouseup', (event) => {
+      event.preventDefault();
+      handleMouseUp(rect, progressRect, task, tasks, dateInfo);
+    });
+ 
+    function handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo ,allTasks=null) {
+      console.log('task');
       document.body.classList.remove('dragging');
       if (isDragging) {
+        document.removeEventListener('mousemove', throttledMouseMove);
         isDragging = false;
         // Find the task in the array and update its properties
-        const updatedTaskIndex = tasks.findIndex(t => t.id === task.id);
+        const updatedTaskIndex = tasks.findIndex((t) => t.id === dependentTask.id);
         if (updatedTaskIndex !== -1) {
-          const newStartDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000));
-          const newEndDate = new Date(newStartDate.getTime() + (parseFloat(rect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000));
-
+          const newStartDate = new Date(
+            dateInfo.startingDate.getTime() +
+              (parseFloat(taskRect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000)
+          );
+          const newEndDate = new Date(
+            newStartDate.getTime() +
+              (parseFloat(taskRect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000)
+          );
+  
           // Update the properties of the task in the array
           tasks[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
           tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
-
+  
           // Update the Gantt chart with the new data
           updateTaskStartEndDates(tasks);
-          createGanttChart(tasks);
+          if(allTasks)
+          {
+            updateTaskStartEndDates(allTasks);
+            createGanttChart(allTasks);
+          }
+          else{
+            createGanttChart(tasks);
+          }
+          
         }
       }
-    });
+    }
 
     function startDrag(event, taskRect, taskProgressRect) {
       document.body.classList.add('dragging');
@@ -276,7 +317,7 @@ function createTaskBars(svg, tasks, dateInfo) {
       currentProgressRect = taskProgressRect;
       // Prevent text selection during drag
       event.preventDefault();
-  
+      document.addEventListener('mousemove', throttledMouseMove);
     }
     
     // Function to check if a task is dependent on another task
@@ -296,8 +337,6 @@ function createTaskBars(svg, tasks, dateInfo) {
     }
 
     function updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks) {
-      console.log('task',dependentTask)
-      console.log('tasks',tasks)
       const deltaX = (clientX - initialX) * 0.6; // Adjust the sensitivity factor (0.5 is just an example)
     
       if (isDragStart) {
