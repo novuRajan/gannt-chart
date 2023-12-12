@@ -29,20 +29,6 @@ function createSVG(tasks) {
   svg.setAttribute('min-width', '100%');
   svg.setAttribute('height', '100%');
 
-  const defs = document.createElementNS(svgNS, 'defs');
-  const marker = document.createElementNS(svgNS, 'marker');
-  marker.setAttribute('id', 'arrowhead');
-  marker.setAttribute('markerWidth', '10');
-  marker.setAttribute('markerHeight', '7');
-  marker.setAttribute('refX', '0');
-  marker.setAttribute('refY', '3.5');
-  marker.setAttribute('orient', 'auto');
-  const polygon = document.createElementNS(svgNS, 'polygon');
-  polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
-  marker.appendChild(polygon);
-  defs.appendChild(marker);
-  svg.appendChild(defs);
-
   const dateInfo = calculateDateInfo(tasks);
   const chartWidth = calculateChartWidth(dateInfo);
 
@@ -146,33 +132,44 @@ function createTaskBars(svg, tasks, dateInfo) {
         const dependentTask = tasks.find(t => t.id === dependentTaskId);
         if (dependentTask) {
           const dependentTaskEndX = (new Date(dependentTask.end) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50;
-          const dependentTaskEndY = index * 40 + 30; // Adjust based on your task bar height
-    
+          const dependentTaskEndY = index * 40 + 30;
+
           const taskStartX = (new Date(task.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50;
-          const taskStartY = index * 40 + 40 + 5; // Adjust based on your task bar height
-    
-// Draw upper horizontal line
-const upperHorizontalLine = document.createElementNS(svgNS, 'line');
-upperHorizontalLine.setAttribute('x1', taskStartX);
-upperHorizontalLine.setAttribute('y1', taskStartY);
-upperHorizontalLine.setAttribute('x2', dependentTaskEndX);
-upperHorizontalLine.setAttribute('y2', taskStartY);
-upperHorizontalLine.setAttribute('stroke', 'black');
+          const taskStartY = index * 40 + 40 + 5;
 
-// Draw vertical line
-const verticalLine = document.createElementNS(svgNS, 'line');
-verticalLine.setAttribute('x1', dependentTaskEndX);
-verticalLine.setAttribute('y1', taskStartY);
-verticalLine.setAttribute('x2', dependentTaskEndX);
-verticalLine.setAttribute('y2', dependentTaskEndY);
-verticalLine.setAttribute('stroke', 'black');
+          // Calculate arrowhead position
+          const arrowheadX = dependentTaskEndX;
+          const arrowheadY = index * 40 + 40 + 5; // Adjust the Y position as needed
 
-// Append upper horizontal line before vertical line
-svg.appendChild(upperHorizontalLine);
-svg.appendChild(verticalLine);
 
-    
+          // Draw horizontal line
+          const horizontalLine = document.createElementNS(svgNS, 'line');
+          horizontalLine.setAttribute('x1', taskStartX);
+          horizontalLine.setAttribute('y1', taskStartY);
+          horizontalLine.setAttribute('x2', dependentTaskEndX);
+          horizontalLine.setAttribute('y2', taskStartY);
+          horizontalLine.setAttribute('stroke', 'black');
 
+
+          // Draw vertical line
+          const verticalLine = document.createElementNS(svgNS, 'line');
+          verticalLine.setAttribute('x1', dependentTaskEndX);
+          verticalLine.setAttribute('y1', taskStartY);
+          verticalLine.setAttribute('x2', dependentTaskEndX);
+          verticalLine.setAttribute('y2', dependentTaskEndY);
+          verticalLine.setAttribute('stroke', 'black');
+
+
+          svg.appendChild(horizontalLine);
+          svg.appendChild(verticalLine);
+
+
+          // Draw arrow
+          const arrow = document.createElementNS(svgNS, 'polygon');
+          arrow.setAttribute('points', `${taskStartX - 5},${arrowheadY - 5} ${taskStartX},${arrowheadY} ${taskStartX - 5},${arrowheadY + 5}`);
+          arrow.setAttribute('fill', 'black');
+
+          svg.appendChild(arrow);
         }
       });
     }
@@ -193,10 +190,10 @@ svg.appendChild(verticalLine);
     svg.appendChild(text);
 
     // Add event listeners for both rectangle and progress bar
-    rect.addEventListener('mouseover', () => showTaskDetails(task,tasks));
+    rect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
     rect.addEventListener('mouseout', hideTaskDetails);
 
-    progressRect.addEventListener('mouseover', () => showTaskDetails(task,tasks));
+    progressRect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
     progressRect.addEventListener('mouseout', hideTaskDetails);
 
     // Add a contextmenu event listener for right-click to enable task editing
@@ -236,8 +233,8 @@ svg.appendChild(verticalLine);
     });
 
     // Add event listeners for dragging to edit start and end dates
-    rect.addEventListener('mousedown', (event) => startDrag(task,event, rect));
-    progressRect.addEventListener('mousedown', (event) => startDrag(task,event, rect));
+    rect.addEventListener('mousedown', (event) => startDrag(task, event, rect));
+    progressRect.addEventListener('mousedown', (event) => startDrag(task, event, rect));
 
     document.addEventListener('mousemove', throttle((event) => {
       if (isDragging) {
@@ -266,74 +263,74 @@ svg.appendChild(verticalLine);
       }
     });
 
-    function startDrag(dependentTask,event, rect) {
+    function startDrag(dependentTask, event, rect) {
       document.body.classList.add('dragging');
       isDragging = true;
       initialX = event.clientX;
       initialWidth = parseFloat(rect.getAttribute('width'));
       isDragStart = event.clientX < rect.getBoundingClientRect().left + initialWidth / 2;
-    
+
       // Set the current task and progress bar
       currentTaskRect = rect;
       currentProgressRect = progressRect;
       // Prevent text selection during drag
       event.preventDefault();
-    
+
       // Check if the task is dependent on another task
-      if (isTaskDependentOnOtherTaskDate(dependentTask,currentTaskRect, tasks) && isDragStart) {
+      if (isTaskDependentOnOtherTaskDate(dependentTask, currentTaskRect, tasks) && isDragStart) {
         alert('Task is dependent on another task. Start date cannot be changed.');
         document.body.classList.remove('dragging'); // remove dragging class
         isDragging = false; // Cancel the drag operation
       }
     }
-    
+
     // Function to check if a task is dependent on another task
-    function isTaskDependentOnOtherTaskDate(dependentTask,taskRect, tasks) {
-      console.log('taskRect',rect);
-      console.log('task',dependentTask.dependencies)
+    function isTaskDependentOnOtherTaskDate(dependentTask, taskRect, tasks) {
+      console.log('taskRect', rect);
+      console.log('task', dependentTask.dependencies)
       const tasksWithDesiredIds = tasks.filter(task =>
         dependentTask.dependencies.includes(task.id)
       );
-      const endDates = tasksWithDesiredIds.map(task => new Date(task.end));    
+      const endDates = tasksWithDesiredIds.map(task => new Date(task.end));
       const maxDate = new Date(Math.max(...endDates));
-      console.log('taskDependent',tasksWithDesiredIds)
+      console.log('taskDependent', tasksWithDesiredIds)
       console.log(tasks)
       const index = taskRect.getAttribute('y') / 40 - 1; // Assuming each task has a height of 40
       const dependentTaskIds = tasks[index].dependencies;
-    
+
       // Check if the task is dependent on another task
       return dependentTaskIds.length > 0;
     }
-    
+
 
     function updateTaskBarPosition(clientX, taskRect, progressRect) {
       const deltaX = (clientX - initialX) * 0.6; // Adjust the sensitivity factor (0.5 is just an example)
-    
+
       if (isDragStart) {
         const deltaX = event.movementX * 4; // Adjusting sentivity for start point 
         // Dragging start handle
         const newStartOffset = parseFloat(taskRect.getAttribute('x')) + deltaX;
         const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
         const newWidth = (endDate - new Date(dateInfo.startingDate.getTime() + newStartOffset / 50 * (24 * 60 * 60 * 1000))) / (24 * 60 * 60 * 1000) * 50;
-    
+
         const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
         const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
         const adjustedWidth = maxStartOffset - adjustedStartOffset;
-    
+
         taskRect.setAttribute('x', adjustedStartOffset);
         taskRect.setAttribute('width', adjustedWidth);
-    
+
         progressRect.setAttribute('x', adjustedStartOffset);
         progressRect.setAttribute('width', adjustedWidth * task.progress / 100);
       } else {
         // Dragging end handle
         const newWidth = initialWidth + deltaX;
-    
+
         taskRect.setAttribute('width', newWidth);
         progressRect.setAttribute('width', newWidth * task.progress / 100);
       }
     }
-    
+
   })
 }
 
@@ -356,7 +353,7 @@ function closeEditModal() {
   editModal.style.display = 'none';
 }
 
-function showTaskDetails(task,allTasks) {
+function showTaskDetails(task, allTasks) {
   const dependentTaskNames = task.dependencies.map(depId => allTasks[depId - 1].name);
   const dependentTaskInfo = dependentTaskNames.length > 0 ? `Dependencies: ${dependentTaskNames.join(', ')}` : '';
 
@@ -516,44 +513,5 @@ function saveEditedTask(tasks) {
   closeEditModal();
 }
 
-
-
-function drawDependencyLine(svg, x1, y1, x2, y2, color) {
-  const line = document.createElementNS(svgNS, 'line');
-  const arrowSize = 5; // Size of the arrowhead
-  const angle = Math.atan2(y2 - y1, x2 - x1);
-  
-  // Draw the main line
-  line.setAttribute('x1', x1);
-  line.setAttribute('y1', y1);
-  line.setAttribute('x2', x2);
-  line.setAttribute('y2', y2);
-  line.setAttribute('stroke', color);
-  line.setAttribute('marker-end', 'url(#arrowhead)');
-  svg.appendChild(line);
-
-  // Draw the arrowhead
-  const arrow = document.createElementNS(svgNS, 'polygon');
-  arrow.setAttribute('points', `${x2 - arrowSize * Math.cos(angle - Math.PI / 6)},${y2 - arrowSize * Math.sin(angle - Math.PI / 6)} 
-                                 ${x2},${y2} 
-                                 ${x2 - arrowSize * Math.cos(angle + Math.PI / 6)},${y2 - arrowSize * Math.sin(angle + Math.PI / 6)}`);
-  arrow.setAttribute('fill', color);
-  svg.appendChild(arrow);
-}
-// function drawDependencyLine(svg, dependentTask, task, dateInfo) {
-//   const dependentTaskEndX = calculateXPosition(dependentTask.end, dateInfo);
-//   const dependentTaskEndY = calculateYPosition(dependentTask.id - 1, tasks.length);
-
-//   const taskStartX = calculateXPosition(task.start, dateInfo);
-//   const taskStartY = calculateYPosition(task.id - 1, tasks.length);
-
-//   const line = document.createElementNS(svgNS, 'path');
-//   line.setAttribute('d', `M${dependentTaskEndX},${dependentTaskEndY} H${taskStartX} V${taskStartY}`);
-//   line.setAttribute('stroke', 'black');
-//   line.setAttribute('fill', 'transparent');
-//   line.setAttribute('marker-end', 'url(#arrowhead)'); // Add arrowhead marker
-
-//   svg.appendChild(line);
-// }
 
 
