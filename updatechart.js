@@ -23,6 +23,7 @@ function updateTaskDates(task, taskMap) {
       task.end = new Date(new Date(task.start).setDate(new Date(task.start).getDate() + duration)).toISOString().split('T')[0];
     }
   });
+  
 }
 
 function updateTaskStartEndDates(tasks) {
@@ -30,7 +31,33 @@ function updateTaskStartEndDates(tasks) {
 
   tasks.forEach(task => {
     updateTaskDates(task, taskMap);
+    updateSubTaskStartEndDate(task);
   });
 
-  // No need to return anything, as tasks array has been modified in place
+}
+
+function updateSubTaskStartEndDate(task)
+{
+   // Check if the task has subtasks
+   if (task.subTask && task.subTask.length > 0) {
+    subTaskMap=new Map(task.subTask.map(subtask => [subtask.id, subtask]));
+    task.subTask.forEach(subTask => {
+      subDuration = (new Date(subTask.end) - new Date(subTask.start)) / (24 * 60 * 60 * 1000);
+      // Example condition: If subtask start date is less than task start date, update it
+      if (new Date(subTask.start) < new Date(task.start)) {
+        subTask.start = task.start;
+        subTask.end = new Date(new Date(subTask.start).setDate(new Date(task.start).getDate() + subDuration)).toISOString().split('T')[0];
+      }
+      else 
+      {
+        gap = (new Date(subTask.start) - new Date(task.start)) / (24 * 60 * 60 * 1000);
+        subTask.start = new Date(new Date(subTask.start).setDate(new Date(task.start).getDate() + gap)).toISOString().split('T')[0];
+      }
+      updateTaskDates(subTask,subTaskMap)
+      if(subTask.end > task.end)
+      {
+        task.end = subTask.end
+      }
+    });
+  }
 }

@@ -3,7 +3,7 @@ body.dragging {
 }
 
 #chart {
-  background-color: red;
+  /* background-color: red; */
   min-width: 100% ;
   position: relative;
   overflow-x: auto;

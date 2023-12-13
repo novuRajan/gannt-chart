@@ -7,6 +7,12 @@ const tooltip = document.createElement('div');
 tooltip.className = "bar-hover"
 document.body.appendChild(tooltip);
 
+//get the total length including sub task 
+function getTotalLength(tasks) {
+  return tasks.reduce((total, task) => {
+    return total + 1 + (task.subTask ? getTotalLength(task.subTask) : 0);
+  }, 0);
+}
 
 // Function to create Gantt chart
 function createGanttChart(tasks) {
@@ -19,26 +25,26 @@ function createGanttChart(tasks) {
     svg = createSVG(tasks);
     chartContainer.appendChild(svg);
   }
-
-  // Update the content of the existing or new SVG element
-  updateGanttChartContent(svg, tasks);
+  else{
+    updateGanttChartContent(svg, tasks);
+  }
 }
 
 function createSVG(tasks) {
   const svg = document.createElementNS(svgNS, 'svg');
   svg.setAttribute('min-width', '100%');
-  svg.setAttribute('height', '100%');
+  svg.setAttribute('height', '200%');
 
   const dateInfo = calculateDateInfo(tasks);
   const chartWidth = calculateChartWidth(dateInfo);
+  length = getTotalLength(tasks)
 
-  svg.setAttribute('viewBox', `0 0 ${chartWidth} ${tasks.length * 40 + 40}`);
+  svg.setAttribute('viewBox', `0 0 ${chartWidth} ${length * 40 + 40}`);
 
-  createGridLines(svg, chartWidth, tasks.length);
+  createGridLines(svg, chartWidth, length);
   createMonthHeadings(svg, dateInfo, chartWidth);
-  createDateScale(svg, dateInfo, chartWidth, tasks.length);
+  createDateScale(svg, dateInfo, chartWidth, length);
   createTaskBars(svg, tasks, dateInfo);
-
   return svg;
 }
 
@@ -112,15 +118,17 @@ function createDateScale(svg, dateInfo, chartWidth, taskCount) {
   }
 }
 
+
 function createTaskBars(svg, tasks, dateInfo) {
+  let customIndex=0;
   tasks.forEach((task, index) => {
     const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end)));
     const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
     const duration = (new Date(task.end) - new Date(task.start)) / (24 * 60 * 60 * 1000) * 50;
-
+    // index = index+1
     const rect = document.createElementNS(svgNS, 'rect');
     rect.setAttribute('x', startOffset);
-    rect.setAttribute('y', index * 40 + 40);
+    rect.setAttribute('y', customIndex * 40 + 40);
     rect.setAttribute('width', duration);
     rect.setAttribute('height', 30);
     rect.setAttribute('fill', '#3498db');
@@ -177,7 +185,7 @@ function createTaskBars(svg, tasks, dateInfo) {
     const progressWidth = (duration * task.progress) / 100;
     const progressRect = document.createElementNS(svgNS, 'rect');
     progressRect.setAttribute('x', startOffset);
-    progressRect.setAttribute('y', index * 40 + 40);
+    progressRect.setAttribute('y', customIndex * 40 + 40);
     progressRect.setAttribute('width', progressWidth);
     progressRect.setAttribute('height', 30);
     progressRect.setAttribute('fill', '#2ecc71');
@@ -185,12 +193,81 @@ function createTaskBars(svg, tasks, dateInfo) {
 
     const text = document.createElementNS(svgNS, 'text');
     text.setAttribute('x', startOffset + 5);
-    text.setAttribute('y', index * 40 + 60);
+    text.setAttribute('y', customIndex * 40 + 60);
     text.textContent = task.name;
     svg.appendChild(text);
+    // Render subtasks
+    if (task.subTask && task.subTask.length > 0) {
+      task.subTask.forEach((subtask, subIndex) => {
+        const subDependentTaskEnd = Math.max(...subtask.dependencies.map(depId => new Date(task.subTask[depId - 1].end)));
+        const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
+        const subDuration = (new Date(subtask.end) - new Date(subtask.start)) / (24 * 60 * 60 * 1000) * 50;
+        // const subDuration = (new Date(subtask.end) - new Date(subtask.start)) / (24 * 60 * 60 * 1000) * 50;
+        const subRect = document.createElementNS(svgNS, 'rect');
+        subRect.setAttribute('x',  subStartOffset);
+        subRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
+        subRect.setAttribute('width', subDuration);
+        subRect.setAttribute('height', 15);
+        subRect.setAttribute('fill', '#e74c3c'); // Adjust color for subtasks
+        svg.appendChild(subRect);
 
+        const subProgressWidth = (subDuration * subtask.progress) / 100;
+        const subProgressRect = document.createElementNS(svgNS, 'rect');
+        subProgressRect.setAttribute('x',  subStartOffset);
+        subProgressRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
+        subProgressRect.setAttribute('width', subProgressWidth);
+        subProgressRect.setAttribute('height', 15);
+        subProgressRect.setAttribute('fill', '#c0392b'); // Adjust color for subtasks
+        svg.appendChild(subProgressRect);
+
+        const subText = document.createElementNS(svgNS, 'text');
+        subText.setAttribute('x',  subStartOffset + 5);
+        subText.setAttribute('y', (subIndex + customIndex + 1) * 40 + 50);
+        subText.textContent = subtask.name;
+        subText.setAttribute('font-size', '10px'); // Adjust the font size as neede
+        svg.appendChild(subText);
+
+        subText.addEventListener('mouseover', () => showTaskDetails(subtask,task.subTask));
+        subRect.addEventListener('mouseover', () => showTaskDetails(subtask,task.subTask));
+        subRect.addEventListener('mouseout', hideTaskDetails);
+
+        subProgressRect.addEventListener('mouseover', () => showTaskDetails(subtask,task.subTask));
+        subProgressRect.addEventListener('mouseout', hideTaskDetails);
+
+        // Add a contextmenu event listener for right-click to enable task editing
+        subRect.addEventListener('contextmenu', (event) => {
+          event.preventDefault(); // Prevent the default context menu
+          editTask(event, subtask, task.subTask , tasks);
+        });
+        subProgressRect.addEventListener('contextmenu', (event) => {
+          event.preventDefault(); // Prevent the default context menu
+          editTask(event, subtask, task.subTask , tasks);
+        });
+        subText.addEventListener('contextmenu', (event) => {
+          event.preventDefault(); // Prevent the default context menu
+          editTask(event, subtask, task.subTask , tasks);
+        });
+        subRect.addEventListener('mousedown', (event) => {
+          startDrag(event, subRect , subProgressRect)
+        });
+        subProgressRect.addEventListener('mousedown', (event) => startDrag(event, subRect ,subProgressRect));
+        subText.addEventListener('mousedown', (event) => {
+          startDrag(event, subRect ,subProgressRect)
+        });
+        subRect.addEventListener('mouseup', (event) => {
+          event.preventDefault();
+          handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo , tasks);
+        });
+      
+        subProgressRect.addEventListener('mouseup', (event) => {
+          event.preventDefault();
+          handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo , tasks);
+        });
+      });
+    }
     // Add event listeners for both rectangle and progress bar
-    rect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
+    text.addEventListener('mouseover', () => showTaskDetails(task,tasks));
+    rect.addEventListener('mouseover', () => showTaskDetails(task,tasks));
     rect.addEventListener('mouseout', hideTaskDetails);
 
     progressRect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
@@ -205,13 +282,10 @@ function createTaskBars(svg, tasks, dateInfo) {
       event.preventDefault(); // Prevent the default context menu
       editTask(event, task, tasks);
     });
-
-    // Add event listeners for both rectangle and progress bar
-    rect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
-    rect.addEventListener('mouseout', hideTaskDetails);
-
-    progressRect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
-    progressRect.addEventListener('mouseout', hideTaskDetails);
+    text.addEventListener('contextmenu', (event) => {
+      event.preventDefault(); // Prevent the default context menu
+      editTask(event, task, tasks);
+    });
 
     let isDragging = false;
     let initialX;
@@ -221,116 +295,150 @@ function createTaskBars(svg, tasks, dateInfo) {
     // Variables to store the current task and progress bar
     let currentTaskRect;
     let currentProgressRect;
-
-    // Add a contextmenu event listener for right-click to enable task editing
-    rect.addEventListener('contextmenu', (event) => {
-      event.preventDefault(); // Prevent the default context menu
-      editTask(event, task, tasks);
-    });
-    progressRect.addEventListener('contextmenu', (event) => {
-      event.preventDefault(); // Prevent the default context menu
-      editTask(event, task, tasks);
-    });
-
-    // Add event listeners for dragging to edit start and end dates
-    rect.addEventListener('mousedown', (event) => startDrag(task, event, rect));
-    progressRect.addEventListener('mousedown', (event) => startDrag(task, event, rect));
-
-    document.addEventListener('mousemove', throttle((event) => {
+    const throttledMouseMove = throttle((event) => {
+      console.log('mousemoive');
       if (isDragging) {
-        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect);
+        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect, task, tasks);
       }
-    }, 16));
-
-    document.addEventListener('mouseup', () => {
+    }, 16);
+    // Add event listeners for dragging to edit start and end dates
+    rect.addEventListener('mousedown', (event) => {
+      startDrag(event, rect , progressRect)
+    });
+    progressRect.addEventListener('mousedown', (event) => startDrag(event, rect ,progressRect));
+    text.addEventListener('mousedown', (event) => {
+      startDrag(event, rect ,progressRect)
+  
+    });
+  
+    document.addEventListener('mouseup', (event) => {
+      event.preventDefault();
+      handleMouseUp(rect, progressRect, task, tasks, dateInfo);
+    });
+ 
+    function handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo ,allTasks=null) {
+      console.log('task');
       document.body.classList.remove('dragging');
       if (isDragging) {
+        document.removeEventListener('mousemove', throttledMouseMove);
         isDragging = false;
         // Find the task in the array and update its properties
-        const updatedTaskIndex = tasks.findIndex(t => t.id === task.id);
+        const updatedTaskIndex = tasks.findIndex((t) => t.id === dependentTask.id);
         if (updatedTaskIndex !== -1) {
-          const newStartDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(rect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000));
-          const newEndDate = new Date(newStartDate.getTime() + (parseFloat(rect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000));
-
+          const newStartDate = new Date(
+            dateInfo.startingDate.getTime() +
+              (parseFloat(taskRect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000)
+          );
+          const newEndDate = new Date(
+            newStartDate.getTime() +
+              (parseFloat(taskRect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000)
+          );
+  
           // Update the properties of the task in the array
           tasks[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
           tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
-
+  
           // Update the Gantt chart with the new data
           updateTaskStartEndDates(tasks);
-          createGanttChart(tasks);
+          if(allTasks)
+          {
+            updateTaskStartEndDates(allTasks);
+            createGanttChart(allTasks);
+          }
+          else{
+            createGanttChart(tasks);
+          }
+          
         }
       }
-    });
+    }
 
-    function startDrag(dependentTask, event, rect) {
+    function startDrag(event, taskRect, taskProgressRect) {
       document.body.classList.add('dragging');
       isDragging = true;
       initialX = event.clientX;
-      initialWidth = parseFloat(rect.getAttribute('width'));
-      isDragStart = event.clientX < rect.getBoundingClientRect().left + initialWidth / 2;
-
+      initialWidth = parseFloat(taskRect.getAttribute('width'));
+      isDragStart = event.clientX < taskRect.getBoundingClientRect().left + initialWidth / 2;
+    
       // Set the current task and progress bar
-      currentTaskRect = rect;
-      currentProgressRect = progressRect;
+      currentTaskRect = taskRect;
+      currentProgressRect = taskProgressRect;
       // Prevent text selection during drag
       event.preventDefault();
-
-      // Check if the task is dependent on another task
-      if (isTaskDependentOnOtherTaskDate(dependentTask, currentTaskRect, tasks) && isDragStart) {
-        alert('Task is dependent on another task. Start date cannot be changed.');
-        document.body.classList.remove('dragging'); // remove dragging class
-        isDragging = false; // Cancel the drag operation
-      }
+      document.addEventListener('mousemove', throttledMouseMove);
     }
 
     // Function to check if a task is dependent on another task
-    function isTaskDependentOnOtherTaskDate(dependentTask, taskRect, tasks) {
-      console.log('taskRect', rect);
-      console.log('task', dependentTask.dependencies)
+    function isExceedingDepenentEndDate(sartDate,dependentTask, tasks) {
       const tasksWithDesiredIds = tasks.filter(task =>
         dependentTask.dependencies.includes(task.id)
       );
-      const endDates = tasksWithDesiredIds.map(task => new Date(task.end));
-      const maxDate = new Date(Math.max(...endDates));
-      console.log('taskDependent', tasksWithDesiredIds)
-      console.log(tasks)
-      const index = taskRect.getAttribute('y') / 40 - 1; // Assuming each task has a height of 40
-      const dependentTaskIds = tasks[index].dependencies;
-
-      // Check if the task is dependent on another task
-      return dependentTaskIds.length > 0;
-    }
-
-
-    function updateTaskBarPosition(clientX, taskRect, progressRect) {
-      const deltaX = (clientX - initialX) * 0.6; // Adjust the sensitivity factor (0.5 is just an example)
-
-      if (isDragStart) {
-        const deltaX = event.movementX * 4; // Adjusting sentivity for start point 
-        // Dragging start handle
-        const newStartOffset = parseFloat(taskRect.getAttribute('x')) + deltaX;
-        const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
-        const newWidth = (endDate - new Date(dateInfo.startingDate.getTime() + newStartOffset / 50 * (24 * 60 * 60 * 1000))) / (24 * 60 * 60 * 1000) * 50;
-
-        const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
-        const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
-        const adjustedWidth = maxStartOffset - adjustedStartOffset;
-
-        taskRect.setAttribute('x', adjustedStartOffset);
-        taskRect.setAttribute('width', adjustedWidth);
-
-        progressRect.setAttribute('x', adjustedStartOffset);
-        progressRect.setAttribute('width', adjustedWidth * task.progress / 100);
-      } else {
-        // Dragging end handle
-        const newWidth = initialWidth + deltaX;
-
-        taskRect.setAttribute('width', newWidth);
-        progressRect.setAttribute('width', newWidth * task.progress / 100);
+      const endDates = tasksWithDesiredIds.map(task => new Date(task.end));    
+      const maxDate = new Date(Math.max(...endDates))
+      if(maxDate > sartDate)
+      {
+        return 1;
+      }
+      else{
+        return 0;
       }
     }
 
+    function updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks) {
+      const deltaX = (clientX - initialX) * 0.6; // Adjust the sensitivity factor (0.5 is just an example)
+
+      if (isDragStart) {
+        const increment = event.movementX * 2.5; // Adjusting sentivity for start point 
+        // Dragging start handle
+        let newStartOffset = parseFloat(taskRect.getAttribute('x')) + increment;
+        const startDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x'))) / 50 * (24 * 60 * 60 * 1000));
+        
+
+        if(isExceedingDepenentEndDate(startDate,dependentTask,tasks))
+        {
+          // isDragging = false;
+          alert('Start Date has exceed to its dependent EndDate');
+          document.body.classList.remove('dragging');
+          isDragging = false ;
+          const updatedTaskIndex = tasks.findIndex(t => t.id === task.id);
+          if (updatedTaskIndex !== -1) {
+            const newEndDate = new Date(startDate.getTime() + (parseFloat(rect.getAttribute('width')) / 51) * (24 * 60 * 60 * 1000));
+
+            // Update the properties of the task in the array
+            tasks[updatedTaskIndex].start = startDate.toISOString().split('T')[0];
+            tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
+
+            // Update the Gantt chart with the new data
+            updateTaskStartEndDates(tasks);
+            createGanttChart(tasks);
+          }
+        }
+        
+        const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
+        
+        const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
+        const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
+        const adjustedWidth = maxStartOffset - adjustedStartOffset;
+        taskRect.setAttribute('x', adjustedStartOffset);
+        taskRect.setAttribute('width', adjustedWidth);
+    
+        progress.setAttribute('x', adjustedStartOffset);
+        progress.setAttribute('width', adjustedWidth * dependentTask.progress / 100);
+        
+      } else {
+        // Dragging end handle
+        const newWidth = initialWidth + deltaX;
+        console.log('task',dependentTask)
+        taskRect.setAttribute('width', newWidth);
+        progress.setAttribute('width', newWidth * dependentTask.progress / 100);
+      }
+    }
+    // task below the sub task
+    customIndex = customIndex + 1; 
+    if(task.subTask && task.subTask.length > 0)
+    {
+      customIndex = customIndex   + task.subTask.length;
+    }
   })
 }
 
@@ -346,33 +454,6 @@ function throttle(func, limit) {
     }
   };
 }
-
-// Function to close the edit modal
-function closeEditModal() {
-  const editModal = document.getElementById('editModal');
-  editModal.style.display = 'none';
-}
-
-function showTaskDetails(task, allTasks) {
-  const dependentTaskNames = task.dependencies.map(depId => allTasks[depId - 1].name);
-  const dependentTaskInfo = dependentTaskNames.length > 0 ? `Dependencies: ${dependentTaskNames.join(', ')}` : '';
-
-  tooltip.innerHTML = `
-    Task: ${task.name}<br>
-    Start: ${task.start}<br>
-    End: ${task.end}<br>
-    ${dependentTaskInfo}
-  `;
-  tooltip.style.left = `${event.pageX}px`;
-  tooltip.style.top = `${event.pageY}px`;
-  tooltip.style.display = 'block';
-}
-
-function hideTaskDetails() {
-  tooltip.style.display = 'none';
-}
-
-
 // Function to update the Gantt chart with new data
 
 function updateGanttChartContent(svg, tasks) {
@@ -385,133 +466,15 @@ function updateGanttChartContent(svg, tasks) {
   const dateInfo = calculateDateInfo(tasks);
   const chartWidth = calculateChartWidth(dateInfo);
 
-  svg.setAttribute('viewBox', `0 0 ${chartWidth} ${tasks.length * 40 + 40}`);
+  svg.setAttribute('viewBox', `0 0 ${chartWidth} ${length * 40 + 40}`);
 
-  createGridLines(svg, chartWidth, tasks.length);
+  createGridLines(svg, chartWidth, length);
   createMonthHeadings(svg, dateInfo, chartWidth);
-  createDateScale(svg, dateInfo, chartWidth, tasks.length);
+  createDateScale(svg, dateInfo, chartWidth, length);
   createTaskBars(svg, tasks, dateInfo);
 }
 
-//function to update the task array
-function addTask(tasks) {
-  const taskName = document.getElementById('taskName').value;
-  const startDate = document.getElementById('startDate').value;
-  const endDate = document.getElementById('endDate').value;
 
-  // Ensure the required fields are not empty
-  if (!taskName || !startDate || !endDate) {
-    alert('Please fill in all fields.');
-    return;
-  }
-
-  const newTask = {
-    id: tasks.length + 1, // Incremental ID
-    name: taskName,
-    start: startDate,
-    end: endDate,
-    progress: 0, // You can set the progress as needed
-    dependencies: [] // You can set dependencies as needed
-  };
-
-  // Add the new task to the existing tasks
-  tasks.push(newTask);
-
-  // Update the Gantt chart with the new data
-  updateTaskStartEndDates(tasks);
-  // Call the function with sample data
-  createGanttChart(tasks);
-}
-
-// Function to handle task editing
-function editTask(event, task, allTasks) {
-  const editTaskForm = document.getElementById('editTaskForm');
-  const editTaskNameInput = document.getElementById('editTaskName');
-  const editStartDateInput = document.getElementById('editStartDate');
-  const editEndDateInput = document.getElementById('editEndDate');
-  const editProgress = document.getElementById('editProgress');
-  const editDependenciesSelect = document.getElementById('editDependencies');
-  const editModal = document.getElementById('editModal');
-
-  // Set the current task details in the form
-  editTaskNameInput.value = task.name;
-  editStartDateInput.value = task.start;
-  editEndDateInput.value = task.end;
-  editProgress.value = task.progress;
-
-  // Clear existing options
-  editDependenciesSelect.innerHTML = '';
-
-  // Display dependencies in the modal as select options
-  allTasks.forEach(availableTask => {
-    // Check if the available task is not the current task and not dependent on the current task
-    if (availableTask.id !== task.id && !isTaskDependent(task, availableTask, allTasks)) {
-      const option = document.createElement('option');
-      option.value = availableTask.id;
-      option.textContent = availableTask.name;
-      if (task.dependencies.includes(availableTask.id)) {
-        // If the task is already a dependency, mark it as selected
-        option.selected = true;
-      }
-      editDependenciesSelect.appendChild(option);
-    }
-  });
-
-  // Store the task ID in a data attribute of the form
-  editTaskForm.setAttribute('data-task-id', task.id);
-
-  // Display the modal
-  editModal.style.display = 'block';
-
-  // Prevent the contextmenu event from propagating further
-  event.preventDefault();
-}
-
-// Function to check if a task is dependent on another task
-function isTaskDependent(currentTask, otherTask, allTasks) {
-  return otherTask.dependencies.includes(currentTask.id) || otherTask.dependencies.some(depId => isTaskDependent(currentTask, allTasks[depId - 1], allTasks));
-}
-
-// Function to save edited task
-function saveEditedTask(tasks) {
-  const editTaskForm = document.getElementById('editTaskForm');
-  const editTaskNameInput = document.getElementById('editTaskName');
-  const editStartDateInput = document.getElementById('editStartDate');
-  const editEndDateInput = document.getElementById('editEndDate');
-  const editProgress = document.getElementById('editProgress');
-  const editDependenciesSelect = document.getElementById('editDependencies');
-  const editModal = document.getElementById('editModal');
-
-  // Retrieve the edited values
-  const editedTaskName = editTaskNameInput.value;
-  const editedStartDate = editStartDateInput.value;
-  const editedEndDate = editEndDateInput.value;
-  const progress = editProgress.value;
-
-  // Retrieve the task ID from the data attribute
-  const taskId = parseInt(editTaskForm.getAttribute('data-task-id'), 10);
-
-  // Retrieve the selected dependencies from the updated select element
-  const selectedDependencies = Array.from(editDependenciesSelect.selectedOptions).map(option => parseInt(option.value, 10));
-
-  // Find the task in the array and update its properties
-  const editedTaskIndex = tasks.findIndex(task => task.id === taskId);
-  if (editedTaskIndex !== -1) {
-    tasks[editedTaskIndex].name = editedTaskName;
-    tasks[editedTaskIndex].start = editedStartDate;
-    tasks[editedTaskIndex].end = editedEndDate;
-    tasks[editedTaskIndex].progress = progress > 100 ? 100 : progress;
-    tasks[editedTaskIndex].dependencies = selectedDependencies;
-  }
-
-  // Update the Gantt chart with the new data
-  updateTaskStartEndDates(tasks);
-  // Call the function with sample data
-  createGanttChart(tasks);
-
-  // Close the modal
-  closeEditModal();
-}
 
 
 
