@@ -267,11 +267,6 @@ function createTaskBars(svg, tasks, dateInfo) {
     // Variables to store the current task and progress bar
     let currentTaskRect;
     let currentProgressRect;
-    const throttledMouseMove = throttle((event) => {
-      if (isDragging) {
-        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect, task, tasks);
-      }
-    }, 16);
     // Add event listeners for dragging to edit start and end dates
     rect.addEventListener('mousedown', (event) => {
       startDrag(event, rect, progressRect);
@@ -280,7 +275,12 @@ function createTaskBars(svg, tasks, dateInfo) {
     text.addEventListener('mousedown', (event) => {
       startDrag(event, rect, progressRect);
     });
-
+    document.addEventListener('mousemove',(event) =>{
+      event.preventDefault();
+      if (isDragging) {
+        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect, task, tasks);
+      }
+    }, 16);
     document.addEventListener('mouseup', (event) => {
       event.preventDefault();
       handleMouseUp(rect, progressRect, task, tasks, dateInfo);
@@ -289,7 +289,6 @@ function createTaskBars(svg, tasks, dateInfo) {
     function handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo, allTasks = null) {
       document.body.classList.remove('dragging');
       if (isDragging) {
-        document.removeEventListener('mousemove', throttledMouseMove);
         isDragging = false;
         // Find the task in the array and update its properties
         const updatedTaskIndex = tasks.findIndex((t) => t.id === dependentTask.id);
@@ -334,7 +333,6 @@ function createTaskBars(svg, tasks, dateInfo) {
       currentProgressRect = taskProgressRect;
       // Prevent text selection during drag
       event.preventDefault();
-      document.addEventListener('mousemove', throttledMouseMove);
     }
 
     // Function to check if a task is dependent on another task
@@ -364,7 +362,7 @@ function createTaskBars(svg, tasks, dateInfo) {
           alert('Start Date has exceeded its dependent EndDate');
           document.body.classList.remove('dragging');
           isDragging = false;
-          const updatedTaskIndex = tasks.findIndex(t => t.id === task.id);
+          const updatedTaskIndex = tasks.findIndex(t => t.id === dependentTask.id);
           if (updatedTaskIndex !== -1) {
             const newEndDate = new Date(startDate.getTime() + (parseFloat(taskRect.getAttribute('width')) / 52) * (24 * 60 * 60 * 1000));
 
