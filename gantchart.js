@@ -350,21 +350,11 @@ function createTaskBars(svg, tasks, dateInfo) {
         return 0;
       }
     }
-
     function updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks) {
-      console.log(clientX);
-      console.log('initialx', initialX)
       const deltaX = (clientX - initialX) * .73 // Adjust the sensitivity factor (0.5 is just an example)
       if (isDragStart) {
-        const increment = event.movementX * 2.5; // Adjusting sentivity for start point
-        console.log('increment',increment) 
-        console.log('client',clientX)
         // Dragging start handle
-        let newStartOffset = parseFloat(taskRect.getAttribute('x')) + increment;
-        console.log('drag',parseFloat(taskRect.getAttribute('x')))
-        console.log('new',newStartOffset)
-        console.log('event',event)
-        console.log(dateInfo)
+        const newStartOffset = (new Date(dependentTask.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50 + deltaX;
         const startDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x'))) / 50 * (24 * 60 * 60 * 1000));
         console.log(startDate);
 
@@ -376,7 +366,7 @@ function createTaskBars(svg, tasks, dateInfo) {
           isDragging = false;
           const updatedTaskIndex = tasks.findIndex(t => t.id === task.id);
           if (updatedTaskIndex !== -1) {
-            const newEndDate = new Date(startDate.getTime() + (parseFloat(taskRect.getAttribute('width')) / 51) * (24 * 60 * 60 * 1000));
+            const newEndDate = new Date(startDate.getTime() + (parseFloat(taskRect.getAttribute('width')) / 52) * (24 * 60 * 60 * 1000));
 
             // Update the properties of the task in the array
             tasks[updatedTaskIndex].start = startDate.toISOString().split('T')[0];
@@ -388,15 +378,15 @@ function createTaskBars(svg, tasks, dateInfo) {
           }
         }
 
-        const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
+        // const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
 
         const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
         const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
         const adjustedWidth = maxStartOffset - adjustedStartOffset;
-        taskRect.setAttribute('x', adjustedStartOffset);
+        taskRect.setAttribute('x', newStartOffset);
         taskRect.setAttribute('width', adjustedWidth);
 
-        progress.setAttribute('x', adjustedStartOffset);
+        progress.setAttribute('x', newStartOffset);
         progress.setAttribute('width', adjustedWidth * dependentTask.progress / 100);
 
       } else {
