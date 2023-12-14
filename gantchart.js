@@ -174,6 +174,7 @@ function createTaskBars(svg, tasks, dateInfo) {
         const subDuration = (new Date(subtask.end) - new Date(subtask.start)) / (24 * 60 * 60 * 1000) * 50;
 
         const subRect = document.createElementNS(svgNS, 'rect');
+        subRect.setAttribute('class','subtask')
         subRect.setAttribute('x', subStartOffset);
         subRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
         subRect.setAttribute('width', subDuration);
@@ -183,6 +184,7 @@ function createTaskBars(svg, tasks, dateInfo) {
 
         const subProgressWidth = (subDuration * subtask.progress) / 100;
         const subProgressRect = document.createElementNS(svgNS, 'rect');
+        subProgressRect.setAttribute('class','subtask-progress')
         subProgressRect.setAttribute('x', subStartOffset);
         subProgressRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
         subProgressRect.setAttribute('width', subProgressWidth);
@@ -224,10 +226,12 @@ function createTaskBars(svg, tasks, dateInfo) {
           startDrag(event, subRect, subProgressRect);
         });
         subRect.addEventListener('mouseup', (event) => {
+          console.log(event)
           event.preventDefault();
           handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo, tasks);
         });
         subProgressRect.addEventListener('mouseup', (event) => {
+          console.log(event)
           event.preventDefault();
           handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo, tasks);
         });
@@ -351,12 +355,18 @@ function createTaskBars(svg, tasks, dateInfo) {
       console.log(clientX);
       console.log('initialx', initialX)
       const deltaX = (clientX - initialX) * .73 // Adjust the sensitivity factor (0.5 is just an example)
-      console.log('event', event.movementX)
       if (isDragStart) {
-        const increment = event.movementX * 2.5; // Adjusting sentivity for start point 
+        const increment = event.movementX * 2.5; // Adjusting sentivity for start point
+        console.log('increment',increment) 
+        console.log('client',clientX)
         // Dragging start handle
         let newStartOffset = parseFloat(taskRect.getAttribute('x')) + increment;
+        console.log('drag',parseFloat(taskRect.getAttribute('x')))
+        console.log('new',newStartOffset)
+        console.log('event',event)
+        console.log(dateInfo)
         const startDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x'))) / 50 * (24 * 60 * 60 * 1000));
+        console.log(startDate);
 
 
         if (isExceedingDepenentEndDate(startDate, dependentTask, tasks)) {
