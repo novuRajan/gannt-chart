@@ -70,8 +70,11 @@ function calculateChartWidth(dateInfo) {
   return dateInfo.multiplier * ((dateInfo.maxDate - dateInfo.startingDate) / (24 * 60 * 60 * 1000));
 }
 
-function createGridLines(svg, chartWidth, taskCount) {
+function createGridLines(dateGroup, chartWidth, taskCount) {
 
+  const gridLines = document.createElementNS(svgNS, 'g');
+  gridLines.classList.add('lines')
+  dateGroup.appendChild(gridLines)
   for (let i = 0; i <= chartWidth; i += 50) {
     const line = document.createElementNS(svgNS, 'line');
     line.setAttribute('x1', i);
@@ -79,11 +82,14 @@ function createGridLines(svg, chartWidth, taskCount) {
     line.setAttribute('y1', 35);
     line.setAttribute('y2', taskCount * 40 + 40);
     line.classList.add('grid-line');
-    svg.appendChild(line);
+    gridLines.appendChild(line);
   }
 }
 
-function createMonthHeadings(svg, dateInfo, chartWidth) {
+function createMonthHeadings(dateGroup, dateInfo, chartWidth) {
+  const month = document.createElementNS(svgNS, 'g');
+  month.classList.add('month')
+  dateGroup.appendChild(month)
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   let currentMonth = -1;
 
@@ -98,17 +104,19 @@ function createMonthHeadings(svg, dateInfo, chartWidth) {
       monthHeading.setAttribute('y', 15);
       monthHeading.classList.add('month-heading');
       monthHeading.textContent = months[currentMonth];
-      svg.appendChild(monthHeading);
+      month.appendChild(monthHeading);
     }
   }
 }
 
-function createDateScale(svg, dateInfo, chartWidth, taskCount) {
+function createDateScale(dateGroup, dateInfo, chartWidth, taskCount) {
+  const date = document.createElementNS(svgNS,'g')
+  dateGroup.appendChild(date)
+  date.classList.add('date')
   const dateScale = document.createElementNS(svgNS, 'text');
   dateScale.setAttribute('x', '0');
   dateScale.setAttribute('y', taskCount);
-  dateScale.classList.add('date-scale');
-  svg.appendChild(dateScale);
+  date.appendChild(dateScale);
 
   for (let i = 0; i <= chartWidth; i += 50) {
     const currentDate = new Date(dateInfo.startingDate.getTime() + i / 50 * (24 * 60 * 60 * 1000));
@@ -116,7 +124,7 @@ function createDateScale(svg, dateInfo, chartWidth, taskCount) {
     text.setAttribute('x', i - 3);
     text.setAttribute('y', taskCount + 25);
     text.textContent = currentDate.getDate();
-    svg.appendChild(text);
+    date.appendChild(text);
   }
 }
 
@@ -125,6 +133,7 @@ function createTaskBars(svg, tasks, dateInfo) {
 
   tasks.forEach((task, index) => {
     const taskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
+    taskGroup.setAttribute('class','tasks')
     svg.appendChild(taskGroup);
 
     const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end)));
@@ -156,6 +165,9 @@ function createTaskBars(svg, tasks, dateInfo) {
 
     // Render subtasks
     if (task.subTask && task.subTask.length > 0) {
+      const subTaskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
+      subTaskGroup.setAttribute('class','subtask')
+      taskGroup.appendChild(subTaskGroup);
       task.subTask.forEach((subtask, subIndex) => {
         const subDependentTaskEnd = Math.max(...subtask.dependencies.map(depId => new Date(task.subTask[depId - 1].end)));
         const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
@@ -167,7 +179,7 @@ function createTaskBars(svg, tasks, dateInfo) {
         subRect.setAttribute('width', subDuration);
         subRect.setAttribute('height', 15);
         subRect.setAttribute('fill', '#e74c3c');
-        taskGroup.appendChild(subRect);
+        subTaskGroup.appendChild(subRect);
 
         const subProgressWidth = (subDuration * subtask.progress) / 100;
         const subProgressRect = document.createElementNS(svgNS, 'rect');
@@ -176,14 +188,14 @@ function createTaskBars(svg, tasks, dateInfo) {
         subProgressRect.setAttribute('width', subProgressWidth);
         subProgressRect.setAttribute('height', 15);
         subProgressRect.setAttribute('fill', '#c0392b');
-        taskGroup.appendChild(subProgressRect);
+        subTaskGroup.appendChild(subProgressRect);
 
         const subText = document.createElementNS(svgNS, 'text');
         subText.setAttribute('x', subStartOffset + 5);
         subText.setAttribute('y', (subIndex + customIndex + 1) * 40 + 50);
         subText.textContent = subtask.name;
         subText.setAttribute('font-size', '10px');
-        taskGroup.appendChild(subText);
+        subTaskGroup.appendChild(subText);
 
         subText.addEventListener('mouseover', () => showTaskDetails(subtask, task.subTask));
         subRect.addEventListener('mouseover', () => showTaskDetails(subtask, task.subTask));
@@ -215,7 +227,6 @@ function createTaskBars(svg, tasks, dateInfo) {
           event.preventDefault();
           handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo, tasks);
         });
-
         subProgressRect.addEventListener('mouseup', (event) => {
           event.preventDefault();
           handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo, tasks);
@@ -307,6 +318,7 @@ function createTaskBars(svg, tasks, dateInfo) {
 
     function startDrag(event, taskRect, taskProgressRect) {
       document.body.classList.add('dragging');
+      hideTaskDetails
       isDragging = true;
       initialX = event.clientX;
       console.log(initialX);
@@ -416,12 +428,15 @@ function updateGanttChartContent(svg, tasks) {
   // Update the content with the new tasks
   const dateInfo = calculateDateInfo(tasks);
   const chartWidth = calculateChartWidth(dateInfo);
+  const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
+  dateGroup.setAttribute('class','date-groups')
+  svg.appendChild(dateGroup);
 
   svg.setAttribute('viewBox', `0 0 ${chartWidth} ${length * 40 + 40}`);
 
-  createGridLines(svg, chartWidth, length);
-  createMonthHeadings(svg, dateInfo, chartWidth);
-  createDateScale(svg, dateInfo, chartWidth, length);
+  createGridLines(dateGroup, chartWidth, length);
+  createMonthHeadings(dateGroup, dateInfo, chartWidth);
+  createDateScale(dateGroup, dateInfo, chartWidth, length);
   createTaskBars(svg, tasks, dateInfo);
 }
 

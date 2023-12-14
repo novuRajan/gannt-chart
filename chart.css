@@ -12,15 +12,19 @@ body.dragging {
   overflow-y: auto;
 }
 
+.date-groups{
+  position: fixed;
+  top: 0;
+}
 .month-heading {
   font-size: 14px;
   fill: #333;
   font-weight: bold;
 }
 
-.date-scale {
-  font-size: 12px;
-  fill: #333;
+.date {
+  position: sticky;
+  top: 0;
 }
 
 .grid-line {
