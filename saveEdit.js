@@ -36,6 +36,7 @@ function addTask(tasks) {
   
 // Function to handle task editing
 function editTask(event, task, tasks, allTasks = null) {
+    document.removeEventListener('mousemove',dragMoveListener)
     const editTaskForm = document.getElementById('editTaskForm');
     const editTaskNameInput = document.getElementById('editTaskName');
     const editStartDateInput = document.getElementById('editStartDate');
@@ -73,10 +74,8 @@ function editTask(event, task, tasks, allTasks = null) {
 
     // Display the modal
     editModal.style.display = 'block';
-    console.log('ahha');
     // Attach a click event listener to the "Save Changes" button
     saveChangesBtn.addEventListener('click', function saveChangesHandler() {
-        console.log('Save Changes clicked');
         // Call your function to save the edited task data
         saveEditedTask(tasks, allTasks);
         // Close the modal after saving changes
@@ -94,8 +93,6 @@ function isTaskDependent(currentTask, otherTask, allTasks) {
   
 // Function to save edited task
 function saveEditedTask(tasks,alltasks=null) {
-    console.log("after save",tasks);
-    console.log('after all task',alltasks);
     const editTaskForm = document.getElementById('editTaskForm');
     const editTaskNameInput = document.getElementById('editTaskName');
     const editStartDateInput = document.getElementById('editStartDate');

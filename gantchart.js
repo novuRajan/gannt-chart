@@ -1,6 +1,6 @@
 const svgNS = 'http://www.w3.org/2000/svg';
 var taskCount;
-
+let dragMoveListener;
 
 // Function to create external tooltip
 const tooltip = document.createElement('div');
@@ -219,21 +219,16 @@ function createTaskBars(svg, tasks, dateInfo) {
           editTask(event, subtask, task.subTask, tasks);
         });
         subRect.addEventListener('mousedown', (event) => {
-          startDrag(event, subRect, subProgressRect);
+          event.preventDefault();
+          startDrag(event, subRect, subProgressRect ,subtask , task.subTask , tasks);
         });
-        subProgressRect.addEventListener('mousedown', (event) => startDrag(event, subRect, subProgressRect));
+        subProgressRect.addEventListener('mousedown', (event) => {
+          event.preventDefault();
+          startDrag(event, subRect, subProgressRect,subtask , task.subTask , tasks)
+        });
         subText.addEventListener('mousedown', (event) => {
-          startDrag(event, subRect, subProgressRect);
-        });
-        subRect.addEventListener('mouseup', (event) => {
-          console.log(event)
           event.preventDefault();
-          handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo, tasks);
-        });
-        subProgressRect.addEventListener('mouseup', (event) => {
-          console.log(event)
-          event.preventDefault();
-          handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo, tasks);
+          startDrag(event, subRect, subProgressRect , subtask , task.subTask , tasks);
         });
       });
     }
@@ -263,27 +258,21 @@ function createTaskBars(svg, tasks, dateInfo) {
     let initialX;
     let initialWidth;
     let isDragStart;
-
     // Variables to store the current task and progress bar
     let currentTaskRect;
     let currentProgressRect;
     // Add event listeners for dragging to edit start and end dates
     rect.addEventListener('mousedown', (event) => {
-      startDrag(event, rect, progressRect);
+      event.preventDefault();
+      startDrag(event, rect, progressRect,task ,tasks);
     });
-    progressRect.addEventListener('mousedown', (event) => startDrag(event, rect, progressRect));
+    progressRect.addEventListener('mousedown', (event) => {
+      event.preventDefault();
+      startDrag(event, rect, progressRect ,task ,tasks)
+    });
     text.addEventListener('mousedown', (event) => {
-      startDrag(event, rect, progressRect);
-    });
-    document.addEventListener('mousemove',(event) =>{
       event.preventDefault();
-      if (isDragging) {
-        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect, task, tasks);
-      }
-    }, 16);
-    document.addEventListener('mouseup', (event) => {
-      event.preventDefault();
-      handleMouseUp(rect, progressRect, task, tasks, dateInfo);
+      startDrag(event, rect, progressRect,task ,tasks);
     });
 
     function handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo, allTasks = null) {
@@ -317,22 +306,32 @@ function createTaskBars(svg, tasks, dateInfo) {
 
         }
       }
+
     }
 
-    function startDrag(event, taskRect, taskProgressRect) {
+    function startDrag(event, taskRect, taskProgressRect , dependentTask, task , allTasks=null) {
       document.body.classList.add('dragging');
       hideTaskDetails
       isDragging = true;
       initialX = event.clientX;
-      console.log(initialX);
       initialWidth = parseFloat(taskRect.getAttribute('width'));
       isDragStart = event.clientX < taskRect.getBoundingClientRect().left + initialWidth / 2;
 
       // Set the current task and progress bar
       currentTaskRect = taskRect;
       currentProgressRect = taskProgressRect;
+      dragMoveListener = (event) => handleDragMove(event, currentTaskRect, currentProgressRect, dependentTask, task, allTasks);
       // Prevent text selection during drag
       event.preventDefault();
+      document.addEventListener('mousemove',dragMoveListener);
+
+    }
+
+    function handleDragMove(event, taskRect, progress, dependentTask, tasks ,allTasks=null) {
+      event.preventDefault();
+      if (isDragging) {
+        updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks ,allTasks);
+      }
     }
 
     // Function to check if a task is dependent on another task
@@ -348,14 +347,12 @@ function createTaskBars(svg, tasks, dateInfo) {
         return 0;
       }
     }
-    function updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks) {
+    function updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks ,allTasks) {
       const deltaX = (clientX - initialX) * .73 // Adjust the sensitivity factor (0.5 is just an example)
       if (isDragStart) {
         // Dragging start handle
         const newStartOffset = (new Date(dependentTask.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50 + deltaX;
         const startDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x'))) / 50 * (24 * 60 * 60 * 1000));
-        console.log(startDate);
-
 
         if (isExceedingDepenentEndDate(startDate, dependentTask, tasks)) {
           // isDragging = false;
@@ -372,7 +369,14 @@ function createTaskBars(svg, tasks, dateInfo) {
 
             // Update the Gantt chart with the new data
             updateTaskStartEndDates(tasks);
-            createGanttChart(tasks);
+            if(allTasks)
+            {
+              updateTaskStartEndDates(allTasks);
+              createGanttChart(allTasks);
+            }
+            else{
+              createGanttChart(tasks);
+            }
           }
         }
 
@@ -393,6 +397,10 @@ function createTaskBars(svg, tasks, dateInfo) {
         taskRect.setAttribute('width', newWidth);
         progress.setAttribute('width', newWidth * dependentTask.progress / 100);
       }
+      document.addEventListener('mouseup', (event) => {
+        document.removeEventListener('mousemove',dragMoveListener)
+        handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo ,allTasks);
+      });
     }
     // task below the subtask
     customIndex = customIndex + 1;
