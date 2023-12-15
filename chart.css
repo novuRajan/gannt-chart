@@ -46,3 +46,7 @@ body.dragging {
   z-index: 1000;
 }
   
+.dependency-line {
+  stroke: #e74c3c; /* Line color */
+  stroke-width: 2; /* Line width */
+}
