@@ -1,6 +1,6 @@
 const svgNS = 'http://www.w3.org/2000/svg';
 var taskCount;
-
+let dragMoveListener;
 
 // Function to create external tooltip
 const tooltip = document.createElement('div');
@@ -34,16 +34,18 @@ function createSVG(tasks) {
   const svg = document.createElementNS(svgNS, 'svg');
   svg.setAttribute('min-width', '100%');
   svg.setAttribute('height', '200%');
-
+  const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
+  dateGroup.setAttribute('class','date-groups')
+  svg.appendChild(dateGroup);
   const dateInfo = calculateDateInfo(tasks);
   const chartWidth = calculateChartWidth(dateInfo);
   length = getTotalLength(tasks)
 
   svg.setAttribute('viewBox', `0 0 ${chartWidth} ${length * 40 + 40}`);
 
-  createGridLines(svg, chartWidth, length);
-  createMonthHeadings(svg, dateInfo, chartWidth);
-  createDateScale(svg, dateInfo, chartWidth, length);
+  createGridLines(dateGroup, chartWidth, length);
+  createMonthHeadings(dateGroup, dateInfo, chartWidth);
+  createDateScale(dateGroup, dateInfo, chartWidth, length);
   createTaskBars(svg, tasks, dateInfo);
   // createDependencyLines(svg, tasks, dateInfo);
   return svg;
@@ -69,8 +71,11 @@ function calculateChartWidth(dateInfo) {
   return dateInfo.multiplier * ((dateInfo.maxDate - dateInfo.startingDate) / (24 * 60 * 60 * 1000));
 }
 
-function createGridLines(svg, chartWidth, taskCount) {
+function createGridLines(dateGroup, chartWidth, taskCount) {
 
+  const gridLines = document.createElementNS(svgNS, 'g');
+  gridLines.classList.add('lines')
+  dateGroup.appendChild(gridLines)
   for (let i = 0; i <= chartWidth; i += 50) {
     const line = document.createElementNS(svgNS, 'line');
     line.setAttribute('x1', i);
@@ -78,11 +83,14 @@ function createGridLines(svg, chartWidth, taskCount) {
     line.setAttribute('y1', 35);
     line.setAttribute('y2', taskCount * 40 + 40);
     line.classList.add('grid-line');
-    svg.appendChild(line);
+    gridLines.appendChild(line);
   }
 }
 
-function createMonthHeadings(svg, dateInfo, chartWidth) {
+function createMonthHeadings(dateGroup, dateInfo, chartWidth) {
+  const month = document.createElementNS(svgNS, 'g');
+  month.classList.add('month')
+  dateGroup.appendChild(month)
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   let currentMonth = -1;
 
@@ -97,17 +105,19 @@ function createMonthHeadings(svg, dateInfo, chartWidth) {
       monthHeading.setAttribute('y', 15);
       monthHeading.classList.add('month-heading');
       monthHeading.textContent = months[currentMonth];
-      svg.appendChild(monthHeading);
+      month.appendChild(monthHeading);
     }
   }
 }
 
-function createDateScale(svg, dateInfo, chartWidth, taskCount) {
+function createDateScale(dateGroup, dateInfo, chartWidth, taskCount) {
+  const date = document.createElementNS(svgNS,'g')
+  dateGroup.appendChild(date)
+  date.classList.add('date')
   const dateScale = document.createElementNS(svgNS, 'text');
   dateScale.setAttribute('x', '0');
   dateScale.setAttribute('y', taskCount);
-  dateScale.classList.add('date-scale');
-  svg.appendChild(dateScale);
+  date.appendChild(dateScale);
 
   for (let i = 0; i <= chartWidth; i += 50) {
     const currentDate = new Date(dateInfo.startingDate.getTime() + i / 50 * (24 * 60 * 60 * 1000));
@@ -115,29 +125,29 @@ function createDateScale(svg, dateInfo, chartWidth, taskCount) {
     text.setAttribute('x', i - 3);
     text.setAttribute('y', taskCount + 25);
     text.textContent = currentDate.getDate();
-    svg.appendChild(text);
+    date.appendChild(text);
   }
 }
 
-function getTaskRectForId(svg, taskId) {
-  return svg.querySelector(`[data-id="${taskId}"]`);
-}
-
 function createTaskBars(svg, tasks, dateInfo) {
-  let customIndex=0;
+  let customIndex = 0;
+
   tasks.forEach((task, index) => {
+    const taskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
+    taskGroup.setAttribute('class','tasks')
+    svg.appendChild(taskGroup);
+
     const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end)));
     const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
     const duration = (new Date(task.end) - new Date(task.start)) / (24 * 60 * 60 * 1000) * 50;
-    // index = index+1
+
     const rect = document.createElementNS(svgNS, 'rect');
     rect.setAttribute('x', startOffset);
     rect.setAttribute('y', customIndex * 40 + 40);
     rect.setAttribute('width', duration);
     rect.setAttribute('height', 30);
     rect.setAttribute('fill', '#3498db');
-    rect.setAttribute('id', `task-${task.id}`);
-    svg.appendChild(rect);
+    taskGroup.appendChild(rect);
 
     const progressWidth = (duration * task.progress) / 100;
     const progressRect = document.createElementNS(svgNS, 'rect');
@@ -146,163 +156,102 @@ function createTaskBars(svg, tasks, dateInfo) {
     progressRect.setAttribute('width', progressWidth);
     progressRect.setAttribute('height', 30);
     progressRect.setAttribute('fill', '#2ecc71');
-    svg.appendChild(progressRect);
+    taskGroup.appendChild(progressRect);
 
     const text = document.createElementNS(svgNS, 'text');
     text.setAttribute('x', startOffset + 5);
     text.setAttribute('y', customIndex * 40 + 60);
     text.textContent = task.name;
-    svg.appendChild(text);
-
-    // Draw dependency lines
-task.dependencies.forEach((depId) => {
-  const dependentTask = tasks.find((t) => t.id === depId);
-
-  if (dependentTask) {
-    // Calculate coordinates for the lines
-    const dependentTaskRect = document.getElementById(`task-${dependentTask.id}`);
-    console.log(dependentTaskRect)
-    if (!dependentTaskRect) return;
-
-    const startX = parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width'));
-    const startY = customIndex * 40 + 40 + 15; // Adjusted for subtasks height
-    const endX = parseFloat(dependentTaskRect.getAttribute('x')); // Use dependent task rect's x
-    const endY = (tasks.indexOf(dependentTask) + customIndex + 1) * 40 + 40 + 15; // Adjusted for subtasks height
-
-    // Create the horizontal line
-    const horizontalLine = document.createElementNS(svgNS, 'line');
-    horizontalLine.setAttribute('x1', startX);
-    horizontalLine.setAttribute('y1', startY);
-    horizontalLine.setAttribute('x2', endX);
-    horizontalLine.setAttribute('y2', startY);
-    horizontalLine.setAttribute('stroke', '#34495e'); // Line color
-    horizontalLine.setAttribute('stroke-width', '2');
-    svg.appendChild(horizontalLine);
-
-    // Create the vertical line
-    const verticalLine = document.createElementNS(svgNS, 'line');
-    verticalLine.setAttribute('x1', endX);
-    verticalLine.setAttribute('y1', startY);
-    verticalLine.setAttribute('x2', endX);
-    verticalLine.setAttribute('y2', endY);
-    verticalLine.setAttribute('stroke', '#34495e'); // Line color
-    verticalLine.setAttribute('stroke-width', '2');
-    svg.appendChild(verticalLine);
-  }
-});
-
+    taskGroup.appendChild(text);
 
     // Render subtasks
     if (task.subTask && task.subTask.length > 0) {
+      const subTaskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
+      subTaskGroup.setAttribute('class','subtask')
+      taskGroup.appendChild(subTaskGroup);
       task.subTask.forEach((subtask, subIndex) => {
         const subDependentTaskEnd = Math.max(...subtask.dependencies.map(depId => new Date(task.subTask[depId - 1].end)));
         const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
         const subDuration = (new Date(subtask.end) - new Date(subtask.start)) / (24 * 60 * 60 * 1000) * 50;
-        // const subDuration = (new Date(subtask.end) - new Date(subtask.start)) / (24 * 60 * 60 * 1000) * 50;
+
         const subRect = document.createElementNS(svgNS, 'rect');
-        subRect.setAttribute('x',  subStartOffset);
+        subRect.setAttribute('class','subtask')
+        subRect.setAttribute('x', subStartOffset);
         subRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
         subRect.setAttribute('width', subDuration);
         subRect.setAttribute('height', 15);
-        subRect.setAttribute('fill', '#e74c3c'); // Adjust color for subtasks
-        svg.appendChild(subRect);
+        subRect.setAttribute('fill', '#e74c3c');
+        subTaskGroup.appendChild(subRect);
 
         const subProgressWidth = (subDuration * subtask.progress) / 100;
         const subProgressRect = document.createElementNS(svgNS, 'rect');
-        subProgressRect.setAttribute('x',  subStartOffset);
+        subProgressRect.setAttribute('class','subtask-progress')
+        subProgressRect.setAttribute('x', subStartOffset);
         subProgressRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
         subProgressRect.setAttribute('width', subProgressWidth);
         subProgressRect.setAttribute('height', 15);
-        subProgressRect.setAttribute('fill', '#c0392b'); // Adjust color for subtasks
-        svg.appendChild(subProgressRect);
+        subProgressRect.setAttribute('fill', '#c0392b');
+        subTaskGroup.appendChild(subProgressRect);
 
         const subText = document.createElementNS(svgNS, 'text');
-        subText.setAttribute('x',  subStartOffset + 5);
+        subText.setAttribute('x', subStartOffset + 5);
         subText.setAttribute('y', (subIndex + customIndex + 1) * 40 + 50);
         subText.textContent = subtask.name;
-        subText.setAttribute('font-size', '10px'); // Adjust the font size as neede
-        svg.appendChild(subText);
+        subText.setAttribute('font-size', '10px');
+        subTaskGroup.appendChild(subText);
 
-        // Draw dependency lines for subtasks
-        subtask.dependencies.forEach((depId) => {
-          const dependentSubTask = task.subTask[depId - 1];
-
-          // Calculate coordinates for the line
-          const startXSub = parseFloat(subRect.getAttribute('x')) + parseFloat(subRect.getAttribute('width'));
-          const startYSub = (subIndex + customIndex + 1) * 40 + 40 + 7.5; // Adjusted for subtasks height
-          const endXSub = parseFloat(subRect.getAttribute('x'));
-          const endYSub = (task.subTask.indexOf(dependentSubTask) + customIndex + 1) * 40 + 40 + 7.5;
-
-          // Create the line for subtasks
-          const lineSub = document.createElementNS(svgNS, 'line');
-          lineSub.setAttribute('x1', startXSub);
-          lineSub.setAttribute('y1', startYSub);
-          lineSub.setAttribute('x2', endXSub);
-          lineSub.setAttribute('y2', endYSub);
-          lineSub.setAttribute('stroke', '#e67e22'); // Line color for subtasks
-          lineSub.setAttribute('stroke-width', '1.5');
-          svg.appendChild(lineSub);
-        });
-
-        subText.addEventListener('mouseover', () => showTaskDetails(subtask,task.subTask));
-        subRect.addEventListener('mouseover', () => showTaskDetails(subtask,task.subTask));
+        subText.addEventListener('mouseover', () => showTaskDetails(subtask, task.subTask));
+        subRect.addEventListener('mouseover', () => showTaskDetails(subtask, task.subTask));
         subRect.addEventListener('mouseout', hideTaskDetails);
 
-        subProgressRect.addEventListener('mouseover', () => showTaskDetails(subtask,task.subTask));
+        subProgressRect.addEventListener('mouseover', () => showTaskDetails(subtask, task.subTask));
         subProgressRect.addEventListener('mouseout', hideTaskDetails);
 
-        // Add a contextmenu event listener for right-click to enable task editing
         subRect.addEventListener('contextmenu', (event) => {
-          event.preventDefault(); // Prevent the default context menu
-          editTask(event, subtask, task.subTask , tasks);
+          event.preventDefault();
+          editTask(event, subtask, task.subTask, tasks);
         });
         subProgressRect.addEventListener('contextmenu', (event) => {
-          event.preventDefault(); // Prevent the default context menu
-          editTask(event, subtask, task.subTask , tasks);
+          event.preventDefault();
+          editTask(event, subtask, task.subTask, tasks);
         });
         subText.addEventListener('contextmenu', (event) => {
-          event.preventDefault(); // Prevent the default context menu
-          editTask(event, subtask, task.subTask , tasks);
+          event.preventDefault();
+          editTask(event, subtask, task.subTask, tasks);
         });
         subRect.addEventListener('mousedown', (event) => {
-          startDrag(event, subRect , subProgressRect)
+          event.preventDefault();
+          startDrag(event, subRect, subProgressRect ,subtask , task.subTask , tasks);
         });
-        subProgressRect.addEventListener('mousedown', (event) => startDrag(event, subRect ,subProgressRect));
+        subProgressRect.addEventListener('mousedown', (event) => {
+          event.preventDefault();
+          startDrag(event, subRect, subProgressRect,subtask , task.subTask , tasks)
+        });
         subText.addEventListener('mousedown', (event) => {
-          startDrag(event, subRect ,subProgressRect)
-        });
-        subRect.addEventListener('mouseup', (event) => {
           event.preventDefault();
-          handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo , tasks);
-        });
-      
-        subProgressRect.addEventListener('mouseup', (event) => {
-          event.preventDefault();
-          handleMouseUp(subRect, subProgressRect, subtask, task.subTask, dateInfo , tasks);
+          startDrag(event, subRect, subProgressRect , subtask , task.subTask , tasks);
         });
       });
     }
 
-
     // Add event listeners for both rectangle and progress bar
-    text.addEventListener('mouseover', () => showTaskDetails(task,tasks));
-    rect.addEventListener('mouseover', () => showTaskDetails(task,tasks));
+    text.addEventListener('mouseover', () => showTaskDetails(task, tasks));
+    rect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
     rect.addEventListener('mouseout', hideTaskDetails);
 
     progressRect.addEventListener('mouseover', () => showTaskDetails(task, tasks));
     progressRect.addEventListener('mouseout', hideTaskDetails);
 
-    // Add a contextmenu event listener for right-click to enable task editing
     rect.addEventListener('contextmenu', (event) => {
-      event.preventDefault(); // Prevent the default context menu
+      event.preventDefault();
       editTask(event, task, tasks);
     });
     progressRect.addEventListener('contextmenu', (event) => {
-      event.preventDefault(); // Prevent the default context menu
+      event.preventDefault();
       editTask(event, task, tasks);
     });
     text.addEventListener('contextmenu', (event) => {
-      event.preventDefault(); // Prevent the default context menu
+      event.preventDefault();
       editTask(event, task, tasks);
     });
 
@@ -310,118 +259,110 @@ task.dependencies.forEach((depId) => {
     let initialX;
     let initialWidth;
     let isDragStart;
-
     // Variables to store the current task and progress bar
     let currentTaskRect;
     let currentProgressRect;
-    const throttledMouseMove = throttle((event) => {
-      console.log('mousemoive');
-      if (isDragging) {
-        updateTaskBarPosition(event.clientX, currentTaskRect, currentProgressRect, task, tasks);
-      }
-    }, 16);
     // Add event listeners for dragging to edit start and end dates
     rect.addEventListener('mousedown', (event) => {
-      startDrag(event, rect , progressRect)
-    });
-    progressRect.addEventListener('mousedown', (event) => startDrag(event, rect ,progressRect));
-    text.addEventListener('mousedown', (event) => {
-      startDrag(event, rect ,progressRect)
-  
-    });
-  
-    document.addEventListener('mouseup', (event) => {
       event.preventDefault();
-      handleMouseUp(rect, progressRect, task, tasks, dateInfo);
+      startDrag(event, rect, progressRect,task ,tasks);
     });
- 
-    function handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo ,allTasks=null) {
-      console.log('task');
+    progressRect.addEventListener('mousedown', (event) => {
+      event.preventDefault();
+      startDrag(event, rect, progressRect ,task ,tasks)
+    });
+    text.addEventListener('mousedown', (event) => {
+      event.preventDefault();
+      startDrag(event, rect, progressRect,task ,tasks);
+    });
+
+    function handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo, allTasks = null) {
       document.body.classList.remove('dragging');
       if (isDragging) {
-        document.removeEventListener('mousemove', throttledMouseMove);
         isDragging = false;
         // Find the task in the array and update its properties
         const updatedTaskIndex = tasks.findIndex((t) => t.id === dependentTask.id);
         if (updatedTaskIndex !== -1) {
           const newStartDate = new Date(
             dateInfo.startingDate.getTime() +
-              (parseFloat(taskRect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000)
+            (parseFloat(taskRect.getAttribute('x')) / 50) * (24 * 60 * 60 * 1000)
           );
           const newEndDate = new Date(
             newStartDate.getTime() +
-              (parseFloat(taskRect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000)
+            (parseFloat(taskRect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000)
           );
-  
+
           // Update the properties of the task in the array
           tasks[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
           tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
-  
+
           // Update the Gantt chart with the new data
           updateTaskStartEndDates(tasks);
-          if(allTasks)
-          {
+          if (allTasks) {
             updateTaskStartEndDates(allTasks);
             createGanttChart(allTasks);
-          }
-          else{
+          } else {
             createGanttChart(tasks);
           }
-          
+
         }
       }
+
     }
 
-    function startDrag(event, taskRect, taskProgressRect) {
+    function startDrag(event, taskRect, taskProgressRect , dependentTask, task , allTasks=null) {
       document.body.classList.add('dragging');
+      hideTaskDetails
       isDragging = true;
       initialX = event.clientX;
       initialWidth = parseFloat(taskRect.getAttribute('width'));
       isDragStart = event.clientX < taskRect.getBoundingClientRect().left + initialWidth / 2;
-    
+
       // Set the current task and progress bar
       currentTaskRect = taskRect;
       currentProgressRect = taskProgressRect;
+      dragMoveListener = (event) => handleDragMove(event, currentTaskRect, currentProgressRect, dependentTask, task, allTasks);
       // Prevent text selection during drag
       event.preventDefault();
-      document.addEventListener('mousemove', throttledMouseMove);
+      document.addEventListener('mousemove',dragMoveListener);
+
+    }
+
+    function handleDragMove(event, taskRect, progress, dependentTask, tasks ,allTasks=null) {
+      event.preventDefault();
+      if (isDragging) {
+        updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks ,allTasks);
+      }
     }
 
     // Function to check if a task is dependent on another task
-    function isExceedingDepenentEndDate(sartDate,dependentTask, tasks) {
+    function isExceedingDepenentEndDate(sartDate, dependentTask, tasks) {
       const tasksWithDesiredIds = tasks.filter(task =>
         dependentTask.dependencies.includes(task.id)
       );
-      const endDates = tasksWithDesiredIds.map(task => new Date(task.end));    
+      const endDates = tasksWithDesiredIds.map(task => new Date(task.end));
       const maxDate = new Date(Math.max(...endDates))
-      if(maxDate > sartDate)
-      {
+      if (maxDate > sartDate) {
         return 1;
-      }
-      else{
+      } else {
         return 0;
       }
     }
-
-    function updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks) {
-      const deltaX = (clientX - initialX) * 0.6; // Adjust the sensitivity factor (0.5 is just an example)
-
+    function updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks ,allTasks) {
+      const deltaX = (clientX - initialX) * .73 // Adjust the sensitivity factor (0.5 is just an example)
       if (isDragStart) {
-        const increment = event.movementX * 2.5; // Adjusting sentivity for start point 
         // Dragging start handle
-        let newStartOffset = parseFloat(taskRect.getAttribute('x')) + increment;
+        const newStartOffset = (new Date(dependentTask.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50 + deltaX;
         const startDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x'))) / 50 * (24 * 60 * 60 * 1000));
-        
 
-        if(isExceedingDepenentEndDate(startDate,dependentTask,tasks))
-        {
+        if (isExceedingDepenentEndDate(startDate, dependentTask, tasks)) {
           // isDragging = false;
-          alert('Start Date has exceed to its dependent EndDate');
+          alert('Start Date has exceeded its dependent EndDate');
           document.body.classList.remove('dragging');
-          isDragging = false ;
-          const updatedTaskIndex = tasks.findIndex(t => t.id === task.id);
+          isDragging = false;
+          const updatedTaskIndex = tasks.findIndex(t => t.id === dependentTask.id);
           if (updatedTaskIndex !== -1) {
-            const newEndDate = new Date(startDate.getTime() + (parseFloat(rect.getAttribute('width')) / 51) * (24 * 60 * 60 * 1000));
+            const newEndDate = new Date(startDate.getTime() + (parseFloat(taskRect.getAttribute('width')) / 52) * (24 * 60 * 60 * 1000));
 
             // Update the properties of the task in the array
             tasks[updatedTaskIndex].start = startDate.toISOString().split('T')[0];
@@ -429,37 +370,47 @@ task.dependencies.forEach((depId) => {
 
             // Update the Gantt chart with the new data
             updateTaskStartEndDates(tasks);
-            createGanttChart(tasks);
+            if(allTasks)
+            {
+              updateTaskStartEndDates(allTasks);
+              createGanttChart(allTasks);
+            }
+            else{
+              createGanttChart(tasks);
+            }
           }
         }
-        
-        const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
-        
+
+        // const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
+
         const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
         const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
         const adjustedWidth = maxStartOffset - adjustedStartOffset;
-        taskRect.setAttribute('x', adjustedStartOffset);
+        taskRect.setAttribute('x', newStartOffset);
         taskRect.setAttribute('width', adjustedWidth);
-    
-        progress.setAttribute('x', adjustedStartOffset);
+
+        progress.setAttribute('x', newStartOffset);
         progress.setAttribute('width', adjustedWidth * dependentTask.progress / 100);
-        
+
       } else {
         // Dragging end handle
         const newWidth = initialWidth + deltaX;
-        console.log('task',dependentTask)
         taskRect.setAttribute('width', newWidth);
         progress.setAttribute('width', newWidth * dependentTask.progress / 100);
       }
+      document.addEventListener('mouseup', (event) => {
+        document.removeEventListener('mousemove',dragMoveListener)
+        handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo ,allTasks);
+      });
     }
-    // task below the sub task
-    customIndex = customIndex + 1; 
-    if(task.subTask && task.subTask.length > 0)
-    {
-      customIndex = customIndex   + task.subTask.length;
+    // task below the subtask
+    customIndex = customIndex + 1;
+    if (task.subTask && task.subTask.length > 0) {
+      customIndex = customIndex + task.subTask.length;
     }
   })
 }
+
 
 function throttle(func, limit) {
   let inThrottle;
@@ -484,12 +435,15 @@ function updateGanttChartContent(svg, tasks) {
   // Update the content with the new tasks
   const dateInfo = calculateDateInfo(tasks);
   const chartWidth = calculateChartWidth(dateInfo);
+  const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
+  dateGroup.setAttribute('class','date-groups')
+  svg.appendChild(dateGroup);
 
   svg.setAttribute('viewBox', `0 0 ${chartWidth} ${length * 40 + 40}`);
 
-  createGridLines(svg, chartWidth, length);
-  createMonthHeadings(svg, dateInfo, chartWidth);
-  createDateScale(svg, dateInfo, chartWidth, length);
+  createGridLines(dateGroup, chartWidth, length);
+  createMonthHeadings(dateGroup, dateInfo, chartWidth);
+  createDateScale(dateGroup, dateInfo, chartWidth, length);
   createTaskBars(svg, tasks, dateInfo);
   // createDependencyLines(svg, tasks, dateInfo);
 }
