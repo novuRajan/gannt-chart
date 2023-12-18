@@ -28,6 +28,7 @@ export default class GanttChart {
   }
 
   createGanttChart(tasks) {
+    updateTaskStartEndDates(tasks);
     const chartContainer = document.getElementById('chart');
     let svg = chartContainer.querySelector('svg');
 
@@ -220,7 +221,6 @@ export default class GanttChart {
         this.startDrag(event, rect, progressRect,task ,tasks);
       });     
       document.addEventListener('mouseup', (event) => {
-        console.log('hey')
         document.removeEventListener('mousemove',this.dragMoveListener)
         this.handleMouseUp(this.taskRect, this.dependentTask, this.tasks, this.dateInfo ,this.allTasks);
       });
@@ -310,7 +310,6 @@ export default class GanttChart {
           updateTaskStartEndDates(tasks);
           if(allTasks)
           {
-            updateTaskStartEndDates(allTasks);
             this.createGanttChart(allTasks);
           }
           else{
@@ -340,11 +339,8 @@ export default class GanttChart {
   }
 
   handleMouseUp(taskRect,  dependentTask, tasks, dateInfo, allTasks = null) {
-    console.log(tasks);
-    // console.log(this.isDragging);
     document.body.classList.remove('dragging');
     if (this.isDragging) {
-      console.log('task',taskRect);
       this.isDragging = false
       // Find the task in the array and update its properties
       const updatedTaskIndex = tasks.findIndex((t) => t.id === dependentTask.id);
@@ -363,7 +359,6 @@ export default class GanttChart {
         // Update the Gantt chart with the new data
         updateTaskStartEndDates(tasks);
         if (allTasks) {
-          updateTaskStartEndDates(allTasks);
           this.createGanttChart(allTasks);
         } else {
           this.createGanttChart(tasks);
@@ -400,53 +395,7 @@ export default class GanttChart {
   }
 
   static stopDrag(){
-      // Remove the event listener when the dragging stops
-      document.removeEventListener('mousemove', this.dragMoveListener);  
+    // Remove the event listener when the dragging stops
+    document.removeEventListener('mousemove', this.dragMoveListener);  
   }
 }
-
-const Gantt = new GanttChart();
-const data = [
-  {
-    id: 1,
-    name: 'Task 1',
-    start: '2023-10-08',
-    end: '2023-10-12',
-    progress: 50,
-    dependencies: [],
-    subTask: [
-      { id: 1, name: 'sub1', start: '2023-10-08', end: '2023-10-10', progress: 50, dependencies: [] },
-      { id: 2, name: 'sub2', start: '2023-10-10', end: '2023-10-12', progress: 50, dependencies: [1] },
-    ]
-  },
-  {
-    id: 2,
-    name: 'Task 2',
-    start: '2023-10-13',
-    end: '2023-10-18',
-    progress: 75,
-    dependencies: [1],
-    subTask: [
-      { id: 1, name: 'sub2 task', start: '2023-10-14', end: '2023-10-15', progress: 50, dependencies: [] },
-      { id: 2, name: 'sub2 end', start: '2023-10-10', end: '2023-10-15', progress: 50, dependencies: [] },
-      { id: 3, name: 'dep', start: '2023-10-10', end: '2023-10-12', progress: 50, dependencies: [] },
-    ],
-  },
-  {
-    id: 3, name: 'Task 3', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [],
-    subTask: [
-      { id: 4, name: 'sub3 task', start: '2023-10-13', end: '2023-10-15', progress: 50, dependencies: [] },
-    ],
-  },
-  {
-    id: 4, name: 'Task 4', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [],
-    subTask: [
-      { id: 1, name: 'sub3 task', start: '2023-10-13', end: '2023-10-15', progress: 50, dependencies: [] },
-    ],
-  },
-  { id: 5, name: 'Task 5', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
-  { id: 6, name: 'Task 6', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
-];
-//function to update the task with is sub task
-updateTaskStartEndDates(data);
-Gantt.createGanttChart(data);

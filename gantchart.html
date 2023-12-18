@@ -48,7 +48,52 @@
   </form>
 
   <script src="./js/gantchart.js"  type="module"></script>
-  <script src="./js/updatechart.js"  type="module"></script>
+  <script type="module">
+      import GanttChart from "./js/gantchart.js";
+      const Gantt = new GanttChart();
+      var data = [
+        {
+          id: 1,
+          name: 'Task 1',
+          start: '2023-10-08',
+          end: '2023-10-12',
+          progress: 50,
+          dependencies: [],
+          subTask: [
+            { id: 1, name: 'sub1', start: '2023-10-08', end: '2023-10-10', progress: 50, dependencies: [] },
+            { id: 2, name: 'sub2', start: '2023-10-10', end: '2023-10-12', progress: 50, dependencies: [1] },
+          ]
+        },
+        {
+          id: 2,
+          name: 'Task 2',
+          start: '2023-10-13',
+          end: '2023-10-18',
+          progress: 75,
+          dependencies: [1],
+          subTask: [
+            { id: 1, name: 'sub2 task', start: '2023-10-14', end: '2023-10-15', progress: 50, dependencies: [] },
+            { id: 2, name: 'sub2 end', start: '2023-10-10', end: '2023-10-15', progress: 50, dependencies: [] },
+            { id: 3, name: 'dep', start: '2023-10-10', end: '2023-10-12', progress: 50, dependencies: [] },
+          ],
+        },
+        {
+          id: 3, name: 'Task 3', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [],
+          subTask: [
+            { id: 4, name: 'sub3 task', start: '2023-10-13', end: '2023-10-15', progress: 50, dependencies: [] },
+          ],
+        },
+        {
+          id: 4, name: 'Task 4', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [],
+          subTask: [
+            { id: 1, name: 'sub3 task', start: '2023-10-13', end: '2023-10-15', progress: 50, dependencies: [] },
+          ],
+        },
+        { id: 5, name: 'Task 5', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
+        { id: 6, name: 'Task 6', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
+      ];
+    Gantt.createGanttChart(data);
+  </script>
   
 </body>
 
