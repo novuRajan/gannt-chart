@@ -1,10 +1,10 @@
 import { terser } from 'rollup-plugin-terser';
 
 const dev = {
-    input: 'src/index.js',
+    input: 'js/gantchart.js',
     output: {
         name: 'Gantt',
-        file: 'dist/frappe-gantt.js',
+        file: 'dist/gantt.js',
         sourcemap: true,
         format: 'iife',
     },
@@ -15,10 +15,10 @@ const dev = {
     ],
 };
 const prod = {
-    input: 'src/index.js',
+    input: 'js/gantchart.js',
     output: {
         name: 'Gantt',
-        file: 'dist/frappe-gantt.min.js',
+        file: 'dist/gantt.min.js',
         sourcemap: true,
         format: 'iife',
     },
