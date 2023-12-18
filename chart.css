@@ -1,7 +1,22 @@
 body.dragging {
   cursor: e-resize ;
 }
-
+.add-button{
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  background-color: #3498db; 
+  color: #ffffff; 
+  border: 1px solid #2980b9; 
+  border-radius: 5px; 
+  cursor: pointer;
+}
+.add-button:hover {
+  background-color: #2980b9; 
+  color: #ffffff; 
+}
 #chart {
   /* background-color: red; */
   min-width: 100% ;

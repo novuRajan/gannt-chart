@@ -30,6 +30,17 @@ export default class GanttChart {
   createGanttChart(tasks) {
     updateTaskStartEndDates(tasks);
     const chartContainer = document.getElementById('chart');
+     // Create a button element
+    const button = document.createElement('button');
+    button.setAttribute('class','add-button')
+    button.textContent = 'Click me'; // Set the button text
+    button.addEventListener('click', () => {
+      // Handle button click event
+      console.log('Button clicked!');
+    });
+
+  // Append the button to the parent container of the SVG
+  chartContainer.appendChild(button);
     let svg = chartContainer.querySelector('svg');
 
     // Check if the SVG element already exists
