@@ -25,7 +25,7 @@ function createGanttChart(tasks) {
     svg = createSVG(tasks);
     chartContainer.appendChild(svg);
   }
-  else{
+  else {
     updateGanttChartContent(svg, tasks);
   }
 }
@@ -35,7 +35,7 @@ function createSVG(tasks) {
   svg.setAttribute('min-width', '100%');
   svg.setAttribute('height', '200%');
   const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
-  dateGroup.setAttribute('class','date-groups')
+  dateGroup.setAttribute('class', 'date-groups')
   svg.appendChild(dateGroup);
   const dateInfo = calculateDateInfo(tasks);
   const chartWidth = calculateChartWidth(dateInfo);
@@ -47,7 +47,12 @@ function createSVG(tasks) {
   createMonthHeadings(dateGroup, dateInfo, chartWidth);
   createDateScale(dateGroup, dateInfo, chartWidth, length);
   createTaskBars(svg, tasks, dateInfo);
-  // createDependencyLines(svg, tasks, dateInfo);
+  
+  setTimeout(() => {
+    drawDependencyLine(svg, tasks, dateInfo);
+  }, 0);
+
+
   return svg;
 }
 
@@ -111,7 +116,7 @@ function createMonthHeadings(dateGroup, dateInfo, chartWidth) {
 }
 
 function createDateScale(dateGroup, dateInfo, chartWidth, taskCount) {
-  const date = document.createElementNS(svgNS,'g')
+  const date = document.createElementNS(svgNS, 'g')
   dateGroup.appendChild(date)
   date.classList.add('date')
   const dateScale = document.createElementNS(svgNS, 'text');
@@ -134,7 +139,7 @@ function createTaskBars(svg, tasks, dateInfo) {
 
   tasks.forEach((task, index) => {
     const taskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
-    taskGroup.setAttribute('class','tasks')
+    taskGroup.setAttribute('class', 'tasks')
     svg.appendChild(taskGroup);
 
     const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end)));
@@ -147,7 +152,9 @@ function createTaskBars(svg, tasks, dateInfo) {
     rect.setAttribute('width', duration);
     rect.setAttribute('height', 30);
     rect.setAttribute('fill', '#3498db');
+    rect.setAttribute('id', `task-${task.id}`); // Set the id attribute
     taskGroup.appendChild(rect);
+
 
     const progressWidth = (duration * task.progress) / 100;
     const progressRect = document.createElementNS(svgNS, 'rect');
@@ -164,10 +171,12 @@ function createTaskBars(svg, tasks, dateInfo) {
     text.textContent = task.name;
     taskGroup.appendChild(text);
 
+
+
     // Render subtasks
     if (task.subTask && task.subTask.length > 0) {
       const subTaskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
-      subTaskGroup.setAttribute('class','subtask')
+      subTaskGroup.setAttribute('class', 'subtask')
       taskGroup.appendChild(subTaskGroup);
       task.subTask.forEach((subtask, subIndex) => {
         const subDependentTaskEnd = Math.max(...subtask.dependencies.map(depId => new Date(task.subTask[depId - 1].end)));
@@ -175,17 +184,18 @@ function createTaskBars(svg, tasks, dateInfo) {
         const subDuration = (new Date(subtask.end) - new Date(subtask.start)) / (24 * 60 * 60 * 1000) * 50;
 
         const subRect = document.createElementNS(svgNS, 'rect');
-        subRect.setAttribute('class','subtask')
+        subRect.setAttribute('class', 'subtask')
         subRect.setAttribute('x', subStartOffset);
         subRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
         subRect.setAttribute('width', subDuration);
         subRect.setAttribute('height', 15);
         subRect.setAttribute('fill', '#e74c3c');
+        subRect.setAttribute('id', `task-${task.id}-${subtask.id}`); // Set the id attribute for subtasks
         subTaskGroup.appendChild(subRect);
 
         const subProgressWidth = (subDuration * subtask.progress) / 100;
         const subProgressRect = document.createElementNS(svgNS, 'rect');
-        subProgressRect.setAttribute('class','subtask-progress')
+        subProgressRect.setAttribute('class', 'subtask-progress')
         subProgressRect.setAttribute('x', subStartOffset);
         subProgressRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
         subProgressRect.setAttribute('width', subProgressWidth);
@@ -221,18 +231,22 @@ function createTaskBars(svg, tasks, dateInfo) {
         });
         subRect.addEventListener('mousedown', (event) => {
           event.preventDefault();
-          startDrag(event, subRect, subProgressRect ,subtask , task.subTask , tasks);
+          startDrag(event, subRect, subProgressRect, subtask, task.subTask, tasks);
         });
         subProgressRect.addEventListener('mousedown', (event) => {
           event.preventDefault();
-          startDrag(event, subRect, subProgressRect,subtask , task.subTask , tasks)
+          startDrag(event, subRect, subProgressRect, subtask, task.subTask, tasks)
         });
         subText.addEventListener('mousedown', (event) => {
           event.preventDefault();
-          startDrag(event, subRect, subProgressRect , subtask , task.subTask , tasks);
+          startDrag(event, subRect, subProgressRect, subtask, task.subTask, tasks);
         });
+
+
       });
     }
+
+
 
     // Add event listeners for both rectangle and progress bar
     text.addEventListener('mouseover', () => showTaskDetails(task, tasks));
@@ -265,15 +279,15 @@ function createTaskBars(svg, tasks, dateInfo) {
     // Add event listeners for dragging to edit start and end dates
     rect.addEventListener('mousedown', (event) => {
       event.preventDefault();
-      startDrag(event, rect, progressRect,task ,tasks);
+      startDrag(event, rect, progressRect, task, tasks);
     });
     progressRect.addEventListener('mousedown', (event) => {
       event.preventDefault();
-      startDrag(event, rect, progressRect ,task ,tasks)
+      startDrag(event, rect, progressRect, task, tasks)
     });
     text.addEventListener('mousedown', (event) => {
       event.preventDefault();
-      startDrag(event, rect, progressRect,task ,tasks);
+      startDrag(event, rect, progressRect, task, tasks);
     });
 
     function handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo, allTasks = null) {
@@ -310,7 +324,7 @@ function createTaskBars(svg, tasks, dateInfo) {
 
     }
 
-    function startDrag(event, taskRect, taskProgressRect , dependentTask, task , allTasks=null) {
+    function startDrag(event, taskRect, taskProgressRect, dependentTask, task, allTasks = null) {
       document.body.classList.add('dragging');
       hideTaskDetails
       isDragging = true;
@@ -324,14 +338,14 @@ function createTaskBars(svg, tasks, dateInfo) {
       dragMoveListener = (event) => handleDragMove(event, currentTaskRect, currentProgressRect, dependentTask, task, allTasks);
       // Prevent text selection during drag
       event.preventDefault();
-      document.addEventListener('mousemove',dragMoveListener);
+      document.addEventListener('mousemove', dragMoveListener);
 
     }
 
-    function handleDragMove(event, taskRect, progress, dependentTask, tasks ,allTasks=null) {
+    function handleDragMove(event, taskRect, progress, dependentTask, tasks, allTasks = null) {
       event.preventDefault();
       if (isDragging) {
-        updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks ,allTasks);
+        updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks, allTasks);
       }
     }
 
@@ -348,7 +362,7 @@ function createTaskBars(svg, tasks, dateInfo) {
         return 0;
       }
     }
-    function updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks ,allTasks) {
+    function updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks, allTasks) {
       const deltaX = (clientX - initialX) * .73 // Adjust the sensitivity factor (0.5 is just an example)
       if (isDragStart) {
         // Dragging start handle
@@ -370,12 +384,11 @@ function createTaskBars(svg, tasks, dateInfo) {
 
             // Update the Gantt chart with the new data
             updateTaskStartEndDates(tasks);
-            if(allTasks)
-            {
+            if (allTasks) {
               updateTaskStartEndDates(allTasks);
               createGanttChart(allTasks);
             }
-            else{
+            else {
               createGanttChart(tasks);
             }
           }
@@ -399,8 +412,8 @@ function createTaskBars(svg, tasks, dateInfo) {
         progress.setAttribute('width', newWidth * dependentTask.progress / 100);
       }
       document.addEventListener('mouseup', (event) => {
-        document.removeEventListener('mousemove',dragMoveListener)
-        handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo ,allTasks);
+        document.removeEventListener('mousemove', dragMoveListener)
+        handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo, allTasks);
       });
     }
     // task below the subtask
@@ -436,7 +449,7 @@ function updateGanttChartContent(svg, tasks) {
   const dateInfo = calculateDateInfo(tasks);
   const chartWidth = calculateChartWidth(dateInfo);
   const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
-  dateGroup.setAttribute('class','date-groups')
+  dateGroup.setAttribute('class', 'date-groups')
   svg.appendChild(dateGroup);
 
   svg.setAttribute('viewBox', `0 0 ${chartWidth} ${length * 40 + 40}`);
@@ -445,50 +458,62 @@ function updateGanttChartContent(svg, tasks) {
   createMonthHeadings(dateGroup, dateInfo, chartWidth);
   createDateScale(dateGroup, dateInfo, chartWidth, length);
   createTaskBars(svg, tasks, dateInfo);
-  // createDependencyLines(svg, tasks, dateInfo);
+  drawDependencyLine(svg, tasks, dateInfo);
 }
 
-// Inside the createDependencyLines function
-// function createDependencyLines(svg, tasks, dateInfo, yOffset = 0) {
-//   tasks.forEach((task) => {
-//     if (task.dependencies && task.dependencies.length > 0) {
-//       task.dependencies.forEach((dependencyId) => {
-//         const dependentTask = tasks.find((t) => t.id === dependencyId);
-//         if (dependentTask) {
-//           const startOffset = (new Date(task.end) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50;
-//           const endOffset = (new Date(dependentTask.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50;
-//           const yOffsetDependency = yOffset + (task.subTask ? task.subTask.length : 0) * 40 + 40;
-//           console.log(task);
-//           console.log(yOffset);
-//           console.log(task.subTask);
-//           // console.log(task.subTask.length);
-//           console.log(yOffsetDependency);
-//           debugger;
-//           const lineHorizontal = document.createElementNS(svgNS, 'line');
-//           lineHorizontal.setAttribute('x1', startOffset);
-//           lineHorizontal.setAttribute('y1', yOffsetDependency - 25); // Adjust as needed
-//           lineHorizontal.setAttribute('x2', endOffset + startOffset);
-//           lineHorizontal.setAttribute('y2', yOffsetDependency - 25); // Adjust as needed
-//           lineHorizontal.classList.add('dependency-line');
-//           svg.appendChild(lineHorizontal);
+function drawDependencyLine(svg, tasks) {
+  tasks.forEach((task, index) => {
+    if (task.dependencies && task.dependencies.length > 0) {
+      task.dependencies.forEach((dependencyId) => {
+        const dependentTask = tasks.find((t) => t.id === dependencyId);
+        if (dependentTask) {
 
-//           const lineVertical = document.createElementNS(svgNS, 'line');
-//           lineVertical.setAttribute('x1', endOffset + startOffset);
-//           lineVertical.setAttribute('y1', yOffsetDependency + 15); // Adjust as needed
-//           lineVertical.setAttribute('x2', endOffset + startOffset);
-//           lineVertical.setAttribute('y2', yOffsetDependency + 40); // Adjust as needed
-//           lineVertical.classList.add('dependency-line');
-//           svg.appendChild(lineVertical);
-//         }
-//       });
-//     }
+          const svgNS = 'http://www.w3.org/2000/svg';
+          
+          const startTaskElement = document.getElementById(`task-${dependentTask.id}`);
+          const endTaskElement = document.getElementById(`task-${task.id}`);
 
-//     // Recursively check for subtasks
-//     if (task.subTask && task.subTask.length > 0) {
-//       createDependencyLines(svg, task.subTask, dateInfo, yOffset + 40);
-//     }
-//   });
-// }
+          if (startTaskElement && endTaskElement) {
+            const startOffset = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
+            const x1 = startOffset;
+
+            const y1 = parseFloat(startTaskElement.getAttribute('y'));
+  
+            const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
+
+            // Draw horizontal line
+            const lineHorizontal = document.createElementNS(svgNS, 'line');
+            lineHorizontal.setAttribute('x1', x1);
+            lineHorizontal.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+            lineHorizontal.setAttribute('x2', x2);
+            lineHorizontal.setAttribute('y2', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+            lineHorizontal.classList.add('dependency-line');
+            svg.appendChild(lineHorizontal);
+
+            // Draw vertical line
+            const lineVertical = document.createElementNS(svgNS, 'line');
+            lineVertical.setAttribute('x1', x2);
+            lineVertical.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+            lineVertical.setAttribute('x2', x2);
+            lineVertical.setAttribute('y2', parseFloat(endTaskElement.getAttribute('y'))); // Adjust as needed
+            lineVertical.classList.add('dependency-line');
+            svg.appendChild(lineVertical);
+
+            // Draw arrowhead
+            const arrowhead = document.createElementNS(svgNS, 'polygon');
+            const arrowheadSize = 5; 
+            arrowhead.setAttribute('points', `${x2},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2 - arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2},${parseFloat(endTaskElement.getAttribute('y'))} ${x2 + arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize}`);
+            arrowhead.classList.add('dependency-arrowhead');
+            svg.appendChild(arrowhead);
+
+          }
+        }
+      });
+    }
+  });
+}
+
+
 
 
 

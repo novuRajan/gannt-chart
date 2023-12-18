@@ -51,6 +51,6 @@ body.dragging {
 }
   
 .dependency-line {
-  stroke: #e74c3c; /* Line color */
-  stroke-width: 2; /* Line width */
+  stroke: black;
+  stroke-width: 1.5; /* Line width */
 }
