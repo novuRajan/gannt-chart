@@ -1,4 +1,4 @@
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 
 const dev = {
     input: 'js/gantchart.js',
@@ -9,9 +9,7 @@ const dev = {
         format: 'iife',
     },
     plugins: [
-        sass({
-            output: true,
-        }),
+       
     ],
 };
 const prod = {
@@ -23,13 +21,7 @@ const prod = {
         format: 'iife',
     },
     plugins: [
-        sass({
-            output: true,
-            options: {
-                outputStyle: 'compressed',
-            },
-        }),
-        terser(),
+        [terser()]
     ],
 };
 

@@ -3,6 +3,7 @@
   "version": "0.6.1",
   "description": "Gantt library for web",
   "main": "js/gantchart.js",
+  "type": "module",
   "scripts": {
     "start": "npm run dev",
     "build": "rollup -c",
@@ -12,16 +13,13 @@
     "prettier": "prettier --write \"{src/*,tests/*,rollup.config}.js\"",
     "prettier-check": "prettier --check \"{src/*,tests/*,rollup.config}.js\""
   },
-
   "devDependencies": {
-    "rollup": "^4.9.1",
+    "@rollup/plugin-terser": "^0.4.4",
     "babel-preset-env": "^1.7.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.0.1",
-    "prettier": "^3.1.1"
-  },
-  "dependencies": {
-   
+    "prettier": "^3.1.1",
+    "rollup": "^4.9.1"
   }
 }
