@@ -252,7 +252,6 @@ export default class GanttChart {
   }
 
   handleDragMove(event, taskRect, progress, dependentTask, tasks ,allTasks=null) {
-    console.log('handleDragMove')
     event.preventDefault();
     if (this.isDragging) {
       this.updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks ,allTasks);
@@ -260,7 +259,6 @@ export default class GanttChart {
   }
 
   startDrag(event, taskRect, taskProgressRect , dependentTask, task , allTasks=null) {
-    console.log('startDrag');
     document.body.classList.add('dragging');
     hideTaskDetails
     this.isDragging = true;
@@ -279,7 +277,6 @@ export default class GanttChart {
   }
 
   updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks ,allTasks) {
-    console.log('updateTaskBarpostion');
     const deltaX = (clientX - this.initialX) * .73 // Adjust the sensitivity factor (0.5 is just an example)
     if (this.isDragStart) {
       // Dragging start handle
@@ -328,19 +325,16 @@ export default class GanttChart {
       const newWidth = this.initialWidth + deltaX;
       taskRect.setAttribute('width', newWidth);
       progress.setAttribute('width', newWidth * dependentTask.progress / 100);
-      console.log('progress',taskRect);
     }
     document.addEventListener('mouseup', (event) => {
       document.removeEventListener('mousemove',this.dragMoveListener)
-      this.throttle(this.handleMouseUp(taskRect, progress, dependentTask, tasks, this.dateInfo ,allTasks),250);
+      this.handleMouseUp(taskRect, progress, dependentTask, tasks, this.dateInfo ,allTasks);
     });
   }
 
   handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo, allTasks = null) {
     document.body.classList.remove('dragging');
-    console.log(this.isDragging);
     if (this.isDragging) {
-      console.log('handlemouseuptask',taskRect)
       this.isDragging = false;
       // Find the task in the array and update its properties
       const updatedTaskIndex = tasks.findIndex((t) => t.id === dependentTask.id);
@@ -353,12 +347,9 @@ export default class GanttChart {
           newStartDate.getTime() +
           (parseFloat(taskRect.getAttribute('width')) / 50) * (24 * 60 * 60 * 1000)
         );
-          console.log('start date',newStartDate.toISOString().split('T')[0])
-          console.log('end date',newEndDate.toISOString().split('T')[0])
         // Update the properties of the task in the array
         tasks[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
         tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
-        console.log('tasksed',tasks);
         // Update the Gantt chart with the new data
         updateTaskStartEndDates(tasks);
         if (allTasks) {
@@ -391,8 +382,6 @@ export default class GanttChart {
     createGridLines(dateGroup, chartWidth, this.length);
     createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
     createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
-    console.log('haha')
-    console.log(tasks);
     this.createTaskBars(svg, tasks, this.dateInfo);
   }
   static createChart(tasks) {
