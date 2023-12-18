@@ -1,0 +1,27 @@
+{
+  "name": "rajan-gantt",
+  "version": "0.6.1",
+  "description": "Gantt library for web",
+  "main": "js/gantchart.js",
+  "scripts": {
+    "start": "npm run dev",
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "prettier": "prettier --write \"{src/*,tests/*,rollup.config}.js\"",
+    "prettier-check": "prettier --check \"{src/*,tests/*,rollup.config}.js\""
+  },
+
+  "devDependencies": {
+    "rollup": "^4.9.1",
+    "babel-preset-env": "^1.7.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "prettier": "^3.1.1"
+  },
+  "dependencies": {
+   
+  }
+}
