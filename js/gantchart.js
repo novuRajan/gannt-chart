@@ -16,6 +16,9 @@ export default class GanttChart {
     this.currentProgressRect;
     this.dragMoveListener = null;
     this.length;
+    this.dependentTask ;
+    this.tasks ;
+    this.allTask ; 
   }
 
   getTotalLength(tasks) {
@@ -170,11 +173,11 @@ export default class GanttChart {
           });
           subRect.addEventListener('mousedown', (event) => {
             event.preventDefault();
-            this.startDrag(event, subRect, subProgressRect ,subtask , task.subTask , tasks);
+            this.startDrag(event, subRect, subProgressRect , subtask , task.subTask , tasks);
           });
           subProgressRect.addEventListener('mousedown', (event) => {
             event.preventDefault();
-            this.startDrag(event, subRect, subProgressRect,subtask , task.subTask , tasks)
+            this.startDrag(event, subRect, subProgressRect, subtask , task.subTask , tasks)
           });
           subText.addEventListener('mousedown', (event) => {
             event.preventDefault();
@@ -216,7 +219,11 @@ export default class GanttChart {
         event.preventDefault();
         this.startDrag(event, rect, progressRect,task ,tasks);
       });     
-
+      document.addEventListener('mouseup', (event) => {
+        console.log('hey')
+        document.removeEventListener('mousemove',this.dragMoveListener)
+        this.handleMouseUp(this.taskRect, this.dependentTask, this.tasks, this.dateInfo ,this.allTasks);
+      });
       // task below the subtask
       customIndex = customIndex + 1;
       if (task.subTask && task.subTask.length > 0) {
@@ -259,6 +266,9 @@ export default class GanttChart {
   }
 
   startDrag(event, taskRect, taskProgressRect , dependentTask, task , allTasks=null) {
+    this.dependentTask = dependentTask ;
+    this.tasks = task ;
+    this.allTasks = allTasks ; 
     document.body.classList.add('dragging');
     hideTaskDetails
     this.isDragging = true;
@@ -269,22 +279,22 @@ export default class GanttChart {
     // Set the current task and progress bar
     this.currentTaskRect = taskRect;
     this.currentProgressRect = taskProgressRect;
-    this.dragMoveListener = (event) => this.handleDragMove(event, this.currentTaskRect, this.currentProgressRect, dependentTask, task, allTasks);
-    // Prevent text selection during drag
+    this.dragMoveListener = this.throttle((event) => {
+      this.handleDragMove(event, this.currentTaskRect, this.currentProgressRect, dependentTask, task, allTasks);
+    }, 16); 
     event.preventDefault();
     document.addEventListener('mousemove',this.dragMoveListener);
 
   }
 
   updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks ,allTasks) {
-    const deltaX = (clientX - this.initialX) * .73 // Adjust the sensitivity factor (0.5 is just an example)
+    const deltaX = (clientX - this.initialX) * .73 // Adjust the sensitivity factor 
     if (this.isDragStart) {
       // Dragging start handle
       const newStartOffset = (new Date(dependentTask.start) - this.dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50 + deltaX;
       const startDate = new Date(this.dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x'))) / 50 * (24 * 60 * 60 * 1000));
 
       if (this.isExceedingDepenentEndDate(startDate, dependentTask, tasks)) {
-        // isDragging = false;
         alert('Start Date has exceeded its dependent EndDate');
         document.body.classList.remove('dragging');
         this.isDragging = false;
@@ -326,16 +336,16 @@ export default class GanttChart {
       taskRect.setAttribute('width', newWidth);
       progress.setAttribute('width', newWidth * dependentTask.progress / 100);
     }
-    document.addEventListener('mouseup', (event) => {
-      document.removeEventListener('mousemove',this.dragMoveListener)
-      this.handleMouseUp(taskRect, progress, dependentTask, tasks, this.dateInfo ,allTasks);
-    });
+    this.taskRect = taskRect;
   }
 
-  handleMouseUp(taskRect, progress, dependentTask, tasks, dateInfo, allTasks = null) {
+  handleMouseUp(taskRect,  dependentTask, tasks, dateInfo, allTasks = null) {
+    console.log(tasks);
+    // console.log(this.isDragging);
     document.body.classList.remove('dragging');
     if (this.isDragging) {
-      this.isDragging = false;
+      console.log('task',taskRect);
+      this.isDragging = false
       // Find the task in the array and update its properties
       const updatedTaskIndex = tasks.findIndex((t) => t.id === dependentTask.id);
       if (updatedTaskIndex !== -1) {
@@ -406,7 +416,7 @@ const data = [
     dependencies: [],
     subTask: [
       { id: 1, name: 'sub1', start: '2023-10-08', end: '2023-10-10', progress: 50, dependencies: [] },
-      { id: 2, name: 'sub2', start: '2023-10-10', end: '2023-10-12', progress: 50, dependencies: [] },
+      { id: 2, name: 'sub2', start: '2023-10-10', end: '2023-10-12', progress: 50, dependencies: [1] },
     ]
   },
   {
