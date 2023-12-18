@@ -9,30 +9,6 @@
 
 <body>
   <div id="chart" xmlns="http://www.w3.org/2000/svg"></div>
-  <div id="editModal" class="modal">
-    <h2>Edit Task</h2>
-    <form id="editTaskForm">
-      <label for="editTaskName">Task Name:</label>
-      <input type="text" id="editTaskName" name="editTaskName" required>
-
-      <label for="editStartDate">Start Date:</label>
-      <input type="date" id="editStartDate" name="editStartDate" required>
-
-      <label for="editEndDate">End Date:</label>
-      <input type="date" id="editEndDate" name="editEndDate" required>
-
-      <label for="editProgress">Progress</label>
-      <input type="number" min="1" max="100" oninput="setCustomValidity('')"
-        oninvalid="setCustomValidity('Please enter a number between 1 and 10.')" id="editProgress" name="editProgress"
-        required>
-
-      <select id="editDependencies" multiple></select>
-      <button type="button" id="saveChangesBtn">Save Changes</button>
-
-      <!-- <button type="button" onclick="saveEditedTask(data)">Save Changes</button> -->
-      <button type="button" onclick="closeEditModal()">Cancel</button>
-    </form>
-  </div>
 
   <form id="taskForm">
     <label for="taskName">Task Name:</label>

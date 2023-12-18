@@ -374,7 +374,7 @@ export default class GanttChart {
     while (svg.firstChild) {
       svg.removeChild(svg.firstChild);
     }
-
+    this.length = this.getTotalLength(tasks)
     // Update the content with the new tasks
     this.dateInfo = this.calculateDateInfo(tasks);
     const chartWidth = this.calculateChartWidth(this.dateInfo);
@@ -390,6 +390,7 @@ export default class GanttChart {
     this.createTaskBars(svg, tasks, this.dateInfo);
   }
   static createChart(tasks) {
+    console.log(tasks);
     const ganttChart = new GanttChart();
     ganttChart.createGanttChart(tasks);
   }

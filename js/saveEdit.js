@@ -41,56 +41,103 @@ export function addTask(tasks) {
   
 // Function to handle task editing
 export function editTask(event, task, tasks, allTasks = null) {
+    event.preventDefault();
     GanttChart.stopDrag();
-    // document.removeEventListener('mousemove',this.dragMoveListener)
-    const editTaskForm = document.getElementById('editTaskForm');
-    const editTaskNameInput = document.getElementById('editTaskName');
-    const editStartDateInput = document.getElementById('editStartDate');
-    const editEndDateInput = document.getElementById('editEndDate');
-    const editProgress = document.getElementById('editProgress');
-    const editDependenciesSelect = document.getElementById('editDependencies');
-    const editModal = document.getElementById('editModal');
-    const saveChangesBtn = document.getElementById('saveChangesBtn');
-    // Set the current task details in the form
-    editTaskNameInput.value = task.name;
-    editStartDateInput.value = task.start;
-    editEndDateInput.value = task.end;
-    editProgress.value = task.progress;
+
+    // Create or get the modal element
+    let editModal = document.getElementById('editModal');
+    if (!editModal) {
+        editModal = document.createElement('div');
+        editModal.setAttribute('id', 'editModal');
+        editModal.setAttribute('class','modal')
+        document.body.appendChild(editModal);
+    }
+
+    // Create or get the form element
+    let editTaskForm = document.getElementById('editTaskForm');
+    if (!editTaskForm) {
+        editTaskForm = document.createElement('form');
+        editTaskForm.setAttribute('id', 'editTaskForm');
+        editModal.appendChild(editTaskForm);
+    }
+
+    // Clear existing content in the form
+    editTaskForm.innerHTML = '';
+
+    // Create form elements dynamically and append them to the form
+    createFormField('Task Name:', 'editTaskName', task.name, 'text', true);
+    createFormField('Start Date:', 'editStartDate', task.start, 'date', true);
+    createFormField('End Date:', 'editEndDate', task.end, 'date', true);
+    createFormField('Progress:', 'editProgress', task.progress, 'number', true);
 
     // Clear existing options
-    editDependenciesSelect.innerHTML = '';
+    const editDependenciesSelect = document.createElement('select');
+    editDependenciesSelect.setAttribute('id', 'editDependencies');
+    editDependenciesSelect.setAttribute('multiple', 'multiple'); // Set the multiple attribute
+    editTaskForm.appendChild(editDependenciesSelect);
 
     // Display dependencies in the modal as select options
     tasks.forEach(availableTask => {
         // Check if the available task is not the current task and not dependent on the current task
         if (availableTask.id !== task.id && !isTaskDependent(task, availableTask, tasks)) {
-        const option = document.createElement('option');
-        option.value = availableTask.id;
-        option.textContent = availableTask.name;
-        if (task.dependencies.includes(availableTask.id)) {
-            // If the task is already a dependency, mark it as selected
-            option.selected = true;
-        }
-        editDependenciesSelect.appendChild(option);
+            const option = document.createElement('option');
+            option.value = availableTask.id;
+            option.textContent = availableTask.name;
+            if (task.dependencies.includes(availableTask.id)) {
+                // If the task is already a dependency, mark it as selected
+                option.selected = true;
+            }
+            editDependenciesSelect.appendChild(option);
         }
     });
 
     // Store the task ID in a data attribute of the form
     editTaskForm.setAttribute('data-task-id', task.id);
 
-    // Display the modal
-    editModal.style.display = 'block';
-    // Attach a click event listener to the "Save Changes" button
+    // Create and append Save Changes button
+    const saveChangesBtn = document.createElement('button');
+    saveChangesBtn.setAttribute('type', 'button');
+    saveChangesBtn.textContent = 'Save Changes';
     saveChangesBtn.addEventListener('click', function saveChangesHandler() {
         // Call your function to save the edited task data
         saveEditedTask(tasks, allTasks);
         // Close the modal after saving changes
         closeEditModal();
-    }, { once: true });
+    });
+    editTaskForm.appendChild(saveChangesBtn);
+
+    // Create and append Cancel button
+    const cancelBtn = document.createElement('button');
+    cancelBtn.setAttribute('type', 'button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', closeEditModal);
+    editTaskForm.appendChild(cancelBtn);
+
+    // Display the modal
+    editModal.style.display = 'block';
 
     // Prevent the contextmenu event from propagating further
     event.preventDefault();
 }
+
+function createFormField(labelText, inputId, inputValue, inputType, required) {
+    const label = document.createElement('label');
+    label.setAttribute('for', inputId);
+    label.textContent = labelText;
+
+    const input = document.createElement('input');
+    input.setAttribute('type', inputType);
+    input.setAttribute('id', inputId);
+    input.setAttribute('name', inputId);
+    input.value = inputValue;
+    input.required = required;
+
+    // Append label and input to the form
+    editTaskForm.appendChild(label);
+    editTaskForm.appendChild(input);
+}
+
+
   
 // Function to check if a task is dependent on another task
 export function isTaskDependent(currentTask, otherTask, allTasks) {
@@ -99,6 +146,7 @@ export function isTaskDependent(currentTask, otherTask, allTasks) {
   
 // Function to save edited task
 export function saveEditedTask(tasks,alltasks=null) {
+    // console.log(tasks);
     const editTaskForm = document.getElementById('editTaskForm');
     const editTaskNameInput = document.getElementById('editTaskName');
     const editStartDateInput = document.getElementById('editStartDate');
@@ -111,7 +159,6 @@ export function saveEditedTask(tasks,alltasks=null) {
     const editedStartDate = editStartDateInput.value;
     const editedEndDate = editEndDateInput.value;
     const progress = editProgress.value;
-
     // Retrieve the task ID from the data attribute
     const taskId = parseInt(editTaskForm.getAttribute('data-task-id'), 10);
 
@@ -130,10 +177,10 @@ export function saveEditedTask(tasks,alltasks=null) {
 
     // Update the Gantt chart with the new data
     updateTaskStartEndDates(tasks);
+    console.log(tasks);
     // Call the function with sample data
     if(alltasks)
     {
-        updateTaskStartEndDates(alltasks);
         GanttChart.createChart(alltasks);
     }
     else{
