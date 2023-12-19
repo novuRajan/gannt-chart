@@ -1,6 +1,6 @@
 import { createGridLines, createMonthHeadings, createDateScale } from './date-utl.js';
 import { updateTaskStartEndDates } from './updatechart.js';
-import { hideTaskDetails , showTaskDetails , editTask ,saveEditedTask , addTask  } from './saveEdit.js';
+import { hideTaskDetails , showTaskDetails , editTask ,openAddModal , addTask  } from './saveEdit.js';
 
 const svgNS = 'http://www.w3.org/2000/svg';
 export default class GanttChart {
@@ -33,10 +33,9 @@ export default class GanttChart {
      // Create a button element
     const button = document.createElement('button');
     button.setAttribute('class','add-button')
-    button.textContent = 'Click me'; // Set the button text
+    button.textContent = 'Add Task'; // Set the button text
     button.addEventListener('click', () => {
-      // Handle button click event
-      console.log('Button clicked!');
+      openAddModal();
     });
 
   // Append the button to the parent container of the SVG

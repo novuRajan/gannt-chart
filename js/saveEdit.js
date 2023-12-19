@@ -8,7 +8,55 @@ export function closeEditModal() {
     const editModal = document.getElementById('editModal');
     editModal.style.display = 'none';
 }
+export function openAddModal(){
+    // Create or get the modal element
+    let addModal = document.getElementById('addFormModal');
+    if (!addModal) {
+        addModal = document.createElement('div');
+        addModal.setAttribute('id', 'addFormModal');
+        addModal.setAttribute('class','modal')
+        document.body.appendChild(addModal);
+    }
 
+    // Create or get the form element
+    let addTaskForm = document.getElementById('addTaskForm');
+    if (!addTaskForm) {
+        addTaskForm = document.createElement('form');
+        addTaskForm.setAttribute('id', 'addTaskForm');
+        addModal.appendChild(addTaskForm);
+    }
+
+    // Clear existing content in the form
+    addTaskForm.innerHTML = '';
+
+    // Create form elements dynamically and append them to the form
+    createFormField('Task Name:', 'editTaskName', '', 'text', true ,addTaskForm);
+    createFormField('Start Date:', 'editStartDate', '', 'date', true ,addTaskForm);
+    createFormField('End Date:', 'editEndDate', '', 'date', true ,addTaskForm);
+    createFormField('Progress:', 'editProgress', '', 'number', true ,addTaskForm);
+    // Create and append Save Changes button
+    const saveChangesBtn = document.createElement('button');
+    saveChangesBtn.setAttribute('type', 'button');
+    saveChangesBtn.textContent = 'Save Changes';
+    saveChangesBtn.addEventListener('click', function saveChangesHandler() {
+       console.log('hehehe')
+    });
+    addTaskForm.appendChild(saveChangesBtn);
+
+    // Create and append Cancel button
+    const cancelBtn = document.createElement('button');
+    cancelBtn.setAttribute('type', 'button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', closeEditModal);
+    addTaskForm.appendChild(cancelBtn);
+
+    // Display the modal
+    addModal.style.display = 'block';
+    console.log('task');
+
+    // Prevent the contextmenu event from propagating further
+    event.preventDefault();
+}
 //function to update the task array
 export function addTask(tasks) {
     const taskName = document.getElementById('taskName').value;
@@ -65,10 +113,10 @@ export function editTask(event, task, tasks, allTasks = null) {
     editTaskForm.innerHTML = '';
 
     // Create form elements dynamically and append them to the form
-    createFormField('Task Name:', 'editTaskName', task.name, 'text', true);
-    createFormField('Start Date:', 'editStartDate', task.start, 'date', true);
-    createFormField('End Date:', 'editEndDate', task.end, 'date', true);
-    createFormField('Progress:', 'editProgress', task.progress, 'number', true);
+    createFormField('Task Name:', 'editTaskName', task.name, 'text', true ,editTaskForm);
+    createFormField('Start Date:', 'editStartDate', task.start, 'date', true ,editTaskForm);
+    createFormField('End Date:', 'editEndDate', task.end, 'date', true ,editTaskForm);
+    createFormField('Progress:', 'editProgress', task.progress, 'number', true ,editTaskForm);
 
     // Clear existing options
     const editDependenciesSelect = document.createElement('select');
@@ -120,7 +168,7 @@ export function editTask(event, task, tasks, allTasks = null) {
     event.preventDefault();
 }
 
-function createFormField(labelText, inputId, inputValue, inputType, required) {
+function createFormField(labelText, inputId, inputValue, inputType, required,parentName) {
     const label = document.createElement('label');
     label.setAttribute('for', inputId);
     label.textContent = labelText;
@@ -133,8 +181,8 @@ function createFormField(labelText, inputId, inputValue, inputType, required) {
     input.required = required;
 
     // Append label and input to the form
-    editTaskForm.appendChild(label);
-    editTaskForm.appendChild(input);
+    parentName.appendChild(label);
+    parentName.appendChild(input);
 }
 
 
@@ -177,7 +225,6 @@ export function saveEditedTask(tasks,alltasks=null) {
 
     // Update the Gantt chart with the new data
     updateTaskStartEndDates(tasks);
-    console.log(tasks);
     // Call the function with sample data
     if(alltasks)
     {
