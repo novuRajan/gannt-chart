@@ -146,7 +146,7 @@ export default class GanttChart {
           subRect.setAttribute('width', subDuration);
           subRect.setAttribute('height', 15);
           subRect.setAttribute('fill', '#e74c3c');
-          subRect.setAttribute('id', `task-${task.id}-${subtask.id}`); // Set the id attribute for subtasks
+          subRect.setAttribute('id', `subtask-${task.id}-${subtask.id}`); // Set the id attribute for subtasks
           subTaskGroup.appendChild(subRect);
 
           const subProgressWidth = (subDuration * subtask.progress) / 100;
@@ -402,7 +402,7 @@ export default class GanttChart {
     createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
     this.createTaskBars(svg, tasks, this.dateInfo);
     this.drawDependencyLine(svg,tasks)
-  }s
+  }
   drawDependencyLine(svg, tasks) {
     tasks.forEach((task, index) => {
       if (task.dependencies && task.dependencies.length > 0) {
@@ -452,6 +452,57 @@ export default class GanttChart {
             }
           }
         });
+      }
+      if(task.subTask){
+        task.subTask.forEach((subtask,subindex)=>{
+          if (subtask.dependencies && subtask.dependencies.length > 0) {
+            subtask.dependencies.forEach((dependencyId) => {
+              const dependentTask = task.subTask.find((t) => t.id === dependencyId);
+              if (dependentTask) {
+      
+                const svgNS = 'http://www.w3.org/2000/svg';
+                
+                const startTaskElement = document.getElementById(`subtask-${task.id}-${dependentTask.id}`);
+                const endTaskElement = document.getElementById(`subtask-${task.id}-${subtask.id}`);
+      
+                if (startTaskElement && endTaskElement) {
+                  const startOffset = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
+                  const x1 = startOffset;
+      
+                  const y1 = parseFloat(startTaskElement.getAttribute('y'));
+        
+                  const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
+      
+                  // Draw horizontal line
+                  const lineHorizontal = document.createElementNS(svgNS, 'line');
+                  lineHorizontal.setAttribute('x1', x1);
+                  lineHorizontal.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+                  lineHorizontal.setAttribute('x2', x2);
+                  lineHorizontal.setAttribute('y2', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+                  lineHorizontal.classList.add('dependency-line');
+                  svg.appendChild(lineHorizontal);
+      
+                  // Draw vertical line
+                  const lineVertical = document.createElementNS(svgNS, 'line');
+                  lineVertical.setAttribute('x1', x2);
+                  lineVertical.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+                  lineVertical.setAttribute('x2', x2);
+                  lineVertical.setAttribute('y2', parseFloat(endTaskElement.getAttribute('y'))); // Adjust as needed
+                  lineVertical.classList.add('dependency-line');
+                  svg.appendChild(lineVertical);
+      
+                  // Draw arrowhead
+                  const arrowhead = document.createElementNS(svgNS, 'polygon');
+                  const arrowheadSize = 5; 
+                  arrowhead.setAttribute('points', `${x2},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2 - arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2},${parseFloat(endTaskElement.getAttribute('y'))} ${x2 + arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize}`);
+                  arrowhead.classList.add('dependency-arrowhead');
+                  svg.appendChild(arrowhead);
+      
+                }
+              }
+            });
+          }
+        })
       }
     });
   }
