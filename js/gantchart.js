@@ -32,7 +32,7 @@ export default class GanttChart {
     const chartContainer = document.getElementById('chart');
      // Create a button element
     const button = document.createElement('button');
-    button.setAttribute('class','add-button')
+    button.setAttribute('class','top-place add-button')
     button.textContent = 'Add Task'; // Set the button text
     button.addEventListener('click', () => {
       openAddModal(tasks);
