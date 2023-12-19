@@ -26,14 +26,14 @@ export function createMonthHeadings(dateGroup, dateInfo, chartWidth) {
         const currentDate = new Date(dateInfo.startingDate.getTime() + i / 50 * (24 * 60 * 60 * 1000));
         const monthIndex = currentDate.getMonth();
         if (monthIndex !== currentMonth) {
-        currentMonth = monthIndex;
+            currentMonth = monthIndex;
 
-        const monthHeading = document.createElementNS(svgNS, 'text');
-        monthHeading.setAttribute('x', i);
-        monthHeading.setAttribute('y', 15);
-        monthHeading.classList.add('month-heading');
-        monthHeading.textContent = months[currentMonth];
-        month.appendChild(monthHeading);
+            const monthHeading = document.createElementNS(svgNS, 'text');
+            monthHeading.setAttribute('x', i);
+            monthHeading.setAttribute('y', 15);
+            monthHeading.classList.add('month-heading');
+            monthHeading.textContent = months[currentMonth];
+            month.appendChild(monthHeading);
         }
     }
 }
@@ -51,7 +51,7 @@ export function createDateScale(dateGroup, dateInfo, chartWidth, taskCount) {
         const currentDate = new Date(dateInfo.startingDate.getTime() + i / 50 * (24 * 60 * 60 * 1000));
         const text = document.createElementNS(svgNS, 'text');
         text.setAttribute('x', i - 3);
-        text.setAttribute('y', taskCount + 25);
+        text.setAttribute('y', 30);
         text.textContent = currentDate.getDate();
         date.appendChild(text);
     }
