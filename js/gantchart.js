@@ -398,7 +398,6 @@ export default class GanttChart {
     this.createTaskBars(svg, tasks, this.dateInfo);
   }
   static createChart(tasks) {
-    console.log(tasks);
     const ganttChart = new GanttChart();
     ganttChart.createGanttChart(tasks);
   }

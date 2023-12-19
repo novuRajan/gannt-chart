@@ -126,9 +126,87 @@ var Gantt = (function () {
     const tooltip = document.createElement('div');
     tooltip.className = 'bar-hover';
     document.body.appendChild(tooltip);
-    function closeEditModal() {
-        const editModal = document.getElementById('editModal');
-        editModal.style.display = 'none';
+    function closeModal(modal) {
+        modal.style.display = 'none';
+    }
+    function openAddModal(tasks){
+        // Create or get the modal element
+        let addModal = document.getElementById('addFormModal');
+        if (!addModal) {
+            addModal = document.createElement('div');
+            addModal.setAttribute('id', 'addFormModal');
+            addModal.setAttribute('class','modal');
+            document.body.appendChild(addModal);
+        }
+
+        // Create or get the form element
+        let addTaskForm = document.getElementById('addTaskForm');
+        if (!addTaskForm) {
+            addTaskForm = document.createElement('form');
+            addTaskForm.setAttribute('id', 'addTaskForm');
+            addModal.appendChild(addTaskForm);
+        }
+
+        // Clear existing content in the form
+        addTaskForm.innerHTML = '';
+
+        // Create form elements dynamically and append them to the form
+        createFormField('Task Name:', 'taskName', '', 'text', true ,addTaskForm);
+        createFormField('Start Date:', 'startDate', '', 'date', true ,addTaskForm);
+        createFormField('End Date:', 'endDate', '', 'date', true ,addTaskForm);
+        createFormField('Progress:', 'progress', '', 'number', true ,addTaskForm);
+        // Create and append Save Changes button
+        const saveChangesBtn = document.createElement('button');
+        saveChangesBtn.setAttribute('type', 'button');
+        saveChangesBtn.textContent = 'Save Changes';
+        saveChangesBtn.addEventListener('click', function saveChangesHandler() {
+           addTask(tasks);
+        });
+        addTaskForm.appendChild(saveChangesBtn);
+
+        // Create and append Cancel button
+        const cancelBtn = document.createElement('button');
+        cancelBtn.setAttribute('type', 'button');
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.addEventListener('click', function saveChangesHandler() {
+           closeModal(addModal);
+        });
+        addTaskForm.appendChild(cancelBtn);
+
+        // Display the modal
+        addModal.style.display = 'block';
+
+        // Prevent the contextmenu event from propagating further
+        event.preventDefault();
+    }
+    //function to update the task array
+    function addTask(tasks) {
+        const addModal = document.getElementById('addFormModal');
+        const taskName = document.getElementById('taskName').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        // Ensure the required fields are not empty
+        if (!taskName || !startDate || !endDate) {
+            alert('Please fill in all fields.');
+            return;
+        }
+
+        const newTask = {
+            id: tasks.length + 1, // Incremental ID
+            name: taskName,
+            start: startDate,
+            end: endDate,
+            progress: 0, // You can set the progress as needed
+            dependencies: [] // You can set dependencies as needed
+        };
+
+        // Add the new task to the existing tasks
+        tasks.push(newTask);
+        length = length + 1; //after adding of each task length should be increased
+        closeModal(addModal);
+        // Call the function with sample data
+        GanttChart.createChart(tasks);
     }
       
     // Function to handle task editing
@@ -157,10 +235,10 @@ var Gantt = (function () {
         editTaskForm.innerHTML = '';
 
         // Create form elements dynamically and append them to the form
-        createFormField('Task Name:', 'editTaskName', task.name, 'text', true);
-        createFormField('Start Date:', 'editStartDate', task.start, 'date', true);
-        createFormField('End Date:', 'editEndDate', task.end, 'date', true);
-        createFormField('Progress:', 'editProgress', task.progress, 'number', true);
+        createFormField('Task Name:', 'editTaskName', task.name, 'text', true ,editTaskForm);
+        createFormField('Start Date:', 'editStartDate', task.start, 'date', true ,editTaskForm);
+        createFormField('End Date:', 'editEndDate', task.end, 'date', true ,editTaskForm);
+        createFormField('Progress:', 'editProgress', task.progress, 'number', true ,editTaskForm);
 
         // Clear existing options
         const editDependenciesSelect = document.createElement('select');
@@ -194,7 +272,7 @@ var Gantt = (function () {
             // Call your function to save the edited task data
             saveEditedTask(tasks, allTasks);
             // Close the modal after saving changes
-            closeEditModal();
+            closeModal(editModal);
         });
         editTaskForm.appendChild(saveChangesBtn);
 
@@ -202,7 +280,9 @@ var Gantt = (function () {
         const cancelBtn = document.createElement('button');
         cancelBtn.setAttribute('type', 'button');
         cancelBtn.textContent = 'Cancel';
-        cancelBtn.addEventListener('click', closeEditModal);
+        cancelBtn.addEventListener('click', function saveChangesHandler() {
+            closeModal(editModal);
+        });
         editTaskForm.appendChild(cancelBtn);
 
         // Display the modal
@@ -212,7 +292,7 @@ var Gantt = (function () {
         event.preventDefault();
     }
 
-    function createFormField(labelText, inputId, inputValue, inputType, required) {
+    function createFormField(labelText, inputId, inputValue, inputType, required,parentName) {
         const label = document.createElement('label');
         label.setAttribute('for', inputId);
         label.textContent = labelText;
@@ -225,8 +305,8 @@ var Gantt = (function () {
         input.required = required;
 
         // Append label and input to the form
-        editTaskForm.appendChild(label);
-        editTaskForm.appendChild(input);
+        parentName.appendChild(label);
+        parentName.appendChild(input);
     }
 
 
@@ -238,7 +318,6 @@ var Gantt = (function () {
       
     // Function to save edited task
     function saveEditedTask(tasks,alltasks=null) {
-        // console.log(tasks);
         const editTaskForm = document.getElementById('editTaskForm');
         const editTaskNameInput = document.getElementById('editTaskName');
         const editStartDateInput = document.getElementById('editStartDate');
@@ -269,7 +348,6 @@ var Gantt = (function () {
 
         // Update the Gantt chart with the new data
         updateTaskStartEndDates(tasks);
-        console.log(tasks);
         // Call the function with sample data
         if(alltasks)
         {
@@ -278,9 +356,6 @@ var Gantt = (function () {
         else {
             GanttChart.createChart(tasks);
         }
-
-        // Close the modal
-        closeEditModal();
     }
 
     function showTaskDetails(task,allTasks) {
@@ -330,10 +405,18 @@ var Gantt = (function () {
       createGanttChart(tasks) {
         updateTaskStartEndDates(tasks);
         const chartContainer = document.getElementById('chart');
+         // Create a button element
+        const button = document.createElement('button');
+        button.setAttribute('class','add-button');
+        button.textContent = 'Add Task'; // Set the button text
+        button.addEventListener('click', () => {
+          openAddModal(tasks);
+        });
         let svg = chartContainer.querySelector('svg');
-
         // Check if the SVG element already exists
         if (!svg) {
+          // Append the button to the parent container of the SVG
+          chartContainer.appendChild(button);
           // If not, create a new SVG element
           svg = this.createSVG(tasks);
           chartContainer.appendChild(svg);
@@ -689,7 +772,6 @@ var Gantt = (function () {
         this.createTaskBars(svg, tasks, this.dateInfo);
       }
       static createChart(tasks) {
-        console.log(tasks);
         const ganttChart = new GanttChart();
         ganttChart.createGanttChart(tasks);
       }

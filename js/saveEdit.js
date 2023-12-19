@@ -8,7 +8,6 @@ export function closeModal(modal) {
     modal.style.display = 'none';
 }
 export function openAddModal(tasks){
-    console.log(tasks);
     // Create or get the modal element
     let addModal = document.getElementById('addFormModal');
     if (!addModal) {
@@ -54,7 +53,6 @@ export function openAddModal(tasks){
 
     // Display the modal
     addModal.style.display = 'block';
-    console.log('task');
 
     // Prevent the contextmenu event from propagating further
     event.preventDefault();
@@ -198,7 +196,6 @@ export function isTaskDependent(currentTask, otherTask, allTasks) {
   
 // Function to save edited task
 export function saveEditedTask(tasks,alltasks=null) {
-    // console.log(tasks);
     const editTaskForm = document.getElementById('editTaskForm');
     const editTaskNameInput = document.getElementById('editTaskName');
     const editStartDateInput = document.getElementById('editStartDate');
