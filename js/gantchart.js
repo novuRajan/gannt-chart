@@ -35,15 +35,13 @@ export default class GanttChart {
     button.setAttribute('class','add-button')
     button.textContent = 'Add Task'; // Set the button text
     button.addEventListener('click', () => {
-      openAddModal();
+      openAddModal(tasks);
     });
-
-  // Append the button to the parent container of the SVG
-  chartContainer.appendChild(button);
     let svg = chartContainer.querySelector('svg');
-
     // Check if the SVG element already exists
     if (!svg) {
+      // Append the button to the parent container of the SVG
+      chartContainer.appendChild(button);
       // If not, create a new SVG element
       svg = this.createSVG(tasks);
       chartContainer.appendChild(svg);

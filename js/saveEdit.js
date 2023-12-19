@@ -4,11 +4,11 @@ import GanttChart from "./gantchart.js";
 const tooltip = document.createElement('div');
 tooltip.className = 'bar-hover';
 document.body.appendChild(tooltip);
-export function closeEditModal() {
-    const editModal = document.getElementById('editModal');
-    editModal.style.display = 'none';
+export function closeModal(modal) {
+    modal.style.display = 'none';
 }
-export function openAddModal(){
+export function openAddModal(tasks){
+    console.log(tasks);
     // Create or get the modal element
     let addModal = document.getElementById('addFormModal');
     if (!addModal) {
@@ -30,16 +30,16 @@ export function openAddModal(){
     addTaskForm.innerHTML = '';
 
     // Create form elements dynamically and append them to the form
-    createFormField('Task Name:', 'editTaskName', '', 'text', true ,addTaskForm);
-    createFormField('Start Date:', 'editStartDate', '', 'date', true ,addTaskForm);
-    createFormField('End Date:', 'editEndDate', '', 'date', true ,addTaskForm);
-    createFormField('Progress:', 'editProgress', '', 'number', true ,addTaskForm);
+    createFormField('Task Name:', 'taskName', '', 'text', true ,addTaskForm);
+    createFormField('Start Date:', 'startDate', '', 'date', true ,addTaskForm);
+    createFormField('End Date:', 'endDate', '', 'date', true ,addTaskForm);
+    createFormField('Progress:', 'progress', '', 'number', true ,addTaskForm);
     // Create and append Save Changes button
     const saveChangesBtn = document.createElement('button');
     saveChangesBtn.setAttribute('type', 'button');
     saveChangesBtn.textContent = 'Save Changes';
     saveChangesBtn.addEventListener('click', function saveChangesHandler() {
-       console.log('hehehe')
+       addTask(tasks);
     });
     addTaskForm.appendChild(saveChangesBtn);
 
@@ -47,7 +47,9 @@ export function openAddModal(){
     const cancelBtn = document.createElement('button');
     cancelBtn.setAttribute('type', 'button');
     cancelBtn.textContent = 'Cancel';
-    cancelBtn.addEventListener('click', closeEditModal);
+    cancelBtn.addEventListener('click', function saveChangesHandler() {
+       closeModal(addModal)
+    });
     addTaskForm.appendChild(cancelBtn);
 
     // Display the modal
@@ -59,6 +61,7 @@ export function openAddModal(){
 }
 //function to update the task array
 export function addTask(tasks) {
+    const addModal = document.getElementById('addFormModal');
     const taskName = document.getElementById('taskName').value;
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
@@ -81,8 +84,7 @@ export function addTask(tasks) {
     // Add the new task to the existing tasks
     tasks.push(newTask);
     length = length + 1; //after adding of each task length should be increased
-    // Update the Gantt chart with the new data
-    updateTaskStartEndDates(tasks);
+    closeModal(addModal);
     // Call the function with sample data
     GanttChart.createChart(tasks);
 }
@@ -150,7 +152,7 @@ export function editTask(event, task, tasks, allTasks = null) {
         // Call your function to save the edited task data
         saveEditedTask(tasks, allTasks);
         // Close the modal after saving changes
-        closeEditModal();
+        closeModal(editModal);
     });
     editTaskForm.appendChild(saveChangesBtn);
 
@@ -158,7 +160,9 @@ export function editTask(event, task, tasks, allTasks = null) {
     const cancelBtn = document.createElement('button');
     cancelBtn.setAttribute('type', 'button');
     cancelBtn.textContent = 'Cancel';
-    cancelBtn.addEventListener('click', closeEditModal);
+    cancelBtn.addEventListener('click', function saveChangesHandler() {
+        closeModal(editModal);
+    });
     editTaskForm.appendChild(cancelBtn);
 
     // Display the modal
@@ -233,9 +237,6 @@ export function saveEditedTask(tasks,alltasks=null) {
     else{
         GanttChart.createChart(tasks);
     }
-
-    // Close the modal
-    closeEditModal();
 }
 
 export function showTaskDetails(task,allTasks) {
