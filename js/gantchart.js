@@ -271,7 +271,6 @@ export default class GanttChart {
   }
 
   handleDragMove(event, taskRect, progress, dependentTask, tasks, allTasks = null) {
-    console.log('handle',dependentTask)
     event.preventDefault();
     if (this.isDragging) {
       this.updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks, allTasks);
@@ -279,7 +278,6 @@ export default class GanttChart {
   }
 
   startDrag(event, taskRect, taskProgressRect, dependentTask, task, allTasks = null) {
-    console.log('dependent',dependentTask)
     this.dependentTask = dependentTask;
     this.tasks = task;
     this.allTasks = allTasks;
@@ -302,7 +300,6 @@ export default class GanttChart {
   }
 
   updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks, allTasks) {
-    console.log(dependentTask)
     const deltaX = (clientX - this.initialX) * .71 // Adjust the sensitivity factor 
     if (this.isDragStart) {
       // Dragging start handle

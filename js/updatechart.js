@@ -46,10 +46,6 @@ function updateSubTaskStartEndDate(task) {
         subTask.start = task.start;
         subTask.end = new Date(new Date(subTask.start).setDate(new Date(task.start).getDate() + subDuration)).toISOString().split('T')[0];
       }
-      else {
-        const gap = (new Date(subTask.start) - new Date(task.start)) / (24 * 60 * 60 * 1000);
-        subTask.start = new Date(new Date(subTask.start).setDate(new Date(task.start).getDate() + gap)).toISOString().split('T')[0];
-      }
       updateTaskDates(subTask, subTaskMap)
       if (subTask.end > task.end) {
         task.end = subTask.end
