@@ -19,6 +19,7 @@ export default class GanttChart {
     this.dependentTask;
     this.tasks;
     this.allTask;
+    this.chartWidth;
   }
 
   getTotalLength(tasks) {
@@ -52,6 +53,7 @@ export default class GanttChart {
 
   createSVG(tasks) {
     const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('id', 'mySvg');
     svg.setAttribute('min-width', '100%');
     svg.setAttribute('height', '200%');
     const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
@@ -90,7 +92,8 @@ export default class GanttChart {
   }
 
   calculateChartWidth(dateInfo) {
-    return (dateInfo.multiplier * ((dateInfo.maxDate - dateInfo.startingDate) / (24 * 60 * 60 * 1000)));
+    this.chartWidth = (dateInfo.maxDate - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * dateInfo.multiplier;
+    return this.chartWidth;
   }
 
   createTaskBars(svg, tasks, dateInfo) {
@@ -300,7 +303,8 @@ export default class GanttChart {
   }
 
   updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks, allTasks) {
-    const deltaX = (clientX - this.initialX) * .71 // Adjust the sensitivity factor 
+    const width = this.getWidth()
+    const deltaX = (clientX - this.initialX) /(width/this.chartWidth)// Adjust the sensitivity factor 
     if (this.isDragStart) {
       // Dragging start handle
       const newStartOffset = (new Date(dependentTask.start) - this.dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50 + deltaX;
@@ -503,6 +507,17 @@ export default class GanttChart {
         })
       }
     });
+  }
+  getWidth() {
+    var svgElement = document.getElementById('mySvg');
+
+    if (svgElement) {
+        var svgWidthInPixels = window.getComputedStyle(svgElement).width;
+        var numericWidth = parseFloat(svgWidthInPixels);
+        return numericWidth;
+    } else {
+        return null;
+    }
   }
   static createChart(tasks) {
     const ganttChart = new GanttChart();
