@@ -27,17 +27,21 @@ export default class GanttChart {
       return total + 1 + (task.subTask ? this.getTotalLength(task.subTask) : 0);
     }, 0);
   }
-
-  createGanttChart(tasks) {
-    updateTaskStartEndDates(tasks);
-    const chartContainer = document.getElementById('chart');
-    // Create a button element
+  createButton(tasks) {
     const button = document.createElement('button');
     button.setAttribute('class', 'top-place add-button')
     button.textContent = 'Add Task'; // Set the button text
     button.addEventListener('click', () => {
       openAddModal(tasks);
     });
+    return button;
+  }
+
+  createGanttChart(tasks) {
+    updateTaskStartEndDates(tasks);
+    const chartContainer = document.getElementById('chart');
+    // Create a button element
+    const button = this.createButton(tasks)
     let svg = chartContainer.querySelector('svg');
     // Check if the SVG element already exists
     if (!svg) {
