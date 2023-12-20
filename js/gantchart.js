@@ -301,7 +301,7 @@ export default class GanttChart {
   }
 
   updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks, allTasks) {
-    const deltaX = (clientX - this.initialX) * .73 // Adjust the sensitivity factor 
+    const deltaX = (clientX - this.initialX) * .71 // Adjust the sensitivity factor 
     if (this.isDragStart) {
       // Dragging start handle
       const newStartOffset = (new Date(dependentTask.start) - this.dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50 + deltaX;
