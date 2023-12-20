@@ -1,4 +1,4 @@
-import { createGridLines, createMonthHeadings, createDateScale } from './date-utl.js';
+import { createGridLines, createMonthHeadings ,createDateScale, createDivDateScale } from './date-utl.js';
 import { updateTaskStartEndDates } from './updatechart.js';
 import { hideTaskDetails, showTaskDetails, editTask, openAddModal, addTask } from './saveEdit.js';
 
@@ -50,6 +50,10 @@ export default class GanttChart {
       // If not, create a new SVG element
       svg = this.createSVG(tasks);
       chartContainer.appendChild(svg);
+      const Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
+      chartContainer.insertBefore(Datediv,svg);
+      console.log(Datediv);
+      
     } else {
       this.updateGanttChartContent(svg, tasks);
     }
@@ -390,6 +394,10 @@ export default class GanttChart {
   }
 
   updateGanttChartContent(svg, tasks) {
+    const chartContainer = document.getElementById('chart');
+    //clear the excisting date div
+    let Datediv = document.getElementById('div-date');
+    chartContainer.removeChild(Datediv);
     // Clear existing content
     while (svg.firstChild) {
       svg.removeChild(svg.firstChild);
@@ -407,6 +415,8 @@ export default class GanttChart {
     createGridLines(dateGroup, chartWidth, this.length);
     createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
     createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
+    Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
+    chartContainer.insertBefore(Datediv,svg);
     this.createTaskBars(svg, tasks, this.dateInfo);
     this.drawDependencyLine(svg, tasks)
   }
@@ -522,6 +532,10 @@ export default class GanttChart {
     } else {
         return null;
     }
+  }
+  static returnWidth(){
+    const width = new GanttChart();
+    return width.getWidth();
   }
   static createChart(tasks) {
     const ganttChart = new GanttChart();

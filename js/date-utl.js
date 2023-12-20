@@ -1,3 +1,4 @@
+import GanttChart from "./gantchart.js";
 const svgNS = 'http://www.w3.org/2000/svg';
 
 export function createGridLines(dateGroup, chartWidth, taskCount) {
@@ -49,17 +50,49 @@ export function createDateScale(dateGroup, dateInfo, chartWidth, taskCount) {
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     for (let i = 0; i <= chartWidth; i += 50) {
         const currentDate = new Date(dateInfo.startingDate.getTime() + i / 50 * (24 * 60 * 60 * 1000));
-        const text = document.createElementNS(svgNS, 'text');
-        text.setAttribute('x', i - 3);
-        text.setAttribute('font-size','10px')
-        text.setAttribute('y', 30);
-        text.textContent = currentDate.getDate();
         const day = document.createElementNS(svgNS, 'text');
         day.setAttribute('x', i - 3);
-        day.setAttribute('y', 20);
-        day.setAttribute('font-size','10px')
+        day.setAttribute('y', 25);
+        day.setAttribute('font-size','12px')
+        if(currentDate.getDay() === 0 || currentDate.getDay() === 6){
+            day.setAttribute('fill','red')
+        }
         day.textContent = daysOfWeek[currentDate.getDay()]
-        date.appendChild(text);
         date.appendChild(day)
     }
+}
+
+export function createDivDateScale(dateInfo, chartWidth, taskCount) {
+    const dateDiv = document.createElement('div')
+    dateDiv.setAttribute('id','div-date')
+    dateDiv.classList.add('date')
+    const dateScale = document.createElement('div');
+    dateScale.setAttribute('x', '0');
+    dateScale.setAttribute('y', taskCount);
+    dateDiv.appendChild(dateScale);
+    const width = GanttChart.returnWidth();
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    for (let i = 0; i <= chartWidth; i += 50) {
+        const currentDate = new Date(dateInfo.startingDate.getTime() + i / 50 * (24 * 60 * 60 * 1000));
+        const text = document.createElement('div');
+      
+        text.setAttribute('font-size','10px')
+        text.setAttribute('y', 30);
+        text.textContent = `${currentDate.getDate()}`;
+        // const day = document.createElement('div');
+        // day.setAttribute('x', i - 3);
+        // day.setAttribute('y', 20);
+        // day.setAttribute('font-size','10px')
+        if(currentDate.getDay() === 0 || currentDate.getDay() === 6){
+            text.setAttribute('style',`position:absolute;left:${i*width/chartWidth-5}px;color:red`)
+        }
+        else{
+            text.setAttribute('style', `position:absolute;left:${i*width/chartWidth-5}px`);
+        }
+        // day.textContent = daysOfWeek[currentDate.getDay()]
+        dateDiv.appendChild(text);
+        // dateDiv.appendChild(day)
+    }
+    console.log('width',width)
+    return dateDiv;
 }

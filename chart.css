@@ -48,6 +48,9 @@ body.dragging {
 }
 
 .date {
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
   position: sticky;
   top: 0;
 }
