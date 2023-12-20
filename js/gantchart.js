@@ -404,108 +404,107 @@ export default class GanttChart {
     this.drawDependencyLine(svg,tasks)
   }
   drawDependencyLine(svg, tasks) {
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const arrowheadSize = 5;
+  
     tasks.forEach((task, index) => {
       if (task.dependencies && task.dependencies.length > 0) {
         task.dependencies.forEach((dependencyId) => {
           const dependentTask = tasks.find((t) => t.id === dependencyId);
           if (dependentTask) {
-  
-            const svgNS = 'http://www.w3.org/2000/svg';
-            
             const startTaskElement = document.getElementById(`task-${dependentTask.id}`);
-            console.log(startTaskElement);
             const endTaskElement = document.getElementById(`task-${task.id}`);
   
             if (startTaskElement && endTaskElement) {
               const startOffset = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
               const x1 = startOffset;
-  
               const y1 = parseFloat(startTaskElement.getAttribute('y'));
-    
               const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
   
               // Draw horizontal line
-              const lineHorizontal = document.createElementNS(svgNS, 'line');
-              lineHorizontal.setAttribute('x1', x1);
-              lineHorizontal.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-              lineHorizontal.setAttribute('x2', x2);
-              lineHorizontal.setAttribute('y2', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-              lineHorizontal.classList.add('dependency-line');
+              const lineHorizontal = this.createSvgLine(x1, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
               svg.appendChild(lineHorizontal);
-  
+
+              //if blocked task is above the blocker task in the chart ,add extra height to the vertical line
+              const isDependentAfterTask = dependentTask.id > task.id;
+              const extraHeight = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('height')) : 0;
+
+
               // Draw vertical line
-              const lineVertical = document.createElementNS(svgNS, 'line');
-              lineVertical.setAttribute('x1', x2);
-              lineVertical.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-              lineVertical.setAttribute('x2', x2);
-              lineVertical.setAttribute('y2', parseFloat(endTaskElement.getAttribute('y'))); // Adjust as needed
-              lineVertical.classList.add('dependency-line');
+              const lineVertical = this.createSvgLine(x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, parseFloat(endTaskElement.getAttribute('y')) + extraHeight);
               svg.appendChild(lineVertical);
   
               // Draw arrowhead
-              const arrowhead = document.createElementNS(svgNS, 'polygon');
-              const arrowheadSize = 5; 
-              arrowhead.setAttribute('points', `${x2},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2 - arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2},${parseFloat(endTaskElement.getAttribute('y'))} ${x2 + arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize}`);
-              arrowhead.classList.add('dependency-arrowhead');
+              const arrowheadY = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('y')) + parseFloat(endTaskElement.getAttribute('height')) : parseFloat(endTaskElement.getAttribute('y'));
+              const arrowDirection = isDependentAfterTask ? 'up' : 'down';
+              const arrowhead = this.createArrowhead(x2, arrowheadY, arrowheadSize, arrowDirection);
               svg.appendChild(arrowhead);
-  
             }
           }
         });
       }
-      if(task.subTask){
-        task.subTask.forEach((subtask,subindex)=>{
+  
+      if (task.subTask) {
+        task.subTask.forEach((subtask, subindex) => {
           if (subtask.dependencies && subtask.dependencies.length > 0) {
             subtask.dependencies.forEach((dependencyId) => {
               const dependentTask = task.subTask.find((t) => t.id === dependencyId);
               if (dependentTask) {
-      
-                const svgNS = 'http://www.w3.org/2000/svg';
-                
                 const startTaskElement = document.getElementById(`subtask-${task.id}-${dependentTask.id}`);
                 const endTaskElement = document.getElementById(`subtask-${task.id}-${subtask.id}`);
-      
+  
                 if (startTaskElement && endTaskElement) {
                   const startOffset = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
                   const x1 = startOffset;
-      
                   const y1 = parseFloat(startTaskElement.getAttribute('y'));
-        
                   const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
-      
+  
                   // Draw horizontal line
-                  const lineHorizontal = document.createElementNS(svgNS, 'line');
-                  lineHorizontal.setAttribute('x1', x1);
-                  lineHorizontal.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-                  lineHorizontal.setAttribute('x2', x2);
-                  lineHorizontal.setAttribute('y2', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-                  lineHorizontal.classList.add('dependency-line');
+                  const lineHorizontal = this.createSvgLine(x1, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
                   svg.appendChild(lineHorizontal);
-      
+  
+                  //if blocked subtask is above the blocker task in the chart ,add extra height to the vertical line
+                  const isDependentAfterTask = dependentTask.id > subtask.id;
+                  const extraHeight = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('height')) : 0;
+
                   // Draw vertical line
-                  const lineVertical = document.createElementNS(svgNS, 'line');
-                  lineVertical.setAttribute('x1', x2);
-                  lineVertical.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-                  lineVertical.setAttribute('x2', x2);
-                  lineVertical.setAttribute('y2', parseFloat(endTaskElement.getAttribute('y'))); // Adjust as needed
-                  lineVertical.classList.add('dependency-line');
+                  const lineVertical = this.createSvgLine(x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, parseFloat(endTaskElement.getAttribute('y')) + extraHeight);
                   svg.appendChild(lineVertical);
-      
+  
                   // Draw arrowhead
-                  const arrowhead = document.createElementNS(svgNS, 'polygon');
-                  const arrowheadSize = 5; 
-                  arrowhead.setAttribute('points', `${x2},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2 - arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2},${parseFloat(endTaskElement.getAttribute('y'))} ${x2 + arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize}`);
-                  arrowhead.classList.add('dependency-arrowhead');
+                  const arrowheadY = dependentTask.id > subtask.id ? parseFloat(endTaskElement.getAttribute('y')) + parseFloat(endTaskElement.getAttribute('height')) : parseFloat(endTaskElement.getAttribute('y'));
+                  const arrowDirection = isDependentAfterTask ? 'up' : 'down';
+                  const arrowhead = this.createArrowhead(x2, arrowheadY, arrowheadSize, arrowDirection);
                   svg.appendChild(arrowhead);
-      
                 }
               }
             });
           }
-        })
+        });
       }
     });
   }
+  
+  createSvgLine(x1, y1, x2, y2) {
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', x1);
+      line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2);
+      line.setAttribute('y2', y2);
+      line.classList.add('dependency-line');
+      return line;
+  }
+  
+  createArrowhead(x, y, size, arrowDirection) {
+      const arrowhead = document.createElementNS(svgNS, 'polygon');
+      const points = arrowDirection === "down"
+        ? `${x},${y - size} ${x - size},${y - size} ${x},${y} ${x + size},${y - size}`
+        : `${x - size},${y + size} ${x},${y} ${x + size},${y + size}`;
+      arrowhead.setAttribute('points', points);
+      arrowhead.classList.add('dependency-arrowhead');
+      return arrowhead;
+  } 
+    
   static createChart(tasks) {
     const ganttChart = new GanttChart();
     ganttChart.createGanttChart(tasks);
