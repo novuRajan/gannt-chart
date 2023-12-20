@@ -7,13 +7,13 @@ document.body.appendChild(tooltip);
 export function closeModal(modal) {
     modal.style.display = 'none';
 }
-export function openAddModal(tasks){
+export function openAddModal(tasks) {
     // Create or get the modal element
     let addModal = document.getElementById('addFormModal');
     if (!addModal) {
         addModal = document.createElement('div');
         addModal.setAttribute('id', 'addFormModal');
-        addModal.setAttribute('class','modal')
+        addModal.setAttribute('class', 'modal')
         document.body.appendChild(addModal);
     }
 
@@ -29,16 +29,16 @@ export function openAddModal(tasks){
     addTaskForm.innerHTML = '';
 
     // Create form elements dynamically and append them to the form
-    createFormField('Task Name:', 'taskName', '', 'text', true ,addTaskForm);
-    createFormField('Start Date:', 'startDate', '', 'date', true ,addTaskForm);
-    createFormField('End Date:', 'endDate', '', 'date', true ,addTaskForm);
-    createFormField('Progress:', 'progress', '', 'number', true ,addTaskForm);
+    createFormField('Task Name:', 'taskName', '', 'text', true, addTaskForm);
+    createFormField('Start Date:', 'startDate', '', 'date', true, addTaskForm);
+    createFormField('End Date:', 'endDate', '', 'date', true, addTaskForm);
+    createFormField('Progress:', 'progress', '', 'number', true, addTaskForm);
     // Create and append Save Changes button
     const saveChangesBtn = document.createElement('button');
     saveChangesBtn.setAttribute('type', 'button');
     saveChangesBtn.textContent = 'Save Changes';
     saveChangesBtn.addEventListener('click', function saveChangesHandler() {
-       addTask(tasks);
+        addTask(tasks);
     });
     addTaskForm.appendChild(saveChangesBtn);
 
@@ -47,7 +47,7 @@ export function openAddModal(tasks){
     cancelBtn.setAttribute('type', 'button');
     cancelBtn.textContent = 'Cancel';
     cancelBtn.addEventListener('click', function saveChangesHandler() {
-       closeModal(addModal)
+        closeModal(addModal)
     });
     addTaskForm.appendChild(cancelBtn);
 
@@ -86,7 +86,7 @@ export function addTask(tasks) {
     // Call the function with sample data
     GanttChart.createChart(tasks);
 }
-  
+
 // Function to handle task editing
 export function editTask(event, task, tasks, allTasks = null) {
     event.preventDefault();
@@ -97,7 +97,7 @@ export function editTask(event, task, tasks, allTasks = null) {
     if (!editModal) {
         editModal = document.createElement('div');
         editModal.setAttribute('id', 'editModal');
-        editModal.setAttribute('class','modal')
+        editModal.setAttribute('class', 'modal')
         document.body.appendChild(editModal);
     }
 
@@ -113,10 +113,10 @@ export function editTask(event, task, tasks, allTasks = null) {
     editTaskForm.innerHTML = '';
 
     // Create form elements dynamically and append them to the form
-    createFormField('Task Name:', 'editTaskName', task.name, 'text', true ,editTaskForm);
-    createFormField('Start Date:', 'editStartDate', task.start, 'date', true ,editTaskForm);
-    createFormField('End Date:', 'editEndDate', task.end, 'date', true ,editTaskForm);
-    createFormField('Progress:', 'editProgress', task.progress, 'number', true ,editTaskForm);
+    createFormField('Task Name:', 'editTaskName', task.name, 'text', true, editTaskForm);
+    createFormField('Start Date:', 'editStartDate', task.start, 'date', true, editTaskForm);
+    createFormField('End Date:', 'editEndDate', task.end, 'date', true, editTaskForm);
+    createFormField('Progress:', 'editProgress', task.progress, 'number', true, editTaskForm);
 
     // Clear existing options
     const editDependenciesSelect = document.createElement('select');
@@ -170,7 +170,7 @@ export function editTask(event, task, tasks, allTasks = null) {
     event.preventDefault();
 }
 
-function createFormField(labelText, inputId, inputValue, inputType, required,parentName) {
+function createFormField(labelText, inputId, inputValue, inputType, required, parentName) {
     const label = document.createElement('label');
     label.setAttribute('for', inputId);
     label.textContent = labelText;
@@ -188,14 +188,14 @@ function createFormField(labelText, inputId, inputValue, inputType, required,par
 }
 
 
-  
+
 // Function to check if a task is dependent on another task
 export function isTaskDependent(currentTask, otherTask, allTasks) {
     return otherTask.dependencies.includes(currentTask.id) || otherTask.dependencies.some(depId => isTaskDependent(currentTask, allTasks[depId - 1], allTasks));
 }
-  
+
 // Function to save edited task
-export function saveEditedTask(tasks,alltasks=null) {
+export function saveEditedTask(tasks, alltasks = null) {
     const editTaskForm = document.getElementById('editTaskForm');
     const editTaskNameInput = document.getElementById('editTaskName');
     const editStartDateInput = document.getElementById('editStartDate');
@@ -227,16 +227,15 @@ export function saveEditedTask(tasks,alltasks=null) {
     // Update the Gantt chart with the new data
     updateTaskStartEndDates(tasks);
     // Call the function with sample data
-    if(alltasks)
-    {
+    if (alltasks) {
         GanttChart.createChart(alltasks);
     }
-    else{
+    else {
         GanttChart.createChart(tasks);
     }
 }
 
-export function showTaskDetails(task,allTasks) {
+export function showTaskDetails(task, allTasks) {
     const dependentTaskNames = task.dependencies.map(depId => allTasks[depId - 1].name);
     const dependentTaskInfo = dependentTaskNames.length > 0 ? `Dependencies: ${dependentTaskNames.join(', ')}` : '';
 

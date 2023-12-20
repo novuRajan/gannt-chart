@@ -39,7 +39,7 @@ export function createMonthHeadings(dateGroup, dateInfo, chartWidth) {
 }
 
 export function createDateScale(dateGroup, dateInfo, chartWidth, taskCount) {
-    const date = document.createElementNS(svgNS,'g')
+    const date = document.createElementNS(svgNS, 'g')
     dateGroup.appendChild(date)
     date.classList.add('date')
     const dateScale = document.createElementNS(svgNS, 'text');
