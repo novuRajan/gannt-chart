@@ -1,4 +1,4 @@
-import { createGridLines, createMonthHeadings ,createDateScale, createDivDateScale } from './date-utl.js';
+import { createGridLines, createMonthHeadings, createDateScale, createDivDateScale } from './date-utl.js';
 import { updateTaskStartEndDates } from './updatechart.js';
 import { hideTaskDetails, showTaskDetails, editTask, openAddModal, addTask } from './saveEdit.js';
 
@@ -27,6 +27,7 @@ export default class GanttChart {
       return total + 1 + (task.subTask ? this.getTotalLength(task.subTask) : 0);
     }, 0);
   }
+
   createButton(tasks) {
     const button = document.createElement('button');
     button.setAttribute('class', 'top-place add-button')
@@ -51,9 +52,9 @@ export default class GanttChart {
       svg = this.createSVG(tasks);
       chartContainer.appendChild(svg);
       const Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
-      chartContainer.insertBefore(Datediv,svg);
+      chartContainer.insertBefore(Datediv, svg);
       console.log(Datediv);
-      
+
     } else {
       this.updateGanttChartContent(svg, tasks);
     }
@@ -63,8 +64,8 @@ export default class GanttChart {
     const svg = document.createElementNS(svgNS, 'svg');
     svg.setAttribute('style', 'position: absolute; left: 10rem');
     svg.setAttribute('id', 'mySvg');
-    svg.setAttribute('min-width', '100%');
-    svg.setAttribute('height', '200%');
+    // svg.setAttribute('min-width', '100%');
+    // svg.setAttribute('height', '200%');
     const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
     dateGroup.setAttribute('class', 'date-groups');
     svg.appendChild(dateGroup);
@@ -313,7 +314,7 @@ export default class GanttChart {
 
   updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks, allTasks) {
     const width = this.getWidth()
-    const deltaX = (clientX - this.initialX) /(width/this.chartWidth)// Adjust the sensitivity factor 
+    const deltaX = (clientX - this.initialX) / (width / this.chartWidth)// Adjust the sensitivity factor 
     if (this.isDragStart) {
       // Dragging start handle
       const newStartOffset = (new Date(dependentTask.start) - this.dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50 + deltaX;
@@ -417,10 +418,11 @@ export default class GanttChart {
     createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
     createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
     Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
-    chartContainer.insertBefore(Datediv,svg);
+    chartContainer.insertBefore(Datediv, svg);
     this.createTaskBars(svg, tasks, this.dateInfo);
     this.drawDependencyLine(svg, tasks)
   }
+
   drawDependencyLine(svg, tasks) {
     tasks.forEach((task, index) => {
       if (task.dependencies && task.dependencies.length > 0) {
@@ -523,21 +525,41 @@ export default class GanttChart {
       }
     });
   }
+
   getWidth() {
     var svgElement = document.getElementById('mySvg');
 
     if (svgElement) {
-        var svgWidthInPixels = window.getComputedStyle(svgElement).width;
-        var numericWidth = parseFloat(svgWidthInPixels);
-        return numericWidth;
+      var svgWidthInPixels = window.getComputedStyle(svgElement).width;
+      var numericWidth = parseFloat(svgWidthInPixels);
+      return numericWidth;
     } else {
-        return null;
+      return null;
     }
   }
-  static returnWidth(){
+
+  getheight() {
+    var svgElement = document.getElementById('mySvg');
+
+    if (svgElement) {
+      var svgWidthInPixels = window.getComputedStyle(svgElement).height;
+      var numericWidth = parseFloat(svgWidthInPixels);
+      return numericWidth;
+    } else {
+      return null;
+    }
+  }
+
+  static returnHeight() {
+    const height = new GanttChart();
+    return height.getheight();
+  }
+
+  static returnWidth() {
     const width = new GanttChart();
     return width.getWidth();
   }
+
   static createChart(tasks) {
     const ganttChart = new GanttChart();
     ganttChart.createGanttChart(tasks);

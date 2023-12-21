@@ -63,6 +63,7 @@ export function createDateScale(dateGroup, dateInfo, chartWidth, taskCount) {
 }
 
 export function createDivDateScale(dateInfo, chartWidth, taskCount) {
+    const chartHeight = GanttChart.returnHeight();
     const dateDiv = document.createElement('div')
     dateDiv.setAttribute('id','div-date')
     dateDiv.classList.add('date')
@@ -94,5 +95,6 @@ export function createDivDateScale(dateInfo, chartWidth, taskCount) {
     }
     dateDiv.appendChild(div)
     console.log('width',width)
+    console.log('chartHeight',chartHeight)
     return dateDiv;
 }

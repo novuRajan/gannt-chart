@@ -7,6 +7,10 @@ body.dragging {
   left: 0;
 }
 
+svg{
+  min-width: 100%;
+  height: 200%;
+}
 .dependency-line {
   stroke: black;
   stroke-width: 1.5; /* Line width */
