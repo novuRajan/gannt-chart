@@ -1,4 +1,4 @@
-export const updateTaskStartEndDates =(tasks)=> {
+export const updateTaskStartEndDates = (tasks) => {
   const taskMap = new Map(tasks.map(task => [task.id, task]));
 
   tasks.forEach(task => {
@@ -32,14 +32,13 @@ function updateTaskDates(task, taskMap) {
       task.end = new Date(new Date(task.start).setDate(new Date(task.start).getDate() + duration)).toISOString().split('T')[0];
     }
   });
-  
+
 }
 
-function updateSubTaskStartEndDate(task)
-{
-   // Check if the task has subtasks
-   if (task.subTask && task.subTask.length > 0) {
-    const subTaskMap=new Map(task.subTask.map(subtask => [subtask.id, subtask]));
+function updateSubTaskStartEndDate(task) {
+  // Check if the task has subtasks
+  if (task.subTask && task.subTask.length > 0) {
+    const subTaskMap = new Map(task.subTask.map(subtask => [subtask.id, subtask]));
     task.subTask.forEach(subTask => {
       const subDuration = (new Date(subTask.end) - new Date(subTask.start)) / (24 * 60 * 60 * 1000);
       // Example condition: If subtask start date is less than task start date, update it
@@ -47,14 +46,8 @@ function updateSubTaskStartEndDate(task)
         subTask.start = task.start;
         subTask.end = new Date(new Date(subTask.start).setDate(new Date(task.start).getDate() + subDuration)).toISOString().split('T')[0];
       }
-      else 
-      {
-        const gap = (new Date(subTask.start) - new Date(task.start)) / (24 * 60 * 60 * 1000);
-        subTask.start = new Date(new Date(subTask.start).setDate(new Date(task.start).getDate() + gap)).toISOString().split('T')[0];
-      }
-      updateTaskDates(subTask,subTaskMap)
-      if(subTask.end > task.end)
-      {
+      updateTaskDates(subTask, subTaskMap)
+      if (subTask.end > task.end) {
         task.end = subTask.end
       }
     });

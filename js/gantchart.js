@@ -1,6 +1,6 @@
-import { createGridLines, createMonthHeadings, createDateScale } from './date-utl.js';
+import { createGridLines, createMonthHeadings, createDateScale, createDivDateScale } from './date-utl.js';
 import { updateTaskStartEndDates } from './updatechart.js';
-import { hideTaskDetails , showTaskDetails , editTask ,openAddModal , addTask  } from './saveEdit.js';
+import { hideTaskDetails, showTaskDetails, editTask, openAddModal, addTask } from './saveEdit.js';
 
 const svgNS = 'http://www.w3.org/2000/svg';
 export default class GanttChart {
@@ -16,9 +16,10 @@ export default class GanttChart {
     this.currentProgressRect;
     this.dragMoveListener = null;
     this.length;
-    this.dependentTask ;
-    this.tasks ;
-    this.allTask ; 
+    this.dependentTask;
+    this.tasks;
+    this.allTask;
+    this.chartWidth;
   }
 
   getTotalLength(tasks) {
@@ -27,16 +28,21 @@ export default class GanttChart {
     }, 0);
   }
 
-  createGanttChart(tasks) {
-    updateTaskStartEndDates(tasks);
-    const chartContainer = document.getElementById('chart');
-     // Create a button element
+  createButton(tasks) {
     const button = document.createElement('button');
-    button.setAttribute('class','top-place add-button')
+    button.setAttribute('class', 'top-place add-button')
     button.textContent = 'Add Task'; // Set the button text
     button.addEventListener('click', () => {
       openAddModal(tasks);
     });
+    return button;
+  }
+
+  createGanttChart(tasks) {
+    updateTaskStartEndDates(tasks);
+    const chartContainer = document.getElementById('chart');
+    // Create a button element
+    const button = this.createButton(tasks)
     let svg = chartContainer.querySelector('svg');
     // Check if the SVG element already exists
     if (!svg) {
@@ -45,6 +51,10 @@ export default class GanttChart {
       // If not, create a new SVG element
       svg = this.createSVG(tasks);
       chartContainer.appendChild(svg);
+      const Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
+      chartContainer.insertBefore(Datediv, svg);
+      console.log(Datediv);
+
     } else {
       this.updateGanttChartContent(svg, tasks);
     }
@@ -52,8 +62,10 @@ export default class GanttChart {
 
   createSVG(tasks) {
     const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('min-width', '100%');
-    svg.setAttribute('height', '200%');
+    svg.setAttribute('style', 'position: absolute; left: 10rem');
+    svg.setAttribute('id', 'mySvg');
+    // svg.setAttribute('min-width', '100%');
+    // svg.setAttribute('height', '200%');
     const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
     dateGroup.setAttribute('class', 'date-groups');
     svg.appendChild(dateGroup);
@@ -90,7 +102,8 @@ export default class GanttChart {
   }
 
   calculateChartWidth(dateInfo) {
-    return (dateInfo.multiplier * ((dateInfo.maxDate - dateInfo.startingDate) / (24 * 60 * 60 * 1000)));
+    this.chartWidth = (dateInfo.maxDate - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * dateInfo.multiplier;
+    return this.chartWidth;
   }
 
   createTaskBars(svg, tasks, dateInfo) {
@@ -132,7 +145,7 @@ export default class GanttChart {
       // Render subtasks
       if (task.subTask && task.subTask.length > 0) {
         const subTaskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
-        subTaskGroup.setAttribute('class','subtask')
+        subTaskGroup.setAttribute('class', 'subtask')
         taskGroup.appendChild(subTaskGroup);
         task.subTask.forEach((subtask, subIndex) => {
           const subDependentTaskEnd = Math.max(...subtask.dependencies.map(depId => new Date(task.subTask[depId - 1].end)));
@@ -140,7 +153,7 @@ export default class GanttChart {
           const subDuration = (new Date(subtask.end) - new Date(subtask.start)) / (24 * 60 * 60 * 1000) * 50;
 
           const subRect = document.createElementNS(svgNS, 'rect');
-          subRect.setAttribute('class','subtask')
+          subRect.setAttribute('class', 'subtask')
           subRect.setAttribute('x', subStartOffset);
           subRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
           subRect.setAttribute('width', subDuration);
@@ -151,7 +164,7 @@ export default class GanttChart {
 
           const subProgressWidth = (subDuration * subtask.progress) / 100;
           const subProgressRect = document.createElementNS(svgNS, 'rect');
-          subProgressRect.setAttribute('class','subtask-progress')
+          subProgressRect.setAttribute('class', 'subtask-progress')
           subProgressRect.setAttribute('x', subStartOffset);
           subProgressRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
           subProgressRect.setAttribute('width', subProgressWidth);
@@ -187,15 +200,15 @@ export default class GanttChart {
           });
           subRect.addEventListener('mousedown', (event) => {
             event.preventDefault();
-            this.startDrag(event, subRect, subProgressRect , subtask , task.subTask , tasks);
+            this.startDrag(event, subRect, subProgressRect, subtask, task.subTask, tasks);
           });
           subProgressRect.addEventListener('mousedown', (event) => {
             event.preventDefault();
-            this.startDrag(event, subRect, subProgressRect, subtask , task.subTask , tasks)
+            this.startDrag(event, subRect, subProgressRect, subtask, task.subTask, tasks)
           });
           subText.addEventListener('mousedown', (event) => {
             event.preventDefault();
-            this.startDrag(event, subRect, subProgressRect , subtask , task.subTask , tasks);
+            this.startDrag(event, subRect, subProgressRect, subtask, task.subTask, tasks);
           });
         });
       }
@@ -223,19 +236,18 @@ export default class GanttChart {
       // Add event listeners for dragging to edit start and end dates
       rect.addEventListener('mousedown', (event) => {
         event.preventDefault();
-        this.startDrag(event, rect, progressRect,task ,tasks);
+        this.startDrag(event, rect, progressRect, task, tasks);
       });
       progressRect.addEventListener('mousedown', (event) => {
         event.preventDefault();
-        this.startDrag(event, rect, progressRect ,task ,tasks)
+        this.startDrag(event, rect, progressRect, task, tasks)
       });
       text.addEventListener('mousedown', (event) => {
         event.preventDefault();
-        this.startDrag(event, rect, progressRect,task ,tasks);
-      });     
+        this.startDrag(event, rect, progressRect, task, tasks);
+      });
       document.addEventListener('mouseup', (event) => {
-        document.removeEventListener('mousemove',this.dragMoveListener)
-        this.handleMouseUp(this.taskRect, this.dependentTask, this.tasks, this.dateInfo ,this.allTasks);
+        this.handleMouseUp(this.taskRect, this.dependentTask, this.tasks, this.dateInfo, this.allTasks);
       });
       // task below the subtask
       customIndex = customIndex + 1;
@@ -271,17 +283,17 @@ export default class GanttChart {
     }
   }
 
-  handleDragMove(event, taskRect, progress, dependentTask, tasks ,allTasks=null) {
+  handleDragMove(event, taskRect, progress, dependentTask, tasks, allTasks = null) {
     event.preventDefault();
     if (this.isDragging) {
-      this.updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks ,allTasks);
+      this.updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks, allTasks);
     }
   }
 
-  startDrag(event, taskRect, taskProgressRect , dependentTask, task , allTasks=null) {
-    this.dependentTask = dependentTask ;
-    this.tasks = task ;
-    this.allTasks = allTasks ; 
+  startDrag(event, taskRect, taskProgressRect, dependentTask, task, allTasks = null) {
+    this.dependentTask = dependentTask;
+    this.tasks = task;
+    this.allTasks = allTasks;
     document.body.classList.add('dragging');
     hideTaskDetails
     this.isDragging = true;
@@ -294,14 +306,15 @@ export default class GanttChart {
     this.currentProgressRect = taskProgressRect;
     this.dragMoveListener = this.throttle((event) => {
       this.handleDragMove(event, this.currentTaskRect, this.currentProgressRect, dependentTask, task, allTasks);
-    }, 16); 
+    }, 16);
     event.preventDefault();
-    document.addEventListener('mousemove',this.dragMoveListener);
+    document.addEventListener('mousemove', this.dragMoveListener);
 
   }
 
-  updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks ,allTasks) {
-    const deltaX = (clientX - this.initialX) * .73 // Adjust the sensitivity factor 
+  updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks, allTasks) {
+    const width = this.getWidth()
+    const deltaX = (clientX - this.initialX) / (width / this.chartWidth)// Adjust the sensitivity factor 
     if (this.isDragStart) {
       // Dragging start handle
       const newStartOffset = (new Date(dependentTask.start) - this.dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50 + deltaX;
@@ -313,19 +326,18 @@ export default class GanttChart {
         this.isDragging = false;
         const updatedTaskIndex = tasks.findIndex(t => t.id === dependentTask.id);
         if (updatedTaskIndex !== -1) {
-          const newEndDate = new Date(startDate.getTime() + (parseFloat(taskRect.getAttribute('width')) / 52) * (24 * 60 * 60 * 1000));
+          const newEndDate = new Date(startDate.getTime() + (parseFloat(taskRect.getAttribute('width')) / 51) * (24 * 60 * 60 * 1000));
 
           // Update the properties of the task in the array
           tasks[updatedTaskIndex].start = startDate.toISOString().split('T')[0];
           tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
-
+          document.removeEventListener('mousemove', this.dragMoveListener)
           // Update the Gantt chart with the new data
           updateTaskStartEndDates(tasks);
-          if(allTasks)
-          {
+          if (allTasks) {
             this.createGanttChart(allTasks);
           }
-          else{
+          else {
             this.createGanttChart(tasks);
           }
         }
@@ -351,8 +363,9 @@ export default class GanttChart {
     this.taskRect = taskRect;
   }
 
-  handleMouseUp(taskRect,  dependentTask, tasks, dateInfo, allTasks = null) {
+  handleMouseUp(taskRect, dependentTask, tasks, dateInfo, allTasks = null) {
     document.body.classList.remove('dragging');
+    document.removeEventListener('mousemove', this.dragMoveListener)
     if (this.isDragging) {
       this.isDragging = false
       // Find the task in the array and update its properties
@@ -383,6 +396,10 @@ export default class GanttChart {
   }
 
   updateGanttChartContent(svg, tasks) {
+    const chartContainer = document.getElementById('chart');
+    //clear the excisting date div
+    let Datediv = document.getElementById('div-date');
+    chartContainer.removeChild(Datediv);
     // Clear existing content
     while (svg.firstChild) {
       svg.removeChild(svg.firstChild);
@@ -400,9 +417,12 @@ export default class GanttChart {
     createGridLines(dateGroup, chartWidth, this.length);
     createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
     createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
+    Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
+    chartContainer.insertBefore(Datediv, svg);
     this.createTaskBars(svg, tasks, this.dateInfo);
-    this.drawDependencyLine(svg,tasks)
+    this.drawDependencyLine(svg, tasks)
   }
+
   drawDependencyLine(svg, tasks) {
     const svgNS = 'http://www.w3.org/2000/svg';
     const arrowheadSize = 5;
@@ -414,13 +434,13 @@ export default class GanttChart {
           if (dependentTask) {
             const startTaskElement = document.getElementById(`task-${dependentTask.id}`);
             const endTaskElement = document.getElementById(`task-${task.id}`);
-  
+
             if (startTaskElement && endTaskElement) {
               const startOffset = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
               const x1 = startOffset;
               const y1 = parseFloat(startTaskElement.getAttribute('y'));
               const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
-  
+
               // Draw horizontal line
               const lineHorizontal = this.createSvgLine(x1, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
               svg.appendChild(lineHorizontal);
@@ -433,7 +453,7 @@ export default class GanttChart {
               // Draw vertical line
               const lineVertical = this.createSvgLine(x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, parseFloat(endTaskElement.getAttribute('y')) + extraHeight);
               svg.appendChild(lineVertical);
-  
+
               // Draw arrowhead
               const arrowheadY = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('y')) + parseFloat(endTaskElement.getAttribute('height')) : parseFloat(endTaskElement.getAttribute('y'));
               const arrowDirection = isDependentAfterTask ? 'up' : 'down';
@@ -505,13 +525,48 @@ export default class GanttChart {
       return arrowhead;
   } 
     
+
+  getWidth() {
+    var svgElement = document.getElementById('mySvg');
+
+    if (svgElement) {
+      var svgWidthInPixels = window.getComputedStyle(svgElement).width;
+      var numericWidth = parseFloat(svgWidthInPixels);
+      return numericWidth;
+    } else {
+      return null;
+    }
+  }
+
+  getheight() {
+    var svgElement = document.getElementById('mySvg');
+
+    if (svgElement) {
+      var svgWidthInPixels = window.getComputedStyle(svgElement).height;
+      var numericWidth = parseFloat(svgWidthInPixels);
+      return numericWidth;
+    } else {
+      return null;
+    }
+  }
+
+  static returnHeight() {
+    const height = new GanttChart();
+    return height.getheight();
+  }
+
+  static returnWidth() {
+    const width = new GanttChart();
+    return width.getWidth();
+  }
+
   static createChart(tasks) {
     const ganttChart = new GanttChart();
     ganttChart.createGanttChart(tasks);
   }
 
-  static stopDrag(){
+  static stopDrag() {
     // Remove the event listener when the dragging stops
-    document.removeEventListener('mousemove', this.dragMoveListener);  
+    document.removeEventListener('mousemove', this.dragMoveListener);
   }
 }
