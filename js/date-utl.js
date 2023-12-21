@@ -66,10 +66,9 @@ export function createDivDateScale(dateInfo, chartWidth, taskCount) {
     const dateDiv = document.createElement('div')
     dateDiv.setAttribute('id','div-date')
     dateDiv.classList.add('date')
+    const div = document.createElement('div-date')
+    div.setAttribute('style','position:absolute;left:10rem;')
     const dateScale = document.createElement('div');
-    dateScale.setAttribute('x', '0');
-    dateScale.setAttribute('y', taskCount);
-    dateDiv.appendChild(dateScale);
     const width = GanttChart.returnWidth();
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     for (let i = 0; i <= chartWidth; i += 50) {
@@ -90,9 +89,10 @@ export function createDivDateScale(dateInfo, chartWidth, taskCount) {
             day.setAttribute('style', `position:absolute;left:${i*width/chartWidth-5}px`);
         }
         // day.dayContent = daysOfWeek[currentDate.getDay()]
-        dateDiv.appendChild(day);
+        div.appendChild(day);
         // dateDiv.appendChild(day)
     }
+    dateDiv.appendChild(div)
     console.log('width',width)
     return dateDiv;
 }
