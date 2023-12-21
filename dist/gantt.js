@@ -29,38 +29,76 @@ var Gantt = (function () {
             const currentDate = new Date(dateInfo.startingDate.getTime() + i / 50 * (24 * 60 * 60 * 1000));
             const monthIndex = currentDate.getMonth();
             if (monthIndex !== currentMonth) {
-            currentMonth = monthIndex;
+                currentMonth = monthIndex;
 
-            const monthHeading = document.createElementNS(svgNS$1, 'text');
-            monthHeading.setAttribute('x', i);
-            monthHeading.setAttribute('y', 15);
-            monthHeading.classList.add('month-heading');
-            monthHeading.textContent = months[currentMonth];
-            month.appendChild(monthHeading);
+                const monthHeading = document.createElementNS(svgNS$1, 'text');
+                monthHeading.setAttribute('x', i);
+                monthHeading.setAttribute('y', 10);
+                monthHeading.classList.add('month-heading');
+                monthHeading.textContent = months[currentMonth];
+                month.appendChild(monthHeading);
             }
         }
     }
 
     function createDateScale(dateGroup, dateInfo, chartWidth, taskCount) {
-        const date = document.createElementNS(svgNS$1,'g');
+        const date = document.createElementNS(svgNS$1, 'g');
         dateGroup.appendChild(date);
         date.classList.add('date');
         const dateScale = document.createElementNS(svgNS$1, 'text');
         dateScale.setAttribute('x', '0');
         dateScale.setAttribute('y', taskCount);
         date.appendChild(dateScale);
-
+        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         for (let i = 0; i <= chartWidth; i += 50) {
             const currentDate = new Date(dateInfo.startingDate.getTime() + i / 50 * (24 * 60 * 60 * 1000));
-            const text = document.createElementNS(svgNS$1, 'text');
-            text.setAttribute('x', i - 3);
-            text.setAttribute('y', taskCount + 25);
-            text.textContent = currentDate.getDate();
-            date.appendChild(text);
+            const day = document.createElementNS(svgNS$1, 'text');
+            day.setAttribute('x', i - 3);
+            day.setAttribute('y', 25);
+            day.setAttribute('font-size','12px');
+            if(currentDate.getDay() === 0 || currentDate.getDay() === 6){
+                day.setAttribute('fill','red');
+            }
+            day.textContent = daysOfWeek[currentDate.getDay()];
+            date.appendChild(day);
         }
     }
 
-    const updateTaskStartEndDates =(tasks)=> {
+    function createDivDateScale(dateInfo, chartWidth, taskCount) {
+        const dateDiv = document.createElement('div');
+        dateDiv.setAttribute('id','div-date');
+        dateDiv.classList.add('date');
+        const dateScale = document.createElement('div');
+        dateScale.setAttribute('x', '0');
+        dateScale.setAttribute('y', taskCount);
+        dateDiv.appendChild(dateScale);
+        const width = GanttChart.returnWidth();
+        for (let i = 0; i <= chartWidth; i += 50) {
+            const currentDate = new Date(dateInfo.startingDate.getTime() + i / 50 * (24 * 60 * 60 * 1000));
+            const day = document.createElement('div');
+          
+            day.setAttribute('font-size','10px');
+            day.setAttribute('y', 30);
+            day.textContent = `${currentDate.getDate()}`;
+            // const day = document.createElement('div');
+            // day.setAttribute('x', i - 3);
+            // day.setAttribute('y', 20);
+            // day.setAttribute('font-size','10px')
+            if(currentDate.getDay() === 0 || currentDate.getDay() === 6){
+                day.setAttribute('style',`position:absolute;left:${i*width/chartWidth-5}px;color:red`);
+            }
+            else {
+                day.setAttribute('style', `position:absolute;left:${i*width/chartWidth-5}px`);
+            }
+            // day.dayContent = daysOfWeek[currentDate.getDay()]
+            dateDiv.appendChild(day);
+            // dateDiv.appendChild(day)
+        }
+        console.log('width',width);
+        return dateDiv;
+    }
+
+    const updateTaskStartEndDates = (tasks) => {
       const taskMap = new Map(tasks.map(task => [task.id, task]));
 
       tasks.forEach(task => {
@@ -94,14 +132,13 @@ var Gantt = (function () {
           task.end = new Date(new Date(task.start).setDate(new Date(task.start).getDate() + duration)).toISOString().split('T')[0];
         }
       });
-      
+
     }
 
-    function updateSubTaskStartEndDate(task)
-    {
-       // Check if the task has subtasks
-       if (task.subTask && task.subTask.length > 0) {
-        const subTaskMap=new Map(task.subTask.map(subtask => [subtask.id, subtask]));
+    function updateSubTaskStartEndDate(task) {
+      // Check if the task has subtasks
+      if (task.subTask && task.subTask.length > 0) {
+        const subTaskMap = new Map(task.subTask.map(subtask => [subtask.id, subtask]));
         task.subTask.forEach(subTask => {
           const subDuration = (new Date(subTask.end) - new Date(subTask.start)) / (24 * 60 * 60 * 1000);
           // Example condition: If subtask start date is less than task start date, update it
@@ -109,14 +146,8 @@ var Gantt = (function () {
             subTask.start = task.start;
             subTask.end = new Date(new Date(subTask.start).setDate(new Date(task.start).getDate() + subDuration)).toISOString().split('T')[0];
           }
-          else 
-          {
-            const gap = (new Date(subTask.start) - new Date(task.start)) / (24 * 60 * 60 * 1000);
-            subTask.start = new Date(new Date(subTask.start).setDate(new Date(task.start).getDate() + gap)).toISOString().split('T')[0];
-          }
-          updateTaskDates(subTask,subTaskMap);
-          if(subTask.end > task.end)
-          {
+          updateTaskDates(subTask, subTaskMap);
+          if (subTask.end > task.end) {
             task.end = subTask.end;
           }
         });
@@ -129,13 +160,13 @@ var Gantt = (function () {
     function closeModal(modal) {
         modal.style.display = 'none';
     }
-    function openAddModal(tasks){
+    function openAddModal(tasks) {
         // Create or get the modal element
         let addModal = document.getElementById('addFormModal');
         if (!addModal) {
             addModal = document.createElement('div');
             addModal.setAttribute('id', 'addFormModal');
-            addModal.setAttribute('class','modal');
+            addModal.setAttribute('class', 'modal');
             document.body.appendChild(addModal);
         }
 
@@ -151,16 +182,16 @@ var Gantt = (function () {
         addTaskForm.innerHTML = '';
 
         // Create form elements dynamically and append them to the form
-        createFormField('Task Name:', 'taskName', '', 'text', true ,addTaskForm);
-        createFormField('Start Date:', 'startDate', '', 'date', true ,addTaskForm);
-        createFormField('End Date:', 'endDate', '', 'date', true ,addTaskForm);
-        createFormField('Progress:', 'progress', '', 'number', true ,addTaskForm);
+        createFormField('Task Name:', 'taskName', '', 'text', true, addTaskForm);
+        createFormField('Start Date:', 'startDate', '', 'date', true, addTaskForm);
+        createFormField('End Date:', 'endDate', '', 'date', true, addTaskForm);
+        createFormField('Progress:', 'progress', '', 'number', true, addTaskForm);
         // Create and append Save Changes button
         const saveChangesBtn = document.createElement('button');
         saveChangesBtn.setAttribute('type', 'button');
         saveChangesBtn.textContent = 'Save Changes';
         saveChangesBtn.addEventListener('click', function saveChangesHandler() {
-           addTask(tasks);
+            addTask(tasks);
         });
         addTaskForm.appendChild(saveChangesBtn);
 
@@ -169,7 +200,7 @@ var Gantt = (function () {
         cancelBtn.setAttribute('type', 'button');
         cancelBtn.textContent = 'Cancel';
         cancelBtn.addEventListener('click', function saveChangesHandler() {
-           closeModal(addModal);
+            closeModal(addModal);
         });
         addTaskForm.appendChild(cancelBtn);
 
@@ -208,7 +239,7 @@ var Gantt = (function () {
         // Call the function with sample data
         GanttChart.createChart(tasks);
     }
-      
+
     // Function to handle task editing
     function editTask(event, task, tasks, allTasks = null) {
         event.preventDefault();
@@ -219,7 +250,7 @@ var Gantt = (function () {
         if (!editModal) {
             editModal = document.createElement('div');
             editModal.setAttribute('id', 'editModal');
-            editModal.setAttribute('class','modal');
+            editModal.setAttribute('class', 'modal');
             document.body.appendChild(editModal);
         }
 
@@ -235,10 +266,10 @@ var Gantt = (function () {
         editTaskForm.innerHTML = '';
 
         // Create form elements dynamically and append them to the form
-        createFormField('Task Name:', 'editTaskName', task.name, 'text', true ,editTaskForm);
-        createFormField('Start Date:', 'editStartDate', task.start, 'date', true ,editTaskForm);
-        createFormField('End Date:', 'editEndDate', task.end, 'date', true ,editTaskForm);
-        createFormField('Progress:', 'editProgress', task.progress, 'number', true ,editTaskForm);
+        createFormField('Task Name:', 'editTaskName', task.name, 'text', true, editTaskForm);
+        createFormField('Start Date:', 'editStartDate', task.start, 'date', true, editTaskForm);
+        createFormField('End Date:', 'editEndDate', task.end, 'date', true, editTaskForm);
+        createFormField('Progress:', 'editProgress', task.progress, 'number', true, editTaskForm);
 
         // Clear existing options
         const editDependenciesSelect = document.createElement('select');
@@ -292,7 +323,7 @@ var Gantt = (function () {
         event.preventDefault();
     }
 
-    function createFormField(labelText, inputId, inputValue, inputType, required,parentName) {
+    function createFormField(labelText, inputId, inputValue, inputType, required, parentName) {
         const label = document.createElement('label');
         label.setAttribute('for', inputId);
         label.textContent = labelText;
@@ -310,14 +341,14 @@ var Gantt = (function () {
     }
 
 
-      
+
     // Function to check if a task is dependent on another task
     function isTaskDependent(currentTask, otherTask, allTasks) {
         return otherTask.dependencies.includes(currentTask.id) || otherTask.dependencies.some(depId => isTaskDependent(currentTask, allTasks[depId - 1], allTasks));
     }
-      
+
     // Function to save edited task
-    function saveEditedTask(tasks,alltasks=null) {
+    function saveEditedTask(tasks, alltasks = null) {
         const editTaskForm = document.getElementById('editTaskForm');
         const editTaskNameInput = document.getElementById('editTaskName');
         const editStartDateInput = document.getElementById('editStartDate');
@@ -349,8 +380,7 @@ var Gantt = (function () {
         // Update the Gantt chart with the new data
         updateTaskStartEndDates(tasks);
         // Call the function with sample data
-        if(alltasks)
-        {
+        if (alltasks) {
             GanttChart.createChart(alltasks);
         }
         else {
@@ -358,7 +388,7 @@ var Gantt = (function () {
         }
     }
 
-    function showTaskDetails(task,allTasks) {
+    function showTaskDetails(task, allTasks) {
         const dependentTaskNames = task.dependencies.map(depId => allTasks[depId - 1].name);
         const dependentTaskInfo = dependentTaskNames.length > 0 ? `Dependencies: ${dependentTaskNames.join(', ')}` : '';
 
@@ -391,9 +421,10 @@ var Gantt = (function () {
         this.currentProgressRect;
         this.dragMoveListener = null;
         this.length;
-        this.dependentTask ;
-        this.tasks ;
-        this.allTask ; 
+        this.dependentTask;
+        this.tasks;
+        this.allTask;
+        this.chartWidth;
       }
 
       getTotalLength(tasks) {
@@ -401,17 +432,21 @@ var Gantt = (function () {
           return total + 1 + (task.subTask ? this.getTotalLength(task.subTask) : 0);
         }, 0);
       }
-
-      createGanttChart(tasks) {
-        updateTaskStartEndDates(tasks);
-        const chartContainer = document.getElementById('chart');
-         // Create a button element
+      createButton(tasks) {
         const button = document.createElement('button');
-        button.setAttribute('class','top-place add-button');
+        button.setAttribute('class', 'top-place add-button');
         button.textContent = 'Add Task'; // Set the button text
         button.addEventListener('click', () => {
           openAddModal(tasks);
         });
+        return button;
+      }
+
+      createGanttChart(tasks) {
+        updateTaskStartEndDates(tasks);
+        const chartContainer = document.getElementById('chart');
+        // Create a button element
+        const button = this.createButton(tasks);
         let svg = chartContainer.querySelector('svg');
         // Check if the SVG element already exists
         if (!svg) {
@@ -420,6 +455,10 @@ var Gantt = (function () {
           // If not, create a new SVG element
           svg = this.createSVG(tasks);
           chartContainer.appendChild(svg);
+          const Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
+          chartContainer.insertBefore(Datediv,svg);
+          console.log(Datediv);
+          
         } else {
           this.updateGanttChartContent(svg, tasks);
         }
@@ -427,6 +466,7 @@ var Gantt = (function () {
 
       createSVG(tasks) {
         const svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('id', 'mySvg');
         svg.setAttribute('min-width', '100%');
         svg.setAttribute('height', '200%');
         const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
@@ -442,6 +482,9 @@ var Gantt = (function () {
         createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
         createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
         this.createTaskBars(svg, tasks, this.dateInfo);
+        setTimeout(() => {
+          this.drawDependencyLine(svg, tasks);
+        }, 0);
         return svg;
       }
 
@@ -462,7 +505,8 @@ var Gantt = (function () {
       }
 
       calculateChartWidth(dateInfo) {
-        return (dateInfo.multiplier * ((dateInfo.maxDate - dateInfo.startingDate) / (24 * 60 * 60 * 1000)));
+        this.chartWidth = (dateInfo.maxDate - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * dateInfo.multiplier;
+        return this.chartWidth;
       }
 
       createTaskBars(svg, tasks, dateInfo) {
@@ -483,6 +527,7 @@ var Gantt = (function () {
           rect.setAttribute('width', duration);
           rect.setAttribute('height', 30);
           rect.setAttribute('fill', '#3498db');
+          rect.setAttribute('id', `task-${task.id}`); // Set the id attribute
           taskGroup.appendChild(rect);
 
           const progressWidth = (duration * task.progress) / 100;
@@ -503,7 +548,7 @@ var Gantt = (function () {
           // Render subtasks
           if (task.subTask && task.subTask.length > 0) {
             const subTaskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
-            subTaskGroup.setAttribute('class','subtask');
+            subTaskGroup.setAttribute('class', 'subtask');
             taskGroup.appendChild(subTaskGroup);
             task.subTask.forEach((subtask, subIndex) => {
               const subDependentTaskEnd = Math.max(...subtask.dependencies.map(depId => new Date(task.subTask[depId - 1].end)));
@@ -511,17 +556,18 @@ var Gantt = (function () {
               const subDuration = (new Date(subtask.end) - new Date(subtask.start)) / (24 * 60 * 60 * 1000) * 50;
 
               const subRect = document.createElementNS(svgNS, 'rect');
-              subRect.setAttribute('class','subtask');
+              subRect.setAttribute('class', 'subtask');
               subRect.setAttribute('x', subStartOffset);
               subRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
               subRect.setAttribute('width', subDuration);
               subRect.setAttribute('height', 15);
               subRect.setAttribute('fill', '#e74c3c');
+              subRect.setAttribute('id', `subtask-${task.id}-${subtask.id}`); // Set the id attribute for subtasks
               subTaskGroup.appendChild(subRect);
 
               const subProgressWidth = (subDuration * subtask.progress) / 100;
               const subProgressRect = document.createElementNS(svgNS, 'rect');
-              subProgressRect.setAttribute('class','subtask-progress');
+              subProgressRect.setAttribute('class', 'subtask-progress');
               subProgressRect.setAttribute('x', subStartOffset);
               subProgressRect.setAttribute('y', (subIndex + customIndex + 1) * 40 + 40);
               subProgressRect.setAttribute('width', subProgressWidth);
@@ -557,15 +603,15 @@ var Gantt = (function () {
               });
               subRect.addEventListener('mousedown', (event) => {
                 event.preventDefault();
-                this.startDrag(event, subRect, subProgressRect , subtask , task.subTask , tasks);
+                this.startDrag(event, subRect, subProgressRect, subtask, task.subTask, tasks);
               });
               subProgressRect.addEventListener('mousedown', (event) => {
                 event.preventDefault();
-                this.startDrag(event, subRect, subProgressRect, subtask , task.subTask , tasks);
+                this.startDrag(event, subRect, subProgressRect, subtask, task.subTask, tasks);
               });
               subText.addEventListener('mousedown', (event) => {
                 event.preventDefault();
-                this.startDrag(event, subRect, subProgressRect , subtask , task.subTask , tasks);
+                this.startDrag(event, subRect, subProgressRect, subtask, task.subTask, tasks);
               });
             });
           }
@@ -593,19 +639,18 @@ var Gantt = (function () {
           // Add event listeners for dragging to edit start and end dates
           rect.addEventListener('mousedown', (event) => {
             event.preventDefault();
-            this.startDrag(event, rect, progressRect,task ,tasks);
+            this.startDrag(event, rect, progressRect, task, tasks);
           });
           progressRect.addEventListener('mousedown', (event) => {
             event.preventDefault();
-            this.startDrag(event, rect, progressRect ,task ,tasks);
+            this.startDrag(event, rect, progressRect, task, tasks);
           });
           text.addEventListener('mousedown', (event) => {
             event.preventDefault();
-            this.startDrag(event, rect, progressRect,task ,tasks);
-          });     
+            this.startDrag(event, rect, progressRect, task, tasks);
+          });
           document.addEventListener('mouseup', (event) => {
-            document.removeEventListener('mousemove',this.dragMoveListener);
-            this.handleMouseUp(this.taskRect, this.dependentTask, this.tasks, this.dateInfo ,this.allTasks);
+            this.handleMouseUp(this.taskRect, this.dependentTask, this.tasks, this.dateInfo, this.allTasks);
           });
           // task below the subtask
           customIndex = customIndex + 1;
@@ -641,17 +686,17 @@ var Gantt = (function () {
         }
       }
 
-      handleDragMove(event, taskRect, progress, dependentTask, tasks ,allTasks=null) {
+      handleDragMove(event, taskRect, progress, dependentTask, tasks, allTasks = null) {
         event.preventDefault();
         if (this.isDragging) {
-          this.updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks ,allTasks);
+          this.updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks, allTasks);
         }
       }
 
-      startDrag(event, taskRect, taskProgressRect , dependentTask, task , allTasks=null) {
-        this.dependentTask = dependentTask ;
-        this.tasks = task ;
-        this.allTasks = allTasks ; 
+      startDrag(event, taskRect, taskProgressRect, dependentTask, task, allTasks = null) {
+        this.dependentTask = dependentTask;
+        this.tasks = task;
+        this.allTasks = allTasks;
         document.body.classList.add('dragging');
         this.isDragging = true;
         this.initialX = event.clientX;
@@ -663,14 +708,15 @@ var Gantt = (function () {
         this.currentProgressRect = taskProgressRect;
         this.dragMoveListener = this.throttle((event) => {
           this.handleDragMove(event, this.currentTaskRect, this.currentProgressRect, dependentTask, task, allTasks);
-        }, 16); 
+        }, 16);
         event.preventDefault();
-        document.addEventListener('mousemove',this.dragMoveListener);
+        document.addEventListener('mousemove', this.dragMoveListener);
 
       }
 
-      updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks ,allTasks) {
-        const deltaX = (clientX - this.initialX) * .73; // Adjust the sensitivity factor 
+      updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks, allTasks) {
+        const width = this.getWidth();
+        const deltaX = (clientX - this.initialX) /(width/this.chartWidth);// Adjust the sensitivity factor 
         if (this.isDragStart) {
           // Dragging start handle
           const newStartOffset = (new Date(dependentTask.start) - this.dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50 + deltaX;
@@ -682,16 +728,15 @@ var Gantt = (function () {
             this.isDragging = false;
             const updatedTaskIndex = tasks.findIndex(t => t.id === dependentTask.id);
             if (updatedTaskIndex !== -1) {
-              const newEndDate = new Date(startDate.getTime() + (parseFloat(taskRect.getAttribute('width')) / 52) * (24 * 60 * 60 * 1000));
+              const newEndDate = new Date(startDate.getTime() + (parseFloat(taskRect.getAttribute('width')) / 51) * (24 * 60 * 60 * 1000));
 
               // Update the properties of the task in the array
               tasks[updatedTaskIndex].start = startDate.toISOString().split('T')[0];
               tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
-
+              document.removeEventListener('mousemove', this.dragMoveListener);
               // Update the Gantt chart with the new data
               updateTaskStartEndDates(tasks);
-              if(allTasks)
-              {
+              if (allTasks) {
                 this.createGanttChart(allTasks);
               }
               else {
@@ -720,8 +765,9 @@ var Gantt = (function () {
         this.taskRect = taskRect;
       }
 
-      handleMouseUp(taskRect,  dependentTask, tasks, dateInfo, allTasks = null) {
+      handleMouseUp(taskRect, dependentTask, tasks, dateInfo, allTasks = null) {
         document.body.classList.remove('dragging');
+        document.removeEventListener('mousemove', this.dragMoveListener);
         if (this.isDragging) {
           this.isDragging = false;
           // Find the task in the array and update its properties
@@ -752,6 +798,10 @@ var Gantt = (function () {
       }
 
       updateGanttChartContent(svg, tasks) {
+        const chartContainer = document.getElementById('chart');
+        //clear the excisting date div
+        let Datediv = document.getElementById('div-date');
+        chartContainer.removeChild(Datediv);
         // Clear existing content
         while (svg.firstChild) {
           svg.removeChild(svg.firstChild);
@@ -769,16 +819,136 @@ var Gantt = (function () {
         createGridLines(dateGroup, chartWidth, this.length);
         createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
         createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
+        Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
+        chartContainer.insertBefore(Datediv,svg);
         this.createTaskBars(svg, tasks, this.dateInfo);
+        this.drawDependencyLine(svg, tasks);
+      }
+      drawDependencyLine(svg, tasks) {
+        tasks.forEach((task, index) => {
+          if (task.dependencies && task.dependencies.length > 0) {
+            task.dependencies.forEach((dependencyId) => {
+              const dependentTask = tasks.find((t) => t.id === dependencyId);
+              if (dependentTask) {
+
+                const svgNS = 'http://www.w3.org/2000/svg';
+
+                const startTaskElement = document.getElementById(`task-${dependentTask.id}`);
+                const endTaskElement = document.getElementById(`task-${task.id}`);
+
+                if (startTaskElement && endTaskElement) {
+                  const startOffset = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
+                  const x1 = startOffset;
+
+                  const y1 = parseFloat(startTaskElement.getAttribute('y'));
+
+                  const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
+
+                  // Draw horizontal line
+                  const lineHorizontal = document.createElementNS(svgNS, 'line');
+                  lineHorizontal.setAttribute('x1', x1);
+                  lineHorizontal.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+                  lineHorizontal.setAttribute('x2', x2);
+                  lineHorizontal.setAttribute('y2', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+                  lineHorizontal.classList.add('dependency-line');
+                  svg.appendChild(lineHorizontal);
+
+                  // Draw vertical line
+                  const lineVertical = document.createElementNS(svgNS, 'line');
+                  lineVertical.setAttribute('x1', x2);
+                  lineVertical.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+                  lineVertical.setAttribute('x2', x2);
+                  lineVertical.setAttribute('y2', parseFloat(endTaskElement.getAttribute('y'))); // Adjust as needed
+                  lineVertical.classList.add('dependency-line');
+                  svg.appendChild(lineVertical);
+
+                  // Draw arrowhead
+                  const arrowhead = document.createElementNS(svgNS, 'polygon');
+                  const arrowheadSize = 5;
+                  arrowhead.setAttribute('points', `${x2},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2 - arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2},${parseFloat(endTaskElement.getAttribute('y'))} ${x2 + arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize}`);
+                  arrowhead.classList.add('dependency-arrowhead');
+                  svg.appendChild(arrowhead);
+
+                }
+              }
+            });
+          }
+          if (task.subTask) {
+            task.subTask.forEach((subtask, subindex) => {
+              if (subtask.dependencies && subtask.dependencies.length > 0) {
+                subtask.dependencies.forEach((dependencyId) => {
+                  const dependentTask = task.subTask.find((t) => t.id === dependencyId);
+                  if (dependentTask) {
+
+                    const svgNS = 'http://www.w3.org/2000/svg';
+
+                    const startTaskElement = document.getElementById(`subtask-${task.id}-${dependentTask.id}`);
+                    const endTaskElement = document.getElementById(`subtask-${task.id}-${subtask.id}`);
+
+                    if (startTaskElement && endTaskElement) {
+                      const startOffset = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
+                      const x1 = startOffset;
+
+                      const y1 = parseFloat(startTaskElement.getAttribute('y'));
+
+                      const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
+
+                      // Draw horizontal line
+                      const lineHorizontal = document.createElementNS(svgNS, 'line');
+                      lineHorizontal.setAttribute('x1', x1);
+                      lineHorizontal.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+                      lineHorizontal.setAttribute('x2', x2);
+                      lineHorizontal.setAttribute('y2', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+                      lineHorizontal.classList.add('dependency-line');
+                      svg.appendChild(lineHorizontal);
+
+                      // Draw vertical line
+                      const lineVertical = document.createElementNS(svgNS, 'line');
+                      lineVertical.setAttribute('x1', x2);
+                      lineVertical.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+                      lineVertical.setAttribute('x2', x2);
+                      lineVertical.setAttribute('y2', parseFloat(endTaskElement.getAttribute('y'))); // Adjust as needed
+                      lineVertical.classList.add('dependency-line');
+                      svg.appendChild(lineVertical);
+
+                      // Draw arrowhead
+                      const arrowhead = document.createElementNS(svgNS, 'polygon');
+                      const arrowheadSize = 5;
+                      arrowhead.setAttribute('points', `${x2},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2 - arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2},${parseFloat(endTaskElement.getAttribute('y'))} ${x2 + arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize}`);
+                      arrowhead.classList.add('dependency-arrowhead');
+                      svg.appendChild(arrowhead);
+
+                    }
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+      getWidth() {
+        var svgElement = document.getElementById('mySvg');
+
+        if (svgElement) {
+            var svgWidthInPixels = window.getComputedStyle(svgElement).width;
+            var numericWidth = parseFloat(svgWidthInPixels);
+            return numericWidth;
+        } else {
+            return null;
+        }
+      }
+      static returnWidth(){
+        const width = new GanttChart();
+        return width.getWidth();
       }
       static createChart(tasks) {
         const ganttChart = new GanttChart();
         ganttChart.createGanttChart(tasks);
       }
 
-      static stopDrag(){
+      static stopDrag() {
         // Remove the event listener when the dragging stops
-        document.removeEventListener('mousemove', this.dragMoveListener);  
+        document.removeEventListener('mousemove', this.dragMoveListener);
       }
     }
 
