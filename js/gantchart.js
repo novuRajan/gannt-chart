@@ -20,6 +20,7 @@ export default class GanttChart {
     this.tasks;
     this.allTask;
     this.chartWidth;
+    this.taskBar;
   }
 
   getTotalLength(tasks) {
@@ -30,7 +31,7 @@ export default class GanttChart {
 
   createButton(tasks) {
     const button = document.createElement('button');
-    button.setAttribute('class', 'top-place add-button')
+    button.setAttribute('class', 'add-button')
     button.textContent = 'Add Task'; // Set the button text
     button.addEventListener('click', () => {
       openAddModal(tasks);
@@ -42,19 +43,30 @@ export default class GanttChart {
     updateTaskStartEndDates(tasks);
     const chartContainer = document.getElementById('chart');
     // Create a button element
+    const overallDiv = document.createElement('div'); // Create a div element for the SVG ,date and side bar
+    overallDiv.setAttribute('class', 'top-class');
+    overallDiv.setAttribute('id', 'overall-div');
+    const addTask = document.createElement('div');
+    addTask.setAttribute('class', 'add-tasks');
+    const sideBar = document.createElement('div');
+    sideBar.setAttribute('class', 'sidebar');
+    this.taskBar = document.createElement('div');
+    this.taskBar.setAttribute('class', 'taskbar');
+    sideBar.appendChild(this.taskBar);
     const button = this.createButton(tasks)
     let svg = chartContainer.querySelector('svg');
     // Check if the SVG element already exists
     if (!svg) {
       // Append the button to the parent container of the SVG
-      chartContainer.appendChild(button);
-      // If not, create a new SVG element
+      addTask.appendChild(button);
+      overallDiv.appendChild(addTask);
+      overallDiv.appendChild(sideBar);
+      // If not, create a new SVG da
       svg = this.createSVG(tasks);
-      chartContainer.appendChild(svg);
+      overallDiv.appendChild(svg);
+      chartContainer.appendChild(overallDiv);
       const Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
-      chartContainer.insertBefore(Datediv, svg);
-      console.log(Datediv);
-
+      overallDiv.insertBefore(Datediv, svg);
     } else {
       this.updateGanttChartContent(svg, tasks);
     }
@@ -62,7 +74,6 @@ export default class GanttChart {
 
   createSVG(tasks) {
     const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('style', 'position: absolute; left: 10rem');
     svg.setAttribute('id', 'mySvg');
     // svg.setAttribute('min-width', '100%');
     // svg.setAttribute('height', '200%');
@@ -110,10 +121,13 @@ export default class GanttChart {
     let customIndex = 0;
 
     tasks.forEach((task, index) => {
+      const sideBarDiv = this.createSideBar();
+      
       const taskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
       taskGroup.setAttribute('class', 'tasks');
       svg.appendChild(taskGroup);
-
+      const mainTask = document.createElement('div');
+      mainTask.setAttribute('class', 'main-task'); 
       const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end)));
       const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
       const duration = (new Date(task.end) - new Date(task.start)) / (24 * 60 * 60 * 1000) * 50;
@@ -141,13 +155,18 @@ export default class GanttChart {
       text.setAttribute('y', customIndex * 40 + 60);
       text.textContent = task.name;
       taskGroup.appendChild(text);
-
+      // div added for the task 
+      mainTask.setAttribute('style',`top:${(customIndex * 40 + 40)*770/(this.length * 40 + 40)}px;height:30px;`)
+      mainTask.textContent = task.name;
+      this.taskBar.appendChild(mainTask);
       // Render subtasks
       if (task.subTask && task.subTask.length > 0) {
         const subTaskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
         subTaskGroup.setAttribute('class', 'subtask')
         taskGroup.appendChild(subTaskGroup);
         task.subTask.forEach((subtask, subIndex) => {
+          const subTask = document.createElement('div');
+          subTask.setAttribute('class', 'sub-task'); 
           const subDependentTaskEnd = Math.max(...subtask.dependencies.map(depId => new Date(task.subTask[depId - 1].end)));
           const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
           const subDuration = (new Date(subtask.end) - new Date(subtask.start)) / (24 * 60 * 60 * 1000) * 50;
@@ -178,7 +197,12 @@ export default class GanttChart {
           subText.textContent = subtask.name;
           subText.setAttribute('font-size', '10px');
           subTaskGroup.appendChild(subText);
-
+          
+          // div added for the subtask
+          subTask.setAttribute('style',`top:${((subIndex + customIndex + 1) * 40 + 50)*770/(this.length * 40 + 40)}px;height:15px;`)
+          subTask.textContent = subtask.name;
+          this.taskBar.appendChild(subTask);
+          
           subText.addEventListener('mouseover', () => showTaskDetails(subtask, task.subTask));
           subRect.addEventListener('mouseover', () => showTaskDetails(subtask, task.subTask));
           subRect.addEventListener('mouseout', hideTaskDetails);
@@ -396,7 +420,7 @@ export default class GanttChart {
   }
 
   updateGanttChartContent(svg, tasks) {
-    const chartContainer = document.getElementById('chart');
+    const chartContainer = document.getElementById('overall-div');
     //clear the excisting date div
     let Datediv = document.getElementById('div-date');
     chartContainer.removeChild(Datediv);
@@ -524,7 +548,12 @@ export default class GanttChart {
       arrowhead.classList.add('dependency-arrowhead');
       return arrowhead;
   } 
-    
+  
+  createSideBar() {
+    const sidebar = document.createElement('div');
+    sidebar.setAttribute('class', 'sidebar');
+    return sidebar;
+  }
 
   getWidth() {
     var svgElement = document.getElementById('mySvg');
