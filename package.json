@@ -26,13 +26,14 @@
     "prettier": "^3.1.1",
     "rollup": "^4.9.1",
     "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.3.3"
-  },
-  "dependencies": {
+    "typescript": "^5.3.3",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
     "rollup-plugin-filesize": "^10.0.0",
     "rollup-plugin-peer-deps-external": "^2.2.4"
+  },
+  "dependencies": {
+    
   }
 }
