@@ -10,16 +10,29 @@
     "dev": "rollup -c -w",
     "test": "jest",
     "test:watch": "jest --watch",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
     "prettier": "prettier --write \"{src/*,tests/*,rollup.config}.js\"",
     "prettier-check": "prettier --check \"{src/*,tests/*,rollup.config}.js\""
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
     "babel-preset-env": "^1.7.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.0.1",
     "prettier": "^3.1.1",
-    "rollup": "^4.9.1"
+    "rollup": "^4.9.1",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "rollup-plugin-filesize": "^10.0.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4"
   }
 }
