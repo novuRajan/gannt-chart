@@ -9,10 +9,9 @@
 
 <body>
   <div id="chart" xmlns="http://www.w3.org/2000/svg"></div>
-  <script src="./src/gantchart.js"  type="module"></script>
-  <script type="module">
-      import GanttChart from "./src/gantchart.js";
-      const Gantt = new GanttChart();
+  <script src="./dist/gantt.js"></script>
+  <script>
+      const GanttChart = new Gantt();
       var data = [
         {
           id: 1,
@@ -62,7 +61,7 @@
         
 
       ];
-    Gantt.createGanttChart(data);
+      GanttChart.createGanttChart(data);
   </script>
   
 </body>

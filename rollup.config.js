@@ -1,7 +1,12 @@
 import terser from '@rollup/plugin-terser';
+import typescript from '@rollup/plugin-typescript';
+import commonjs from '@rollup/plugin-commonjs';
+import filesize from 'rollup-plugin-filesize';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 
 const dev = {
-    input: 'src/gantchart.js',
+    input: 'src/gantchart.ts',
     output: {
         name: 'Gantt',
         file: 'dist/gantt.js',
@@ -9,11 +14,15 @@ const dev = {
         format: 'iife',
     },
     plugins: [
-       
+        commonjs(), // Handle CommonJS modules
+        filesize(),
+        nodeResolve(),
+        typescript(),
+        peerDepsExternal(),
     ],
 };
 const prod = {
-    input: 'src/gantchart.js',
+    input: 'src/gantchart.ts',
     output: {
         name: 'Gantt',
         file: 'dist/gantt.min.js',
@@ -21,7 +30,7 @@ const prod = {
         format: 'iife',
     },
     plugins: [
-        [terser()]
+        terser(), // Apply Terser plugin directly in the plugins array
     ],
 };
 
