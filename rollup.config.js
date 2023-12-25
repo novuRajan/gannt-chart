@@ -1,7 +1,7 @@
 import terser from '@rollup/plugin-terser';
 
 const dev = {
-    input: 'js/gantchart.js',
+    input: 'src/gantchart.js',
     output: {
         name: 'Gantt',
         file: 'dist/gantt.js',
@@ -13,7 +13,7 @@ const dev = {
     ],
 };
 const prod = {
-    input: 'js/gantchart.js',
+    input: 'src/gantchart.js',
     output: {
         name: 'Gantt',
         file: 'dist/gantt.min.js',

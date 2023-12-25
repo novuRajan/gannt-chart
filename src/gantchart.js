@@ -62,7 +62,7 @@ export default class GanttChart {
 
   createSVG(tasks) {
     const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('style', 'position: absolute; left: 10rem');
+    // svg.setAttribute('style', 'position: absolute; left: 10rem');
     svg.setAttribute('id', 'mySvg');
     // svg.setAttribute('min-width', '100%');
     // svg.setAttribute('height', '200%');

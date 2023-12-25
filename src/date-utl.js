@@ -68,7 +68,7 @@ export function createDivDateScale(dateInfo, chartWidth, taskCount) {
     dateDiv.setAttribute('id','div-date')
     dateDiv.classList.add('date')
     const div = document.createElement('div-date')
-    div.setAttribute('style','position:absolute;left:10rem;')
+    // div.setAttribute('style','position:absolute;left:10rem;')
     const dateScale = document.createElement('div');
     const width = GanttChart.returnWidth();
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
