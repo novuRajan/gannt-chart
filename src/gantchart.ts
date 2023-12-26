@@ -54,7 +54,6 @@ export default class GanttChart {
             chartContainer.appendChild(svg);
             const DateDiv = createDivDateScale(this.dateInfo, this.chartWidth);
             chartContainer.insertBefore(DateDiv, svg);
-            console.log(DateDiv);
 
         } else {
             this.updateGanttChartContent(svg, tasks);
@@ -408,9 +407,7 @@ export default class GanttChart {
         this.length = this.getTotalLength(tasks);
         // Update the content with the new tasks
 
-        console.log(tasks);
         this.dateInfo = this.calculateDateInfo(tasks);
-        console.log(this.dateInfo);
         const chartWidth = this.calculateChartWidth(this.dateInfo);
         const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
         dateGroup.setAttribute('class', 'date-groups');
