@@ -430,41 +430,44 @@ export default class GanttChart {
     this.drawDependencyLine(svg, tasks)
   }
 
-  drawDependencyLine(svg : SVGElement, tasks : ITask[]) {
+  drawDependencyLine(svg: SVGElement, tasks: ITask[]) {
     const arrowheadSize = 5;
+
+    const drawTaskDependency = (dependentTask: ITask, task: ITask, elementIdPrefix: string) => {
+      const startTaskElement = document.getElementById(`${elementIdPrefix}-${dependentTask.id}`);
+      const endTaskElement = document.getElementById(`${elementIdPrefix}-${task.id}`);
+
+      if (startTaskElement && endTaskElement) {
+        const x1 = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
+        const y1 = parseFloat(startTaskElement.getAttribute('y'));
+        const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
+
+        // Draw horizontal line
+        const lineHorizontal = this.createSvgLine(x1, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+        svg.appendChild(lineHorizontal);
+
+        // Determine extra height for the vertical line
+        const isDependentAfterTask = dependentTask.id > task.id;
+        const extraHeight = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('height')) : 0;
+
+        // Draw vertical line
+        const lineVertical = this.createSvgLine(x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, parseFloat(endTaskElement.getAttribute('y')) + extraHeight);
+        svg.appendChild(lineVertical);
+
+        // Draw arrowhead
+        const arrowheadY = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('y')) + parseFloat(endTaskElement.getAttribute('height')) : parseFloat(endTaskElement.getAttribute('y'));
+        const arrowDirection = isDependentAfterTask ? 'up' : 'down';
+        const arrowhead = this.createArrowhead(x2, arrowheadY, arrowheadSize, arrowDirection);
+        svg.appendChild(arrowhead);
+      }
+    };
 
     tasks.forEach((task) => {
       if (task.dependencies && task.dependencies.length > 0) {
         task.dependencies.forEach((dependencyId) => {
           const dependentTask = tasks.find((t) => t.id === dependencyId);
           if (dependentTask) {
-            const startTaskElement = document.getElementById(`task-${dependentTask.id}`);
-            const endTaskElement = document.getElementById(`task-${task.id}`);
-
-            if (startTaskElement && endTaskElement) {
-              const x1 = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
-              const y1 = parseFloat(startTaskElement.getAttribute('y'));
-              const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
-
-              // Draw horizontal line
-              const lineHorizontal = this.createSvgLine(x1, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-              svg.appendChild(lineHorizontal);
-
-              //if blocked task is above the blocker task in the chart ,add extra height to the vertical line
-              const isDependentAfterTask = dependentTask.id > task.id;
-              const extraHeight = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('height')) : 0;
-
-
-              // Draw vertical line
-              const lineVertical = this.createSvgLine(x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, parseFloat(endTaskElement.getAttribute('y')) + extraHeight);
-              svg.appendChild(lineVertical);
-
-              // Draw arrowhead
-              const arrowheadY = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('y')) + parseFloat(endTaskElement.getAttribute('height')) : parseFloat(endTaskElement.getAttribute('y'));
-              const arrowDirection = isDependentAfterTask ? 'up' : 'down';
-              const arrowhead = this.createArrowhead(x2, arrowheadY, arrowheadSize, arrowDirection);
-              svg.appendChild(arrowhead);
-            }
+            drawTaskDependency(dependentTask, task, 'task');
           }
         });
       }
@@ -475,32 +478,7 @@ export default class GanttChart {
             subtask.dependencies.forEach((dependencyId) => {
               const dependentTask = task.subTask.find((t) => t.id === dependencyId);
               if (dependentTask) {
-                const startTaskElement = document.getElementById(`subtask-${task.id}-${dependentTask.id}`);
-                const endTaskElement = document.getElementById(`subtask-${task.id}-${subtask.id}`);
-
-                if (startTaskElement && endTaskElement) {
-                  const x1 = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
-                  const y1 = parseFloat(startTaskElement.getAttribute('y'));
-                  const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
-
-                  // Draw horizontal line
-                  const lineHorizontal = this.createSvgLine(x1, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-                  svg.appendChild(lineHorizontal);
-
-                  //if blocked subtask is above the blocker task in the chart ,add extra height to the vertical line
-                  const isDependentAfterTask = dependentTask.id > subtask.id;
-                  const extraHeight = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('height')) : 0;
-
-                  // Draw vertical line
-                  const lineVertical = this.createSvgLine(x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, parseFloat(endTaskElement.getAttribute('y')) + extraHeight);
-                  svg.appendChild(lineVertical);
-
-                  // Draw arrowhead
-                  const arrowheadY = dependentTask.id > subtask.id ? parseFloat(endTaskElement.getAttribute('y')) + parseFloat(endTaskElement.getAttribute('height')) : parseFloat(endTaskElement.getAttribute('y'));
-                  const arrowDirection = isDependentAfterTask ? 'up' : 'down';
-                  const arrowhead = this.createArrowhead(x2, arrowheadY, arrowheadSize, arrowDirection);
-                  svg.appendChild(arrowhead);
-                }
+                drawTaskDependency(dependentTask, subtask, 'subtask');
               }
             });
           }
