@@ -18,7 +18,7 @@ function updateTaskDates(task:ITask, taskMap:Map<number, ITask>) {
   const dependentTasks = task.dependencies.map(depId => taskMap.get(depId));
 
   // Find the maximum end date among dependent tasks
-  const maxEndDate=new DateHelper(dependentTasks.map(task=>task.end)).latestDate();
+  const maxEndDate= new DateHelper(dependentTasks.map(task=>task.end)).latestDate();
 
   dependentTasks.forEach(dependentTask => {
     updateTaskDates(dependentTask, taskMap);
