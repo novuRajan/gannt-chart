@@ -7,11 +7,12 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "lib": ["es2016", "dom"],
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.js",
+    "src/**/*.js"
   ],
   "exclude": [
     "node_modules"
