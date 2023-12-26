@@ -1,13 +1,15 @@
 import { updateTaskStartEndDates } from './updatechart';
 import GanttChart from './gantchart';
+import { ITask } from './Interfaces/Task/Task';
+import { ISubTask } from './Interfaces/Task/SubTask';
 
 const tooltip = document.createElement('div');
 tooltip.className = 'bar-hover';
 document.body.appendChild(tooltip);
-export function closeModal(modal) {
+export function closeModal(modal: HTMLElement) {
     modal.style.display = 'none';
 }
-export function openAddModal(tasks) {
+export function openAddModal(tasks : ITask[] | ISubTask[]) {
     // Create or get the modal element
     let addModal = document.getElementById('addFormModal');
     if (!addModal) {
@@ -53,12 +55,9 @@ export function openAddModal(tasks) {
 
     // Display the modal
     addModal.style.display = 'block';
-
-    // Prevent the contextmenu event from propagating further
-    event.preventDefault();
 }
 //function to update the task array
-export function addTask(tasks) {
+export function addTask(tasks : ITask[] | ISubTask[]) {
     const addModal = document.getElementById('addFormModal');
     const taskName = document.getElementById('taskName')  as HTMLInputElement;
     const startDate = document.getElementById('startDate') as HTMLInputElement;
@@ -81,6 +80,7 @@ export function addTask(tasks) {
 
     // Add the new task to the existing tasks
     tasks.push(newTask);
+    // eslint-disable-next-line no-global-assign
     length = length + 1; //after adding of each task length should be increased
     closeModal(addModal);
     // Call the function with sample data
@@ -88,7 +88,7 @@ export function addTask(tasks) {
 }
 
 // Function to handle task editing
-export function editTask(event, task, tasks, allTasks = null) {
+export function editTask(event: MouseEvent, task : ITask | ISubTask, tasks : ITask[] | ISubTask [], allTasks = null) {
     event.preventDefault();
     GanttChart.stopDrag();
 
@@ -125,11 +125,11 @@ export function editTask(event, task, tasks, allTasks = null) {
     editTaskForm.appendChild(editDependenciesSelect);
 
     // Display dependencies in the modal as select options
-    tasks.forEach(availableTask => {
+    tasks.forEach((availableTask) => {
         // Check if the available task is not the current task and not dependent on the current task
         if (availableTask.id !== task.id && !isTaskDependent(task, availableTask, tasks)) {
             const option = document.createElement('option');
-            option.value = availableTask.id;
+            option.value = `${availableTask.id}`; // Convert to string using template literal
             option.textContent = availableTask.name;
             if (task.dependencies.includes(availableTask.id)) {
                 // If the task is already a dependency, mark it as selected
@@ -139,8 +139,9 @@ export function editTask(event, task, tasks, allTasks = null) {
         }
     });
 
+
     // Store the task ID in a data attribute of the form
-    editTaskForm.setAttribute('data-task-id', task.id);
+    editTaskForm.setAttribute('data-task-id', `${task.id}`);
 
     // Create and append Save Changes button
     const saveChangesBtn = document.createElement('button');
@@ -170,7 +171,7 @@ export function editTask(event, task, tasks, allTasks = null) {
     event.preventDefault();
 }
 
-function createFormField(labelText, inputId, inputValue, inputType, required, parentName) {
+function createFormField(labelText: string, inputId: string, inputValue: string | number, inputType: string, required: boolean, parentName: HTMLElement) {
     const label = document.createElement('label');
     label.setAttribute('for', inputId);
     label.textContent = labelText;
@@ -179,7 +180,7 @@ function createFormField(labelText, inputId, inputValue, inputType, required, pa
     input.setAttribute('type', inputType);
     input.setAttribute('id', inputId);
     input.setAttribute('name', inputId);
-    input.value = inputValue;
+    input.value =  `${inputValue}`;
     input.required = required;
 
     // Append label and input to the form
@@ -190,12 +191,12 @@ function createFormField(labelText, inputId, inputValue, inputType, required, pa
 
 
 // Function to check if a task is dependent on another task
-export function isTaskDependent(currentTask, otherTask, allTasks) {
+export function isTaskDependent(currentTask: ITask | ISubTask, otherTask: ITask, allTasks: ITask[] | ISubTask[] = null) {
     return otherTask.dependencies.includes(currentTask.id) || otherTask.dependencies.some(depId => isTaskDependent(currentTask, allTasks[depId - 1], allTasks));
 }
 
 // Function to save edited task
-export function saveEditedTask(tasks, alltasks = null) {
+export function saveEditedTask(tasks : ISubTask[] | ITask [] , allTasks = null) {
     const editTaskForm = document.getElementById('editTaskForm') as HTMLFormElement;
     const editTaskNameInput = document.getElementById('editTaskName') as HTMLInputElement;
     const editStartDateInput = document.getElementById('editStartDate')as HTMLInputElement;
@@ -220,22 +221,27 @@ export function saveEditedTask(tasks, alltasks = null) {
         tasks[editedTaskIndex].name = editedTaskName;
         tasks[editedTaskIndex].start = editedStartDate;
         tasks[editedTaskIndex].end = editedEndDate;
-        tasks[editedTaskIndex].progress = parseInt(progress) > 100 ? 100 : progress;
+
+        // Parse the progress value and ensure it's a number
+        const parsedProgress = parseInt(progress, 10);
+        tasks[editedTaskIndex].progress = isNaN(parsedProgress) ? 0 : Math.min(100, parsedProgress);
+
         tasks[editedTaskIndex].dependencies = selectedDependencies;
     }
+
 
     // Update the Gantt chart with the new data
     updateTaskStartEndDates(tasks);
     // Call the function with sample data
-    if (alltasks) {
-        GanttChart.createChart(alltasks);
+    if (allTasks) {
+        GanttChart.createChart(allTasks);
     }
     else {
         GanttChart.createChart(tasks);
     }
 }
 
-export function showTaskDetails(event,task, allTasks) {
+export function showTaskDetails(event: MouseEvent, task: ISubTask, allTasks: ISubTask[] = null) {
     const dependentTaskNames = task.dependencies.map(depId => allTasks[depId - 1].name);
     const dependentTaskInfo = dependentTaskNames.length > 0 ? `Dependencies: ${dependentTaskNames.join(', ')}` : '';
 
