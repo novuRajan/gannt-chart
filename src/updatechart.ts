@@ -1,4 +1,7 @@
-export const updateTaskStartEndDates = (tasks) => {
+import { ITask } from "./Interfaces/Task/Task";
+import { DateHelper } from "./lib/Date";
+
+export const updateTaskStartEndDates = (tasks:ITask[]) => {
   const taskMap = new Map(tasks.map(task => [task.id, task]));
 
   tasks.forEach(task => {
@@ -7,7 +10,7 @@ export const updateTaskStartEndDates = (tasks) => {
   });
 
 }
-function updateTaskDates(task, taskMap) {
+function updateTaskDates(task:ITask, taskMap:Map<number, ITask>) {
   if (task.dependencies.length === 0) {
     return; // Base case: no dependencies, nothing to update
   }
@@ -15,7 +18,7 @@ function updateTaskDates(task, taskMap) {
   const dependentTasks = task.dependencies.map(depId => taskMap.get(depId));
 
   // Find the maximum end date among dependent tasks
-  const maxEndDate = new Date(Math.max(...dependentTasks.map(depTask => new Date(depTask.end))));
+  const maxEndDate=new DateHelper(dependentTasks.map(task=>task.end)).latestDate();
 
   dependentTasks.forEach(dependentTask => {
     updateTaskDates(dependentTask, taskMap);
@@ -35,7 +38,7 @@ function updateTaskDates(task, taskMap) {
 
 }
 
-function updateSubTaskStartEndDate(task) {
+function updateSubTaskStartEndDate(task:ITask) {
   // Check if the task has subtasks
   if (task.subTask && task.subTask.length > 0) {
     const subTaskMap = new Map(task.subTask.map(subtask => [subtask.id, subtask]));
