@@ -108,7 +108,7 @@ export default class GanttChart {
     return this.chartWidth;
   }
 
-  createTaskBars(svg : SVGElement, tasks : ITask[], dateInfo) {
+  createTaskBars(svg : SVGElement, tasks : ITask[], dateInfo : IDateInfo) {
     let customIndex = 0;
 
     tasks.forEach((task) => {
@@ -117,7 +117,7 @@ export default class GanttChart {
       svg.appendChild(taskGroup);
 
       const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end).getTime()));
-      const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start).getTime() - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
+      const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
       const duration = (new Date(task.end).getTime() - new Date(task.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
 
       const rect = document.createElementNS(svgNS, 'rect');
@@ -151,7 +151,7 @@ export default class GanttChart {
         taskGroup.appendChild(subTaskGroup);
         task.subTask.forEach((subtask, subIndex) => {
           const subDependentTaskEnd = Math.max(...subtask.dependencies.map(depId => new Date(task.subTask[depId - 1].end).getTime()));
-          const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start).getTime() - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
+          const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
           const subDuration = (new Date(subtask.end).getTime() - new Date(subtask.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
 
           const subRect = document.createElementNS(svgNS, 'rect');
@@ -347,27 +347,25 @@ export default class GanttChart {
         }
       }
 
-      // const endDate = new Date(dateInfo.startingDate.getTime() + (parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'))) / 50 * (24 * 60 * 60 * 1000));
-
       const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
       const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
       const adjustedWidth = maxStartOffset - adjustedStartOffset;
-      taskRect.setAttribute('x', newStartOffset);
-      taskRect.setAttribute('width', adjustedWidth);
+      taskRect.setAttribute('x', String(newStartOffset));
+      taskRect.setAttribute('width', String(adjustedWidth));
 
-      progress.setAttribute('x', newStartOffset);
-      progress.setAttribute('width', adjustedWidth * dependentTask.progress / 100);
+      progress.setAttribute('x', String(newStartOffset));
+      progress.setAttribute('width', String(adjustedWidth * dependentTask.progress / 100));
 
     } else {
       // Dragging end handle
       const newWidth = this.initialWidth + deltaX;
-      taskRect.setAttribute('width', newWidth);
+      taskRect.setAttribute('width', String(newWidth));
       progress.setAttribute('width', String(newWidth * dependentTask.progress / 100));
     }
     this.taskRect = taskRect;
   }
 
-  handleMouseUp(taskRect, dependentTask, tasks, dateInfo, allTasks = null) {
+  handleMouseUp(taskRect, dependentTask, tasks, dateInfo : IDateInfo, allTasks = null) {
     document.body.classList.remove('dragging');
     document.removeEventListener('mousemove', this.dragMoveListener)
     if (this.isDragging) {
@@ -399,11 +397,11 @@ export default class GanttChart {
 
   }
 
-  updateGanttChartContent(svg, tasks) {
+  updateGanttChartContent(svg : SVGElement, tasks : ITask[]) {
     const chartContainer = document.getElementById('chart');
-    //clear the excisting date div
-    let Datediv = document.getElementById('div-date');
-    chartContainer.removeChild(Datediv);
+    //clear the existing date div
+    let DateDiv = document.getElementById('div-date');
+    chartContainer.removeChild(DateDiv);
     // Clear existing content
     while (svg.firstChild) {
       svg.removeChild(svg.firstChild);
@@ -424,8 +422,8 @@ export default class GanttChart {
     createGridLines(dateGroup, chartWidth, this.length);
     createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
     createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
-    Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
-    chartContainer.insertBefore(Datediv, svg);
+    DateDiv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
+    chartContainer.insertBefore(DateDiv, svg);
     this.createTaskBars(svg, tasks, this.dateInfo);
     this.drawDependencyLine(svg, tasks)
   }
