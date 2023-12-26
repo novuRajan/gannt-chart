@@ -90,8 +90,6 @@ export function addTask(tasks : ITask[] | ISubTask[]) {
 // Function to handle task editing
 export function editTask(event: MouseEvent, task : ITask | ISubTask, tasks : ITask[] | ISubTask [], allTasks = null) {
     event.preventDefault();
-    GanttChart.stopDrag();
-
     // Create or get the modal element
     let editModal = document.getElementById('editModal');
     if (!editModal) {
