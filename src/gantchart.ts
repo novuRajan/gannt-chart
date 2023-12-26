@@ -52,7 +52,7 @@ export default class GanttChart {
             // If not, create a new SVG element
             svg = this.createSVG(tasks);
             chartContainer.appendChild(svg);
-            const DateDiv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
+            const DateDiv = createDivDateScale(this.dateInfo, this.chartWidth);
             chartContainer.insertBefore(DateDiv, svg);
             console.log(DateDiv);
 
@@ -421,7 +421,7 @@ export default class GanttChart {
         createGridLines(dateGroup, chartWidth, this.length);
         createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
         createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
-        DateDiv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
+        DateDiv = createDivDateScale(this.dateInfo, this.chartWidth);
         chartContainer.insertBefore(DateDiv, svg);
         this.createTaskBars(svg, tasks, this.dateInfo);
         this.drawDependencyLine(svg, tasks);
