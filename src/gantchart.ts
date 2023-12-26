@@ -246,8 +246,15 @@ export default class GanttChart {
                 event.preventDefault();
                 this.startDrag(event, rect, progressRect, task, tasks);
             });
+            // Remove the existing event listener before adding a new one
             document.addEventListener('mouseup', () => {
-                return this.handleMouseUp(this.taskRect, this.dependentTask, this.tasks, this.dateInfo, this.allTasks);
+                if(this.taskRect)
+                {
+                    return this.handleMouseUp(this.taskRect, this.dependentTask, this.tasks, this.dateInfo, this.allTasks);
+                }
+                else{
+                   this.stopDrag();
+                }
             });
             // task below the subtask
             customIndex = customIndex + 1;
@@ -303,7 +310,6 @@ export default class GanttChart {
         this.initialX = event.clientX;
         this.initialWidth = parseFloat(taskRect.getAttribute('width'));
         this.isDragStart = event.clientX < taskRect.getBoundingClientRect().left + this.initialWidth / 2;
-
         // Set the current task and progress bar
         this.currentTaskRect = taskRect;
         this.currentProgressRect = taskProgressRect;
@@ -325,8 +331,6 @@ export default class GanttChart {
 
             if (this.isExceedingDependentEndDate(startDate, dependentTask, tasks)) {
                 alert('Start Date has exceeded its dependent EndDate');
-                document.body.classList.remove('dragging');
-                this.isDragging = false;
                 const updatedTaskIndex = tasks.findIndex(t => t.id === dependentTask.id);
                 if (updatedTaskIndex !== -1) {
                     const newEndDate = new Date(startDate.getTime() + (parseFloat(taskRect.getAttribute('width')) / 51) * (24 * 60 * 60 * 1000));
@@ -334,7 +338,7 @@ export default class GanttChart {
                     // Update the properties of the task in the array
                     tasks[updatedTaskIndex].start = startDate.toISOString().split('T')[0];
                     tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
-                    document.removeEventListener('mousemove', this.dragMoveListener);
+                    this.stopDrag();
                     // Update the Gantt chart with the new data
                     updateTaskStartEndDates(tasks);
                     if (allTasks) {
@@ -364,10 +368,8 @@ export default class GanttChart {
     }
 
     handleMouseUp(taskRect : SVGRectElement, dependentTask : ITask | ISubTask, tasks : ISubTask[] | ITask [], dateInfo: IDateInfo, allTasks = null) {
-        document.body.classList.remove('dragging');
-        document.removeEventListener('mousemove', this.dragMoveListener);
         if (this.isDragging) {
-            this.isDragging = false;
+            this.stopDrag();
             // Find the task in the array and update its properties
             const updatedTaskIndex = tasks.findIndex((t: { id: number; }) => t.id === dependentTask.id);
             if (updatedTaskIndex !== -1) {
@@ -391,6 +393,8 @@ export default class GanttChart {
                 }
 
             }
+            // Reset the current task and progress bar
+            this.taskRect = null;
         }
 
     }
@@ -502,6 +506,12 @@ export default class GanttChart {
         return arrowhead;
     }
 
+    stopDrag() {
+        this.isDragging = false;
+        document.body.classList.remove('dragging');
+        document.removeEventListener('mousemove', this.dragMoveListener);
+    }
+
 
     getWidth() {
         const svgElement = document.getElementById('mySvg');
@@ -538,10 +548,5 @@ export default class GanttChart {
     static createChart(tasks: ITask[] | ISubTask[]) {
         const ganttChart = new GanttChart();
         ganttChart.createGanttChart(tasks);
-    }
-
-    static stopDrag() {
-        // Remove the event listener when the dragging stops
-        // document.removeEventListener('mousemove', this.dragMoveListener);
     }
 }
