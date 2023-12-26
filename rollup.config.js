@@ -14,11 +14,11 @@ const dev = {
         format: 'iife',
     },
     plugins: [
-        typescript(), // Place typescript plugin before commonjs
-        commonjs(), // Handle CommonJS modules
-        filesize(),
-        nodeResolve(),
         peerDepsExternal(),
+        nodeResolve(),
+        commonjs(), // Handle CommonJS modules after resolving external dependencies
+        typescript(), // Place typescript plugin after commonjs
+        filesize(),
     ],
 };
 
