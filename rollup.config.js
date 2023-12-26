@@ -14,13 +14,14 @@ const dev = {
         format: 'iife',
     },
     plugins: [
+        typescript(), // Place typescript plugin before commonjs
         commonjs(), // Handle CommonJS modules
         filesize(),
         nodeResolve(),
-        typescript(),
         peerDepsExternal(),
     ],
 };
+
 const prod = {
     input: 'src/gantchart.ts',
     output: {
@@ -30,7 +31,8 @@ const prod = {
         format: 'iife',
     },
     plugins: [
-        terser(), // Apply Terser plugin directly in the plugins array
+        typescript(),
+        terser(),
     ],
 };
 
