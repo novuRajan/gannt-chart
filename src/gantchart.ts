@@ -5,7 +5,7 @@ import { ITask } from './Interfaces/Task/Task';
 import { ISubTask } from './Interfaces/Task/SubTask';
 import { IDateInfo } from './Interfaces/Date/DateInfo';
 import { DateHelper } from './lib/Date';
-import { IChartConfig } from "./Interfaces/Chart/ChartConfig";
+import { IChartConfig } from './Interfaces/Chart/ChartConfig';
 
 const svgNS = 'http://www.w3.org/2000/svg';
 export default class GanttChart {
@@ -40,11 +40,11 @@ export default class GanttChart {
         return button;
     }
 
-    createGanttChart(_tasks: ITask[],_configs:IChartConfig={}) {
-        let tasks:ITask[]=_tasks;
-        if (_configs.activeTasks){
-            tasks=_tasks.filter(task => new DateHelper().isBetween(task.start,task.end));
-            tasks=!tasks.length?_tasks:tasks;
+    createGanttChart(_tasks: ITask[], _configs: IChartConfig = {}) {
+        let tasks: ITask[] = _tasks;
+        if (_configs.activeTasks) {
+            tasks = _tasks.filter(task => new DateHelper().isBetween(task.start, task.end));
+            tasks = !tasks.length ? _tasks : tasks;
         }
         updateTaskStartEndDates(tasks);
         const chartContainer = document.getElementById('chart');
@@ -107,7 +107,7 @@ export default class GanttChart {
         return { startingDate, maxDate, multiplier };
     }
 
-    calculateChartWidth(dateInfo : IDateInfo) {
+    calculateChartWidth(dateInfo: IDateInfo) {
         this.chartWidth = (dateInfo.maxDate.getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * dateInfo.multiplier;
         return this.chartWidth;
     }
@@ -154,7 +154,12 @@ export default class GanttChart {
                 subTaskGroup.setAttribute('class', 'subtask');
                 taskGroup.appendChild(subTaskGroup);
                 task.subTask.forEach((subtask, subIndex) => {
-                    const subDependentTaskEnd = Math.max(...subtask.dependencies.map(depId => new Date(task.subTask[depId - 1].end).getTime()));
+                    const subDependentTaskEnd = Math.max(
+                        ...subtask.dependencies.map(depId => {
+                            const dependentSubTask = task.subTask.find(sub => sub.id === depId);
+                            return dependentSubTask ? new Date(dependentSubTask.end).getTime() : 0;
+                        })
+                    );
                     const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
                     const subDuration = (new Date(subtask.end).getTime() - new Date(subtask.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
 
@@ -254,12 +259,10 @@ export default class GanttChart {
             });
             // Remove the existing event listener before adding a new one
             document.addEventListener('mouseup', () => {
-                if(this.taskRect)
-                {
+                if (this.taskRect) {
                     return this.handleMouseUp(this.taskRect, this.dependentTask, this.tasks, this.dateInfo, this.allTasks);
-                }
-                else{
-                   this.stopDrag();
+                } else {
+                    this.stopDrag();
                 }
             });
             // task below the subtask
@@ -286,32 +289,35 @@ export default class GanttChart {
     }
 
 
-    isExceedingDependentEndDate(sartDate : Date, dependentTask : ISubTask | ITask, tasks : ITask[] | ISubTask[]) {
+    isExceedingDependentEndDate(startDate: Date, dependentTask: ISubTask | ITask, tasks: ITask[] | ISubTask[]) {
         const tasksWithDesiredIds = tasks.filter(task =>
             dependentTask.dependencies.includes(task.id)
         );
-        const endDates = new DateHelper(tasksWithDesiredIds.map(task => (task.end)))
+        const endDates = new DateHelper(tasksWithDesiredIds.map(task => (task.end)));
         const maxDate = endDates.latestDate();
-        if (maxDate > sartDate) {
+        if (maxDate > startDate) {
             return 1;
         } else {
             return 0;
         }
     }
 
-    handleDragMove(event: { preventDefault: () => void; clientX: any; }, taskRect : SVGRectElement, progress : SVGRectElement, dependentTask : ITask | ISubTask, tasks : ITask[] | ISubTask [], allTasks = null) {
+    handleDragMove(event: {
+        preventDefault: () => void;
+        clientX: any;
+    }, taskRect: SVGRectElement, progress: SVGRectElement, dependentTask: ITask | ISubTask, tasks: ITask[] | ISubTask [], allTasks = null) {
+        hideTaskDetails();
         event.preventDefault();
         if (this.isDragging) {
             this.updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks, allTasks);
         }
     }
 
-    startDrag(event: MouseEvent, taskRect: SVGRectElement, taskProgressRect: SVGRectElement , dependentTask : ITask | ISubTask, task : ITask[] | ISubTask[] ,  allTasks = null) {
+    startDrag(event: MouseEvent, taskRect: SVGRectElement, taskProgressRect: SVGRectElement, dependentTask: ITask | ISubTask, task: ITask[] | ISubTask[], allTasks = null) {
         this.dependentTask = dependentTask;
         this.tasks = task;
         this.allTasks = allTasks;
         document.body.classList.add('dragging');
-        hideTaskDetails;
         this.isDragging = true;
         this.initialX = event.clientX;
         this.initialWidth = parseFloat(taskRect.getAttribute('width'));
@@ -373,7 +379,7 @@ export default class GanttChart {
         this.taskRect = taskRect;
     }
 
-    handleMouseUp(taskRect : SVGRectElement, dependentTask : ITask | ISubTask, tasks : ISubTask[] | ITask [], dateInfo: IDateInfo, allTasks = null) {
+    handleMouseUp(taskRect: SVGRectElement, dependentTask: ITask | ISubTask, tasks: ISubTask[] | ITask [], dateInfo: IDateInfo, allTasks = null) {
         if (this.isDragging) {
             this.stopDrag();
             // Find the task in the array and update its properties
@@ -493,10 +499,10 @@ export default class GanttChart {
 
     createSvgLine(x1: number, y1: number, x2: number, y2: number) {
         const line = document.createElementNS(svgNS, 'line');
-        line.setAttribute('x1', String(x1));
-        line.setAttribute('y1', String(y1));
-        line.setAttribute('x2', String(x2));
-        line.setAttribute('y2', String(y2));
+        line.setAttribute('x1', `${x1}`);
+        line.setAttribute('y1', `${y1}`);
+        line.setAttribute('x2', `${x2}`);
+        line.setAttribute('y2', `${y2}`);
         line.classList.add('dependency-line');
         return line;
     }
