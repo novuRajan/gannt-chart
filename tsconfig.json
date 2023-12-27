@@ -8,7 +8,10 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "lib": ["es2016", "dom"],
+    "lib": [
+      "es2016",
+      "dom"
+    ]
   },
   "include": [
     "src/**/*.ts",
