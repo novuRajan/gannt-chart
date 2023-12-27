@@ -1,15 +1,17 @@
-import { updateTaskStartEndDates } from './updatechart';
+import {updateTaskStartEndDates} from './updatechart';
 import GanttChart from './gantchart';
-import { ITask } from './Interfaces/Task/Task';
-import { ISubTask } from './Interfaces/Task/SubTask';
+import {ITask} from './Interfaces/Task/Task';
+import {ISubTask} from './Interfaces/Task/SubTask';
 
 const tooltip = document.createElement('div');
 tooltip.className = 'bar-hover';
 document.body.appendChild(tooltip);
+
 export function closeModal(modal: HTMLElement) {
     modal.style.display = 'none';
 }
-export function openAddModal(tasks : ITask[] | ISubTask[]) {
+
+export function openAddModal(tasks: ITask[] | ISubTask[]) {
     // Create or get the modal element
     let addModal = document.getElementById('addFormModal');
     if (!addModal) {
@@ -56,10 +58,11 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
     // Display the modal
     addModal.style.display = 'block';
 }
+
 //function to update the task array
-export function addTask(tasks : ITask[] | ISubTask[]) {
+export function addTask(tasks: ITask[] | ISubTask[]) {
     const addModal = document.getElementById('addFormModal');
-    const taskName = document.getElementById('taskName')  as HTMLInputElement;
+    const taskName = document.getElementById('taskName') as HTMLInputElement;
     const startDate = document.getElementById('startDate') as HTMLInputElement;
     const endDate = document.getElementById('endDate') as HTMLInputElement;
 
@@ -88,7 +91,7 @@ export function addTask(tasks : ITask[] | ISubTask[]) {
 }
 
 // Function to handle task editing
-export function editTask(event: MouseEvent, task : ITask | ISubTask, tasks : ITask[] | ISubTask [], allTasks = null) {
+export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask[] | ISubTask [], allTasks = null) {
     event.preventDefault();
     // Create or get the modal element
     let editModal = document.getElementById('editModal');
@@ -178,7 +181,7 @@ function createFormField(labelText: string, inputId: string, inputValue: string 
     input.setAttribute('type', inputType);
     input.setAttribute('id', inputId);
     input.setAttribute('name', inputId);
-    input.value =  `${inputValue}`;
+    input.value = `${inputValue}`;
     input.required = required;
 
     // Append label and input to the form
@@ -187,19 +190,21 @@ function createFormField(labelText: string, inputId: string, inputValue: string 
 }
 
 
-
 // Function to check if a task is dependent on another task
-export function isTaskDependent(currentTask: ITask | ISubTask, otherTask: ITask, allTasks: ITask[] | ISubTask[] = null) {
-    return otherTask.dependencies.includes(currentTask.id) || otherTask.dependencies.some(depId => isTaskDependent(currentTask, allTasks[depId - 1], allTasks));
+export function isTaskDependent(currentTask: ITask | ISubTask, otherTask: ITask | ISubTask, allTasks: ITask[] | ISubTask[] = null) {
+    return otherTask.dependencies.includes(currentTask.id) || otherTask.dependencies.some(depId => {
+        const dependentSubTask = allTasks.find(sub => sub.id === depId);
+        return dependentSubTask ? isTaskDependent(currentTask, dependentSubTask, allTasks) : false;
+    });
 }
 
 // Function to save edited task
-export function saveEditedTask(tasks : ISubTask[] | ITask [] , allTasks = null) {
+export function saveEditedTask(tasks: ISubTask[] | ITask [], allTasks = null) {
     const editTaskForm = document.getElementById('editTaskForm') as HTMLFormElement;
     const editTaskNameInput = document.getElementById('editTaskName') as HTMLInputElement;
-    const editStartDateInput = document.getElementById('editStartDate')as HTMLInputElement;
-    const editEndDateInput = document.getElementById('editEndDate')as HTMLInputElement;
-    const editProgress = document.getElementById('editProgress')as HTMLInputElement;
+    const editStartDateInput = document.getElementById('editStartDate') as HTMLInputElement;
+    const editEndDateInput = document.getElementById('editEndDate') as HTMLInputElement;
+    const editProgress = document.getElementById('editProgress') as HTMLInputElement;
     const editDependenciesSelect = document.getElementById('editDependencies') as HTMLSelectElement;
 
     // Retrieve the edited values
@@ -233,14 +238,17 @@ export function saveEditedTask(tasks : ISubTask[] | ITask [] , allTasks = null) 
     // Call the function with sample data
     if (allTasks) {
         GanttChart.createChart(allTasks);
-    }
-    else {
+    } else {
         GanttChart.createChart(tasks);
     }
 }
 
-export function showTaskDetails(event: MouseEvent, task: ISubTask, allTasks: ISubTask[] = null) {
-    const dependentTaskNames = task.dependencies.map(depId => allTasks[depId - 1].name);
+export function showTaskDetails(event: MouseEvent, task: ISubTask | ITask, allTasks: ISubTask[] | ITask [] = null) {
+    const dependentTaskNames = (task.dependencies.map(depId => {
+            const dependentSubTask = allTasks.find(sub => sub.id === depId);
+            return dependentSubTask ? dependentSubTask.name : '';
+        })
+    );
     const dependentTaskInfo = dependentTaskNames.length > 0 ? `Dependencies: ${dependentTaskNames.join(', ')}` : '';
 
     tooltip.innerHTML = `
