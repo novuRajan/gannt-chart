@@ -2,7 +2,7 @@ import { updateTaskStartEndDates } from './updatechart';
 import GanttChart from './gantchart';
 import { ITask } from './Interfaces/Task/Task';
 import { ISubTask } from './Interfaces/Task/SubTask';
-import { createInputElement } from "./lib/Html/InputHelper";
+import { createInputElement, inputValue } from "./lib/Html/InputHelper";
 import { InputTypes } from "./types/Inputs/InputTypes";
 
 const tooltip = document.createElement('div');
@@ -191,17 +191,8 @@ export function isTaskDependent(currentTask: ITask | ISubTask, otherTask: ITask,
 // Function to save edited task
 export function saveEditedTask(tasks : ISubTask[] | ITask [] , allTasks = null) {
     const editTaskForm = document.getElementById('editTaskForm') as HTMLFormElement;
-    const editTaskNameInput = document.getElementById('editTaskName') as HTMLInputElement;
-    const editStartDateInput = document.getElementById('editStartDate')as HTMLInputElement;
-    const editEndDateInput = document.getElementById('editEndDate')as HTMLInputElement;
-    const editProgress = document.getElementById('editProgress')as HTMLInputElement;
     const editDependenciesSelect = document.getElementById('editDependencies') as HTMLSelectElement;
 
-    // Retrieve the edited values
-    const editedTaskName = editTaskNameInput.value;
-    const editedStartDate = editStartDateInput.value;
-    const editedEndDate = editEndDateInput.value;
-    const progress = editProgress.value;
     // Retrieve the task ID from the data attribute
     const taskId = parseInt(editTaskForm.getAttribute('data-task-id'), 10);
 
@@ -211,12 +202,12 @@ export function saveEditedTask(tasks : ISubTask[] | ITask [] , allTasks = null) 
     // Find the task in the array and update its properties
     const editedTaskIndex = tasks.findIndex(task => task.id === taskId);
     if (editedTaskIndex !== -1) {
-        tasks[editedTaskIndex].name = editedTaskName;
-        tasks[editedTaskIndex].start = editedStartDate;
-        tasks[editedTaskIndex].end = editedEndDate;
+        tasks[editedTaskIndex].name = inputValue('name');
+        tasks[editedTaskIndex].start = inputValue('start');
+        tasks[editedTaskIndex].end = inputValue('end');
 
         // Parse the progress value and ensure it's a number
-        const parsedProgress = parseInt(progress, 10);
+        const parsedProgress = parseInt(inputValue('progress'), 10);
         tasks[editedTaskIndex].progress = isNaN(parsedProgress) ? 0 : Math.min(100, parsedProgress);
 
         tasks[editedTaskIndex].dependencies = selectedDependencies;
