@@ -5,6 +5,7 @@ import { ITask } from './Interfaces/Task/Task';
 import { ISubTask } from './Interfaces/Task/SubTask';
 import { IDateInfo } from './Interfaces/Date/DateInfo';
 import { DateHelper } from './lib/Date';
+import { IChartConfig } from "./Interfaces/Chart/ChartConfig";
 
 const svgNS = 'http://www.w3.org/2000/svg';
 export default class GanttChart {
@@ -39,7 +40,12 @@ export default class GanttChart {
         return button;
     }
 
-    createGanttChart(tasks: ITask[]) {
+    createGanttChart(_tasks: ITask[],_configs:IChartConfig={}) {
+        let tasks:ITask[]=_tasks;
+        if (_configs.activeTasks){
+            tasks=_tasks.filter(task => new DateHelper().isBetween(task.start,task.end));
+            tasks=!tasks.length?_tasks:tasks;
+        }
         updateTaskStartEndDates(tasks);
         const chartContainer = document.getElementById('chart');
         // Create a button element
