@@ -2,10 +2,23 @@ import { updateTaskStartEndDates } from './updatechart';
 import GanttChart from './gantchart';
 import { ITask } from './Interfaces/Task/Task';
 import { ISubTask } from './Interfaces/Task/SubTask';
+import { createInputElement } from "./lib/Html/InputHelper";
+import { InputTypes } from "./types/Inputs/InputTypes";
 
 const tooltip = document.createElement('div');
 tooltip.className = 'bar-hover';
 document.body.appendChild(tooltip);
+
+
+
+const inputs:InputTypes[]=[
+    {label:'Task Name:',id:'editTaskName',name:'name',type:'text'},
+    {label:'Start Date:',id:'editStartDate',name:'start',type:'date'},
+    {label:'End Date:',id:'editEndDate',name:'end',type:'date'},
+    {label:'Progress:',id:'editProgress',name:'progress',type:'number'},
+];
+
+
 export function closeModal(modal: HTMLElement) {
     modal.style.display = 'none';
 }
@@ -31,10 +44,10 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
     addTaskForm.innerHTML = '';
 
     // Create form elements dynamically and append them to the form
-    createFormField('Task Name:', 'taskName', '', 'text', true, addTaskForm);
-    createFormField('Start Date:', 'startDate', '', 'date', true, addTaskForm);
-    createFormField('End Date:', 'endDate', '', 'date', true, addTaskForm);
-    createFormField('Progress:', 'progress', '', 'number', true, addTaskForm);
+    inputs.forEach(input=>{
+        const inputEL=createInputElement(input)
+        addTaskForm.appendChild(inputEL)
+    })
     // Create and append Save Changes button
     const saveChangesBtn = document.createElement('button');
     saveChangesBtn.setAttribute('type', 'button');
@@ -109,12 +122,11 @@ export function editTask(event: MouseEvent, task : ITask | ISubTask, tasks : ITa
 
     // Clear existing content in the form
     editTaskForm.innerHTML = '';
-
-    // Create form elements dynamically and append them to the form
-    createFormField('Task Name:', 'editTaskName', task.name, 'text', true, editTaskForm);
-    createFormField('Start Date:', 'editStartDate', task.start, 'date', true, editTaskForm);
-    createFormField('End Date:', 'editEndDate', task.end, 'date', true, editTaskForm);
-    createFormField('Progress:', 'editProgress', task.progress, 'number', true, editTaskForm);
+    inputs.forEach(input=>{
+        input['value']=task[<string>input.name]
+        const inputEL=createInputElement(input)
+        editTaskForm.appendChild(inputEL)
+    })
 
     // Clear existing options
     const editDependenciesSelect = document.createElement('select');
@@ -167,23 +179,6 @@ export function editTask(event: MouseEvent, task : ITask | ISubTask, tasks : ITa
 
     // Prevent the contextmenu event from propagating further
     event.preventDefault();
-}
-
-function createFormField(labelText: string, inputId: string, inputValue: string | number, inputType: string, required: boolean, parentName: HTMLElement) {
-    const label = document.createElement('label');
-    label.setAttribute('for', inputId);
-    label.textContent = labelText;
-
-    const input = document.createElement('input');
-    input.setAttribute('type', inputType);
-    input.setAttribute('id', inputId);
-    input.setAttribute('name', inputId);
-    input.value =  `${inputValue}`;
-    input.required = required;
-
-    // Append label and input to the form
-    parentName.appendChild(label);
-    parentName.appendChild(input);
 }
 
 
