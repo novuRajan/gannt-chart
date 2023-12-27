@@ -437,7 +437,7 @@ export default class GanttChart {
     drawDependencyLine(svg: SVGElement, tasks: ITask[]) {
         const arrowheadSize = 5;
 
-        const drawTaskDependency = (dependentTask: ITask, task: ITask, elementIdPrefix: string) => {
+        const drawTaskDependency = (dependentTask: ITask | ISubTask, task: ITask | ISubTask, elementIdPrefix: string) => {
             const startTaskElement = document.getElementById(`${elementIdPrefix}-${dependentTask.id}`);
             const endTaskElement = document.getElementById(`${elementIdPrefix}-${task.id}`);
 
@@ -482,7 +482,7 @@ export default class GanttChart {
                         subtask.dependencies.forEach((dependencyId) => {
                             const dependentTask = task.subTask.find((t) => t.id === dependencyId);
                             if (dependentTask) {
-                                drawTaskDependency(dependentTask, subtask, 'subtask');
+                                drawTaskDependency(dependentTask, subtask, `subtask-${task.id}`);
                             }
                         });
                     }

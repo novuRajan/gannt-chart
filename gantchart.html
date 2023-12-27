@@ -33,21 +33,21 @@
           progress: 75,
           dependencies: [1],
           subTask: [
-            { id: 1, name: 'sub2 task', start: '2023-10-14', end: '2023-10-15', progress: 50, dependencies: [] },
-            { id: 2, name: 'sub2 end', start: '2023-10-10', end: '2023-10-15', progress: 50, dependencies: [] },
-            { id: 3, name: 'dep', start: '2023-10-10', end: '2023-10-12', progress: 50, dependencies: [] },
+            { id: 3, name: 'sub2 task', start: '2023-10-14', end: '2023-10-15', progress: 50, dependencies: [] },
+            { id: 4, name: 'sub2 end', start: '2023-10-10', end: '2023-10-15', progress: 50, dependencies: [3] },
+            { id: 5, name: 'dep', start: '2023-10-10', end: '2023-10-12', progress: 50, dependencies: [] },
           ],
         },
         {
           id: 3, name: 'Task 3', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [],
           subTask: [
-            { id: 4, name: 'sub3 task', start: '2023-10-13', end: '2023-10-15', progress: 50, dependencies: [] },
+            { id: 6, name: 'sub3 task', start: '2023-10-13', end: '2023-10-15', progress: 50, dependencies: [] },
           ],
         },
         {
           id: 4, name: 'Task 4', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [],
           subTask: [
-            { id: 1, name: 'sub3 task', start: '2023-10-13', end: '2023-10-15', progress: 50, dependencies: [] },
+            { id: 7, name: 'sub3 task', start: '2023-10-13', end: '2023-10-15', progress: 50, dependencies: [] },
           ],
         },
         { id: 5, name: 'Task 5', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
@@ -55,15 +55,15 @@
         { id: 7, name: 'Task 7', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
         // { id: 8, name: 'Task 8', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
         // { id: 9, name: 'Task 8', start: '2023-10-04', end: '2023-10-18', progress: 75, dependencies: [] },
-        
+
         // { id: 10, name: 'Task 8', start: '2023-10-04', end: '2024-10-18', progress: 75, dependencies: [] },
-        
-        
+
+
 
       ];
     GanttChart.createGanttChart(data,{activeTasks:false});
   </script>
-  
+
 </body>
 
 </html>
