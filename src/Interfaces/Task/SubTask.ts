@@ -1,5 +1,5 @@
-import { IBaseTask } from "./BaseTask";
+import { IBaseTask } from './BaseTask';
 
-export interface ISubTask extends IBaseTask{
+export interface ISubTask extends IBaseTask {
 
 }

@@ -1,5 +1,5 @@
-import {ITask} from "./Interfaces/Task/Task";
-import {DateHelper} from "./lib/Date";
+import { ITask } from './Interfaces/Task/Task';
+import { DateHelper } from './lib/Date';
 
 export const updateTaskStartEndDates = (tasks: ITask[]) => {
     const taskMap = new Map(tasks.map(task => [task.id, task]));
@@ -9,7 +9,7 @@ export const updateTaskStartEndDates = (tasks: ITask[]) => {
         updateSubTaskStartEndDate(task);
     });
 
-}
+};
 
 function updateTaskDates(task: ITask, taskMap: Map<number, ITask>) {
     // if (task.dependencies.length === 0) {
@@ -49,9 +49,9 @@ function updateSubTaskStartEndDate(task: ITask) {
                 subTask.start = task.start;
                 subTask.end = new Date(new Date(subTask.start).setDate(new Date(task.start).getDate() + subDuration)).toISOString().split('T')[0];
             }
-            updateTaskDates(subTask, subTaskMap)
+            updateTaskDates(subTask, subTaskMap);
             if (subTask.end > task.end) {
-                task.end = subTask.end
+                task.end = subTask.end;
             }
         });
     }
