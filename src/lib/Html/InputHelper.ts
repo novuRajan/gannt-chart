@@ -72,15 +72,16 @@ export class InputHelper {
 						optionEL.setAttribute("disabled", option.disabled.toString());
 					}
 					if (!this.input.value)return;
-					if (typeof this.input.value === "string"){
-						if (this.input.value === option.value) {
-							optionEL.setAttribute("selected", "true");
+					if (this.input.value) {
+						if (typeof this.input.value === "string") {
+							if (this.input.value === option.value) {
+								optionEL.setAttribute("selected", "selected");
+							}
+						} else if (Array.isArray(this.input.value)) {
+							if (this.input.value.includes(option.value)) {
+								optionEL.setAttribute("selected", "");
+							}
 						}
-						return;
-					}
-					const values =<Array<string|number>>this.input.value
-					if (values.includes(option.value)) {
-						optionEL.setAttribute("selected", "true");
 					}
 				}
 				selectEL.appendChild(optionEL);

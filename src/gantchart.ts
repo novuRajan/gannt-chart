@@ -511,7 +511,6 @@ export default class GanttChart {
         arrowhead.classList.add('dependency-arrowhead');
         return arrowhead;
     }
-
     stopDrag() {
         this.taskRect = null;
         this.isDragging = false;

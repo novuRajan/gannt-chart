@@ -44,7 +44,7 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
 
     // Clear existing content in the form
     addTaskForm.innerHTML = '';
-
+alert('13')
     // Create form elements dynamically and append them to the form
     inputs.filter(input=>{
         return !(input.type === 'select' && input.options.length === 0);
@@ -92,14 +92,14 @@ export function addTask(tasks : ITask[] | ISubTask[]) {
         name: taskName,
         start: startDate,
         end: endDate,
-        progress: 0, // You can set the progress as needed
+        progress: inputValue('progress')??0, // You can set the progress as needed
         dependencies: [] // You can set dependencies as needed
     };
 
     // Add the new task to the existing tasks
     tasks.push(newTask);
     // eslint-disable-next-line no-global-assign
-    length = length + 1; //after adding of each task length should be increased
+    length++; //after adding of each task length should be increased
     closeModal(addModal);
     // Call the function with sample data
     GanttChart.createChart(tasks);
@@ -203,8 +203,9 @@ export function saveEditedTask(tasks: ISubTask[] | ITask [], allTasks = null) {
         // Parse the progress value and ensure it's a number
         const parsedProgress = parseInt(inputValue('progress'), 10);
         tasks[editedTaskIndex].progress = isNaN(parsedProgress) ? 0 : Math.min(100, parsedProgress);
-
-        tasks[editedTaskIndex].dependencies = selectedDependencies;
+        if (selectedDependencies.filter(d=>!isNaN(d)).length) {
+          tasks[editedTaskIndex].dependencies = selectedDependencies;
+        }
     }
 
 
