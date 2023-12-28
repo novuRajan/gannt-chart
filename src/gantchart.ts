@@ -217,19 +217,20 @@ export default class GanttChart {
             }
         });
     }
+
 // Function to add context menu event listener
-    addContextMenuListener(element: SVGElement, task: ITask | ISubTask, tasks: ITask[] | ISubTask[] , allTasks : ITask[] = null) {
+    addContextMenuListener(element: SVGElement, task: ITask | ISubTask, tasks: ITask[] | ISubTask[], allTasks: ITask[] = null) {
         this.allTasks = allTasks;
         element.addEventListener('contextmenu', (event) => {
             event.preventDefault();
-            if(allTasks) {
+            if (allTasks) {
                 editTask(event, task, tasks, allTasks);
-            }
-            else {
+            } else {
                 editTask(event, task, tasks);
             }
         });
     }
+
     createRectElement(x: number, y: number, width: number, height: number, fill: string, id: string) {
         const rect = document.createElementNS(svgNS, 'rect');
         rect.setAttribute('x', String(x));
@@ -241,11 +242,11 @@ export default class GanttChart {
         return rect;
     }
 
-    createTextElement(x: number, y: number, text: string , fontSize: number = null) {
+    createTextElement(x: number, y: number, text: string, fontSize: number = null) {
         const textElement = document.createElementNS(svgNS, 'text');
         textElement.setAttribute('x', String(x));
         textElement.setAttribute('y', String(y));
-        if(fontSize) {
+        if (fontSize) {
             textElement.setAttribute('font-size', `${fontSize}px`);
         }
         textElement.textContent = text;
@@ -272,7 +273,6 @@ export default class GanttChart {
         };
     }
 
-
     isExceedingDependentEndDate(startDate: Date, dependentTask: ISubTask | ITask, tasks: ITask[] | ISubTask[]) {
         const tasksWithDesiredIds = tasks.filter(task =>
             dependentTask.dependencies.includes(task.id)
@@ -297,7 +297,7 @@ export default class GanttChart {
         }
     }
 
-    calculateDependencyMaxEndDate(dependencies: number[] , tasks: ISubTask[] | ITask [] ): number {
+    calculateDependencyMaxEndDate(dependencies: number[], tasks: ISubTask[] | ITask []): number {
         const maxDates = dependencies.map(depId => {
             const dependentSubTask = tasks.find(sub => sub.id === depId);
             return dependentSubTask ? new Date(dependentSubTask.end).getTime() : 0;
@@ -352,9 +352,7 @@ export default class GanttChart {
                         this.createGanttChart(tasks);
                     }
                 }
-            }
-
-            else {
+            } else {
                 const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
                 const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
                 const adjustedWidth = maxStartOffset - adjustedStartOffset;
