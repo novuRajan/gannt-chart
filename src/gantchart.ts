@@ -304,7 +304,7 @@ export default class GanttChart {
 
     handleDragMove(event: {
         preventDefault: () => void;
-        clientX: any;
+        clientX: number;
     }, taskRect: SVGRectElement, progress: SVGRectElement, dependentTask: ITask | ISubTask, tasks: ITask[] | ISubTask [], allTasks = null) {
         hideTaskDetails();
         event.preventDefault();
@@ -325,7 +325,7 @@ export default class GanttChart {
         // Set the current task and progress bar
         this.currentTaskRect = taskRect;
         this.currentProgressRect = taskProgressRect;
-        this.dragMoveListener = this.throttle((event: { preventDefault: () => void; clientX: any; }) => {
+        this.dragMoveListener = this.throttle((event: { preventDefault: () => void; clientX: number; }) => {
             this.handleDragMove(event, this.currentTaskRect, this.currentProgressRect, dependentTask, task, allTasks);
         }, 16);
         event.preventDefault();
