@@ -159,18 +159,11 @@ export default class GanttChart {
                     this.addMouseOverOutListeners(subRect, (e) => showTaskDetails(e, subtask, task.subTask), hideTaskDetails);
                     this.addMouseOverOutListeners(subProgressRect, (e) => showTaskDetails(e, subtask, task.subTask), hideTaskDetails);
 
-                    subRect.addEventListener('contextmenu', (event) => {
-                        event.preventDefault();
-                        editTask(event, subtask, task.subTask, tasks);
-                    });
-                    subProgressRect.addEventListener('contextmenu', (event) => {
-                        event.preventDefault();
-                        editTask(event, subtask, task.subTask, tasks);
-                    });
-                    subText.addEventListener('contextmenu', (event) => {
-                        event.preventDefault();
-                        editTask(event, subtask, task.subTask, tasks);
-                    });
+                    // Add context menu event listeners
+                    this.addContextMenuListener(subRect, subtask, task.subTask, tasks);
+                    this.addContextMenuListener(subProgressRect, subtask, task.subTask, tasks);
+                    this.addContextMenuListener(subText, subtask, task.subTask, tasks);
+
                     subRect.addEventListener('mousedown', (event) => {
                         event.preventDefault();
                         this.startDrag(event, subRect, subProgressRect, subtask, task.subTask, tasks);
@@ -191,18 +184,11 @@ export default class GanttChart {
             this.addMouseOverOutListeners(rect, (e) => showTaskDetails(e, task, tasks), hideTaskDetails);
             this.addMouseOverOutListeners(progressRect, (e) => showTaskDetails(e, task, tasks), hideTaskDetails);
 
-            rect.addEventListener('contextmenu', (event) => {
-                event.preventDefault();
-                editTask(event, task, tasks);
-            });
-            progressRect.addEventListener('contextmenu', (event) => {
-                event.preventDefault();
-                editTask(event, task, tasks);
-            });
-            text.addEventListener('contextmenu', (event) => {
-                event.preventDefault();
-                editTask(event, task, tasks);
-            });
+            // Add context menu event listeners
+            this.addContextMenuListener(rect, task, tasks);
+            this.addContextMenuListener(progressRect, task, tasks);
+            this.addContextMenuListener(text, task, tasks);
+
             // Add event listeners for dragging to edit start and end dates
             rect.addEventListener('mousedown', (event) => {
                 event.preventDefault();
@@ -231,7 +217,19 @@ export default class GanttChart {
             }
         });
     }
-
+// Function to add context menu event listener
+    addContextMenuListener(element: SVGElement, task: ITask | ISubTask, tasks: ITask[] | ISubTask[] , allTasks : ITask[] = null) {
+        this.allTasks = allTasks;
+        element.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            if(allTasks) {
+                editTask(event, task, tasks, allTasks);
+            }
+            else {
+                editTask(event, task, tasks);
+            }
+        });
+    }
     createRectElement(x: number, y: number, width: number, height: number, fill: string, id: string) {
         const rect = document.createElementNS(svgNS, 'rect');
         rect.setAttribute('x', String(x));
@@ -242,6 +240,7 @@ export default class GanttChart {
         rect.setAttribute('id', id);
         return rect;
     }
+
     createTextElement(x: number, y: number, text: string , fontSize: number = null) {
         const textElement = document.createElementNS(svgNS, 'text');
         textElement.setAttribute('x', String(x));
@@ -252,10 +251,12 @@ export default class GanttChart {
         textElement.textContent = text;
         return textElement;
     }
+
     addMouseOverOutListeners(element: SVGElement, showDetails: (e: MouseEvent) => void, hideDetails: () => void) {
         element.addEventListener('mouseover', showDetails);
         element.addEventListener('mouseout', hideDetails);
     }
+
     throttle<T extends (...args: any[]) => any>(func: T, limit: number) {
         let inThrottle: boolean;
 
@@ -503,7 +504,6 @@ export default class GanttChart {
         return line;
     }
 
-
     createArrowhead(x: number, y: number, size: number, arrowDirection: string) {
         const arrowhead = document.createElementNS(svgNS, 'polygon');
         const points = arrowDirection === 'down'
@@ -520,7 +520,6 @@ export default class GanttChart {
         document.body.classList.remove('dragging');
         document.removeEventListener('mousemove', this.dragMoveListener);
     }
-
 
     getWidth() {
         const svgElement = document.getElementById('mySvg');
