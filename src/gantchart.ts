@@ -124,22 +124,11 @@ export default class GanttChart {
             const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
             const duration = (new Date(task.end).getTime() - new Date(task.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
 
-            const rect = document.createElementNS(svgNS, 'rect');
-            rect.setAttribute('x', String(startOffset));
-            rect.setAttribute('y', String(customIndex * 40 + 40));
-            rect.setAttribute('width', String(duration));
-            rect.setAttribute('height', String(30));
-            rect.setAttribute('fill', '#3498db');
-            rect.setAttribute('id', `task-${task.id}`); // Set the id attribute
+            const rect = this.createRect(startOffset, customIndex * 40 + 40, duration, 30, '#3498db', `task-${task.id}`);
             taskGroup.appendChild(rect);
 
             const progressWidth = (duration * task.progress) / 100;
-            const progressRect = document.createElementNS(svgNS, 'rect');
-            progressRect.setAttribute('x', String(startOffset));
-            progressRect.setAttribute('y', String(customIndex * 40 + 40));
-            progressRect.setAttribute('width', String(progressWidth));
-            progressRect.setAttribute('height', String(30));
-            progressRect.setAttribute('fill', '#2ecc71');
+            const progressRect = this.createRect(startOffset, customIndex * 40 + 40, progressWidth, 30, '#2ecc71', `task-${task.id}-progress`);
             taskGroup.appendChild(progressRect);
 
             const text = document.createElementNS(svgNS, 'text');
@@ -162,25 +151,11 @@ export default class GanttChart {
                     );
                     const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
                     const subDuration = (new Date(subtask.end).getTime() - new Date(subtask.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
-
-                    const subRect = document.createElementNS(svgNS, 'rect');
-                    subRect.setAttribute('class', 'subtask');
-                    subRect.setAttribute('x', String(subStartOffset));
-                    subRect.setAttribute('y', String((subIndex + customIndex + 1) * 40 + 40));
-                    subRect.setAttribute('width', String(subDuration));
-                    subRect.setAttribute('height', String(15));
-                    subRect.setAttribute('fill', '#e74c3c');
-                    subRect.setAttribute('id', `subtask-${task.id}-${subtask.id}`); // Set the id attribute for subtasks
+                    const subRect = this.createRect(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subDuration, 15, '#e74c3c', `subtask-${task.id}-${subtask.id}`);
                     subTaskGroup.appendChild(subRect);
 
                     const subProgressWidth = (subDuration * subtask.progress) / 100;
-                    const subProgressRect = document.createElementNS(svgNS, 'rect');
-                    subProgressRect.setAttribute('class', 'subtask-progress');
-                    subProgressRect.setAttribute('x', String(subStartOffset));
-                    subProgressRect.setAttribute('y', String((subIndex + customIndex + 1) * 40 + 40));
-                    subProgressRect.setAttribute('width', String(subProgressWidth));
-                    subProgressRect.setAttribute('height', String(15));
-                    subProgressRect.setAttribute('fill', '#c0392b');
+                    const subProgressRect = this.createRect(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subProgressWidth, 15, '#c0392b', `subtask-${task.id}-${subtask.id}-progress`);
                     subTaskGroup.appendChild(subProgressRect);
 
                     const subText = document.createElementNS(svgNS, 'text');
@@ -268,6 +243,16 @@ export default class GanttChart {
         });
     }
 
+    createRect(x: number, y: number, width: number, height: number, fill: string, id: string) {
+        const rect = document.createElementNS(svgNS, 'rect');
+        rect.setAttribute('x', String(x));
+        rect.setAttribute('y', String(y));
+        rect.setAttribute('width', String(width));
+        rect.setAttribute('height', String(height));
+        rect.setAttribute('fill', fill);
+        rect.setAttribute('id', id);
+        return rect;
+    }
     addMouseOverOutListeners(element: SVGElement, showDetails: (e: MouseEvent) => void, hideDetails: () => void) {
         element.addEventListener('mouseover', showDetails);
         element.addEventListener('mouseout', hideDetails);
