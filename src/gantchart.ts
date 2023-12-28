@@ -41,7 +41,7 @@ export default class GanttChart {
     }
 
     createGanttChart(_tasks: ITask[], _configs: IChartConfig = {}) {
-        let tasks: ITask[] = _tasks;
+        let tasks: ITask[] = _tasks.filter(task => task.start !== undefined && task.end !== undefined);
         if (_configs.activeTasks) {
             tasks = _tasks.filter(task => new DateHelper().isBetween(task.start, task.end));
             tasks = !tasks.length ? _tasks : tasks;
@@ -120,32 +120,18 @@ export default class GanttChart {
             taskGroup.setAttribute('class', 'tasks');
             svg.appendChild(taskGroup);
 
-            const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end).getTime()));
+            const dependentTaskEnd = this.calculateDependencyMaxEndDate(task.dependencies, tasks);
             const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
             const duration = (new Date(task.end).getTime() - new Date(task.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
 
-            const rect = document.createElementNS(svgNS, 'rect');
-            rect.setAttribute('x', String(startOffset));
-            rect.setAttribute('y', String(customIndex * 40 + 40));
-            rect.setAttribute('width', String(duration));
-            rect.setAttribute('height', String(30));
-            rect.setAttribute('fill', '#3498db');
-            rect.setAttribute('id', `task-${task.id}`); // Set the id attribute
+            const rect = this.createRectElement(startOffset, customIndex * 40 + 40, duration, 30, '#3498db', `task-${task.id}`);
             taskGroup.appendChild(rect);
 
             const progressWidth = (duration * task.progress) / 100;
-            const progressRect = document.createElementNS(svgNS, 'rect');
-            progressRect.setAttribute('x', String(startOffset));
-            progressRect.setAttribute('y', String(customIndex * 40 + 40));
-            progressRect.setAttribute('width', String(progressWidth));
-            progressRect.setAttribute('height', String(30));
-            progressRect.setAttribute('fill', '#2ecc71');
+            const progressRect = this.createRectElement(startOffset, customIndex * 40 + 40, progressWidth, 30, '#2ecc71', `task-${task.id}-progress`);
             taskGroup.appendChild(progressRect);
 
-            const text = document.createElementNS(svgNS, 'text');
-            text.setAttribute('x', String(startOffset + 5));
-            text.setAttribute('y', String(customIndex * 40 + 60));
-            text.textContent = task.name;
+            const text = this.createTextElement(startOffset + 5, customIndex * 40 + 60, task.name);
             taskGroup.appendChild(text);
 
             // Render subtasks
@@ -154,61 +140,30 @@ export default class GanttChart {
                 subTaskGroup.setAttribute('class', 'subtask');
                 taskGroup.appendChild(subTaskGroup);
                 task.subTask.forEach((subtask, subIndex) => {
-                    const subDependentTaskEnd = Math.max(
-                        ...subtask.dependencies.map(depId => {
-                            const dependentSubTask = task.subTask.find(sub => sub.id === depId);
-                            return dependentSubTask ? new Date(dependentSubTask.end).getTime() : 0;
-                        })
-                    );
+                    const subDependentTaskEnd = this.calculateDependencyMaxEndDate(subtask.dependencies, task.subTask);
+
                     const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
                     const subDuration = (new Date(subtask.end).getTime() - new Date(subtask.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
-
-                    const subRect = document.createElementNS(svgNS, 'rect');
-                    subRect.setAttribute('class', 'subtask');
-                    subRect.setAttribute('x', String(subStartOffset));
-                    subRect.setAttribute('y', String((subIndex + customIndex + 1) * 40 + 40));
-                    subRect.setAttribute('width', String(subDuration));
-                    subRect.setAttribute('height', String(15));
-                    subRect.setAttribute('fill', '#e74c3c');
-                    subRect.setAttribute('id', `subtask-${task.id}-${subtask.id}`); // Set the id attribute for subtasks
+                    const subRect = this.createRectElement(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subDuration, 15, '#e74c3c', `subtask-${task.id}-${subtask.id}`);
                     subTaskGroup.appendChild(subRect);
 
                     const subProgressWidth = (subDuration * subtask.progress) / 100;
-                    const subProgressRect = document.createElementNS(svgNS, 'rect');
-                    subProgressRect.setAttribute('class', 'subtask-progress');
-                    subProgressRect.setAttribute('x', String(subStartOffset));
-                    subProgressRect.setAttribute('y', String((subIndex + customIndex + 1) * 40 + 40));
-                    subProgressRect.setAttribute('width', String(subProgressWidth));
-                    subProgressRect.setAttribute('height', String(15));
-                    subProgressRect.setAttribute('fill', '#c0392b');
+                    const subProgressRect = this.createRectElement(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subProgressWidth, 15, '#c0392b', `subtask-${task.id}-${subtask.id}-progress`);
                     subTaskGroup.appendChild(subProgressRect);
 
-                    const subText = document.createElementNS(svgNS, 'text');
-                    subText.setAttribute('x', String(subStartOffset + 5));
-                    subText.setAttribute('y', String((subIndex + customIndex + 1) * 40 + 50));
-                    subText.textContent = subtask.name;
-                    subText.setAttribute('font-size', '10px');
+                    const subText = this.createTextElement(subStartOffset + 5, (subIndex + customIndex + 1) * 40 + 50, subtask.name, 10);
                     subTaskGroup.appendChild(subText);
 
-                    subText.addEventListener('mouseover', (e) => showTaskDetails(e, subtask, task.subTask));
-                    subRect.addEventListener('mouseover', (e) => showTaskDetails(e, subtask, task.subTask));
-                    subRect.addEventListener('mouseout', hideTaskDetails);
+                    // Add mouseover and mouseout event listeners
+                    this.addMouseOverOutListeners(subText, (e) => showTaskDetails(e, subtask, task.subTask), hideTaskDetails);
+                    this.addMouseOverOutListeners(subRect, (e) => showTaskDetails(e, subtask, task.subTask), hideTaskDetails);
+                    this.addMouseOverOutListeners(subProgressRect, (e) => showTaskDetails(e, subtask, task.subTask), hideTaskDetails);
 
-                    subProgressRect.addEventListener('mouseover', (e) => showTaskDetails(e, subtask, task.subTask));
-                    subProgressRect.addEventListener('mouseout', hideTaskDetails);
+                    // Add context menu event listeners
+                    this.addContextMenuListener(subRect, subtask, task.subTask, tasks);
+                    this.addContextMenuListener(subProgressRect, subtask, task.subTask, tasks);
+                    this.addContextMenuListener(subText, subtask, task.subTask, tasks);
 
-                    subRect.addEventListener('contextmenu', (event) => {
-                        event.preventDefault();
-                        editTask(event, subtask, task.subTask, tasks);
-                    });
-                    subProgressRect.addEventListener('contextmenu', (event) => {
-                        event.preventDefault();
-                        editTask(event, subtask, task.subTask, tasks);
-                    });
-                    subText.addEventListener('contextmenu', (event) => {
-                        event.preventDefault();
-                        editTask(event, subtask, task.subTask, tasks);
-                    });
                     subRect.addEventListener('mousedown', (event) => {
                         event.preventDefault();
                         this.startDrag(event, subRect, subProgressRect, subtask, task.subTask, tasks);
@@ -224,26 +179,16 @@ export default class GanttChart {
                 });
             }
 
-            // Add event listeners for both rectangle and progress bar
-            text.addEventListener('mouseover', (e) => showTaskDetails(e, task, tasks));
-            rect.addEventListener('mouseover', (e) => showTaskDetails(e, task, tasks));
-            rect.addEventListener('mouseout', hideTaskDetails);
+            // Add mouseover and mouseout event listeners
+            this.addMouseOverOutListeners(text, (e) => showTaskDetails(e, task, tasks), hideTaskDetails);
+            this.addMouseOverOutListeners(rect, (e) => showTaskDetails(e, task, tasks), hideTaskDetails);
+            this.addMouseOverOutListeners(progressRect, (e) => showTaskDetails(e, task, tasks), hideTaskDetails);
 
-            progressRect.addEventListener('mouseover', (e) => showTaskDetails(e, task, tasks));
-            progressRect.addEventListener('mouseout', hideTaskDetails);
+            // Add context menu event listeners
+            this.addContextMenuListener(rect, task, tasks);
+            this.addContextMenuListener(progressRect, task, tasks);
+            this.addContextMenuListener(text, task, tasks);
 
-            rect.addEventListener('contextmenu', (event) => {
-                event.preventDefault();
-                editTask(event, task, tasks);
-            });
-            progressRect.addEventListener('contextmenu', (event) => {
-                event.preventDefault();
-                editTask(event, task, tasks);
-            });
-            text.addEventListener('contextmenu', (event) => {
-                event.preventDefault();
-                editTask(event, task, tasks);
-            });
             // Add event listeners for dragging to edit start and end dates
             rect.addEventListener('mousedown', (event) => {
                 event.preventDefault();
@@ -273,6 +218,46 @@ export default class GanttChart {
         });
     }
 
+// Function to add context menu event listener
+    addContextMenuListener(element: SVGElement, task: ITask | ISubTask, tasks: ITask[] | ISubTask[], allTasks: ITask[] = null) {
+        this.allTasks = allTasks;
+        element.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            if (allTasks) {
+                editTask(event, task, tasks, allTasks);
+            } else {
+                editTask(event, task, tasks);
+            }
+        });
+    }
+
+    createRectElement(x: number, y: number, width: number, height: number, fill: string, id: string) {
+        const rect = document.createElementNS(svgNS, 'rect');
+        rect.setAttribute('x', String(x));
+        rect.setAttribute('y', String(y));
+        rect.setAttribute('width', String(width));
+        rect.setAttribute('height', String(height));
+        rect.setAttribute('fill', fill);
+        rect.setAttribute('id', id);
+        return rect;
+    }
+
+    createTextElement(x: number, y: number, text: string, fontSize: number = null) {
+        const textElement = document.createElementNS(svgNS, 'text');
+        textElement.setAttribute('x', String(x));
+        textElement.setAttribute('y', String(y));
+        if (fontSize) {
+            textElement.setAttribute('font-size', `${fontSize}px`);
+        }
+        textElement.textContent = text;
+        return textElement;
+    }
+
+    addMouseOverOutListeners(element: SVGElement, showDetails: (e: MouseEvent) => void, hideDetails: () => void) {
+        element.addEventListener('mouseover', showDetails);
+        element.addEventListener('mouseout', hideDetails);
+    }
+
     throttle<T extends (...args: any[]) => any>(func: T, limit: number) {
         let inThrottle: boolean;
 
@@ -287,7 +272,6 @@ export default class GanttChart {
             }
         };
     }
-
 
     isExceedingDependentEndDate(startDate: Date, dependentTask: ISubTask | ITask, tasks: ITask[] | ISubTask[]) {
         const tasksWithDesiredIds = tasks.filter(task =>
@@ -304,13 +288,22 @@ export default class GanttChart {
 
     handleDragMove(event: {
         preventDefault: () => void;
-        clientX: any;
+        clientX: number;
     }, taskRect: SVGRectElement, progress: SVGRectElement, dependentTask: ITask | ISubTask, tasks: ITask[] | ISubTask [], allTasks = null) {
         hideTaskDetails();
         event.preventDefault();
         if (this.isDragging) {
             this.updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks, allTasks);
         }
+    }
+
+    calculateDependencyMaxEndDate(dependencies: number[], tasks: ISubTask[] | ITask []): number {
+        const maxDates = dependencies.map(depId => {
+            const dependentSubTask = tasks.find(sub => sub.id === depId);
+            return dependentSubTask ? new Date(dependentSubTask.end).getTime() : 0;
+        });
+
+        return Math.max(...maxDates);
     }
 
     startDrag(event: MouseEvent, taskRect: SVGRectElement, taskProgressRect: SVGRectElement, dependentTask: ITask | ISubTask, task: ITask[] | ISubTask[], allTasks = null) {
@@ -325,7 +318,7 @@ export default class GanttChart {
         // Set the current task and progress bar
         this.currentTaskRect = taskRect;
         this.currentProgressRect = taskProgressRect;
-        this.dragMoveListener = this.throttle((event: { preventDefault: () => void; clientX: any; }) => {
+        this.dragMoveListener = this.throttle((event: { preventDefault: () => void; clientX: number; }) => {
             this.handleDragMove(event, this.currentTaskRect, this.currentProgressRect, dependentTask, task, allTasks);
         }, 16);
         event.preventDefault();
@@ -359,24 +352,26 @@ export default class GanttChart {
                         this.createGanttChart(tasks);
                     }
                 }
+            } else {
+                const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
+                const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
+                const adjustedWidth = maxStartOffset - adjustedStartOffset;
+                taskRect.setAttribute('x', String(newStartOffset));
+                taskRect.setAttribute('width', String(adjustedWidth));
+
+                progress.setAttribute('x', String(newStartOffset));
+                progress.setAttribute('width', String(adjustedWidth * dependentTask.progress / 100));
+                this.taskRect = taskRect;
             }
-
-            const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
-            const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
-            const adjustedWidth = maxStartOffset - adjustedStartOffset;
-            taskRect.setAttribute('x', String(newStartOffset));
-            taskRect.setAttribute('width', String(adjustedWidth));
-
-            progress.setAttribute('x', String(newStartOffset));
-            progress.setAttribute('width', String(adjustedWidth * dependentTask.progress / 100));
 
         } else {
             // Dragging end handle
             const newWidth = this.initialWidth + deltaX;
             taskRect.setAttribute('width', String(newWidth));
             progress.setAttribute('width', String(newWidth * dependentTask.progress / 100));
+            this.taskRect = taskRect;
         }
-        this.taskRect = taskRect;
+
     }
 
     handleMouseUp(taskRect: SVGRectElement, dependentTask: ITask | ISubTask, tasks: ISubTask[] | ITask [], dateInfo: IDateInfo, allTasks = null) {
@@ -507,7 +502,6 @@ export default class GanttChart {
         return line;
     }
 
-
     createArrowhead(x: number, y: number, size: number, arrowDirection: string) {
         const arrowhead = document.createElementNS(svgNS, 'polygon');
         const points = arrowDirection === 'down'
@@ -519,11 +513,11 @@ export default class GanttChart {
     }
 
     stopDrag() {
+        this.taskRect = null;
         this.isDragging = false;
         document.body.classList.remove('dragging');
         document.removeEventListener('mousemove', this.dragMoveListener);
     }
-
 
     getWidth() {
         const svgElement = document.getElementById('mySvg');
