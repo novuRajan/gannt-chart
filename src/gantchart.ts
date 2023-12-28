@@ -190,12 +190,10 @@ export default class GanttChart {
                     subText.setAttribute('font-size', '10px');
                     subTaskGroup.appendChild(subText);
 
-                    subText.addEventListener('mouseover', (e) => showTaskDetails(e, subtask, task.subTask));
-                    subRect.addEventListener('mouseover', (e) => showTaskDetails(e, subtask, task.subTask));
-                    subRect.addEventListener('mouseout', hideTaskDetails);
-
-                    subProgressRect.addEventListener('mouseover', (e) => showTaskDetails(e, subtask, task.subTask));
-                    subProgressRect.addEventListener('mouseout', hideTaskDetails);
+                    // Add mouseover and mouseout event listeners
+                    this.addMouseOverOutListeners(subText, (e) => showTaskDetails(e, subtask, task.subTask), hideTaskDetails);
+                    this.addMouseOverOutListeners(subRect, (e) => showTaskDetails(e, subtask, task.subTask), hideTaskDetails);
+                    this.addMouseOverOutListeners(subProgressRect, (e) => showTaskDetails(e, subtask, task.subTask), hideTaskDetails);
 
                     subRect.addEventListener('contextmenu', (event) => {
                         event.preventDefault();
@@ -224,13 +222,10 @@ export default class GanttChart {
                 });
             }
 
-            // Add event listeners for both rectangle and progress bar
-            text.addEventListener('mouseover', (e) => showTaskDetails(e, task, tasks));
-            rect.addEventListener('mouseover', (e) => showTaskDetails(e, task, tasks));
-            rect.addEventListener('mouseout', hideTaskDetails);
-
-            progressRect.addEventListener('mouseover', (e) => showTaskDetails(e, task, tasks));
-            progressRect.addEventListener('mouseout', hideTaskDetails);
+            // Add mouseover and mouseout event listeners
+            this.addMouseOverOutListeners(text, (e) => showTaskDetails(e, task, tasks), hideTaskDetails);
+            this.addMouseOverOutListeners(rect, (e) => showTaskDetails(e, task, tasks), hideTaskDetails);
+            this.addMouseOverOutListeners(progressRect, (e) => showTaskDetails(e, task, tasks), hideTaskDetails);
 
             rect.addEventListener('contextmenu', (event) => {
                 event.preventDefault();
@@ -273,6 +268,10 @@ export default class GanttChart {
         });
     }
 
+    addMouseOverOutListeners(element: SVGElement, showDetails: (e: MouseEvent) => void, hideDetails: () => void) {
+        element.addEventListener('mouseover', showDetails);
+        element.addEventListener('mouseout', hideDetails);
+    }
     throttle<T extends (...args: any[]) => any>(func: T, limit: number) {
         let inThrottle: boolean;
 
