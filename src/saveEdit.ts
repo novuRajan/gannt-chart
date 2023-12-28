@@ -1,7 +1,7 @@
-import {updateTaskStartEndDates} from './updatechart';
+import { updateTaskStartEndDates } from './updatechart';
 import GanttChart from './gantchart';
-import {ITask} from './Interfaces/Task/Task';
-import {ISubTask} from './Interfaces/Task/SubTask';
+import { ITask } from './Interfaces/Task/Task';
+import { ISubTask } from './Interfaces/Task/SubTask';
 
 const tooltip = document.createElement('div');
 tooltip.className = 'bar-hover';
@@ -17,7 +17,7 @@ export function openAddModal(tasks: ITask[] | ISubTask[]) {
     if (!addModal) {
         addModal = document.createElement('div');
         addModal.setAttribute('id', 'addFormModal');
-        addModal.setAttribute('class', 'modal')
+        addModal.setAttribute('class', 'modal');
         document.body.appendChild(addModal);
     }
 
@@ -51,7 +51,7 @@ export function openAddModal(tasks: ITask[] | ISubTask[]) {
     cancelBtn.setAttribute('type', 'button');
     cancelBtn.textContent = 'Cancel';
     cancelBtn.addEventListener('click', function saveChangesHandler() {
-        closeModal(addModal)
+        closeModal(addModal);
     });
     addTaskForm.appendChild(cancelBtn);
 
@@ -98,7 +98,7 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
     if (!editModal) {
         editModal = document.createElement('div');
         editModal.setAttribute('id', 'editModal');
-        editModal.setAttribute('class', 'modal')
+        editModal.setAttribute('class', 'modal');
         document.body.appendChild(editModal);
     }
 
