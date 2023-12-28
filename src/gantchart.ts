@@ -361,22 +361,26 @@ export default class GanttChart {
                 }
             }
 
-            const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
-            const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
-            const adjustedWidth = maxStartOffset - adjustedStartOffset;
-            taskRect.setAttribute('x', String(newStartOffset));
-            taskRect.setAttribute('width', String(adjustedWidth));
+            else {
+                const maxStartOffset = parseFloat(taskRect.getAttribute('x')) + parseFloat(taskRect.getAttribute('width'));
+                const adjustedStartOffset = Math.min(newStartOffset, maxStartOffset);
+                const adjustedWidth = maxStartOffset - adjustedStartOffset;
+                taskRect.setAttribute('x', String(newStartOffset));
+                taskRect.setAttribute('width', String(adjustedWidth));
 
-            progress.setAttribute('x', String(newStartOffset));
-            progress.setAttribute('width', String(adjustedWidth * dependentTask.progress / 100));
+                progress.setAttribute('x', String(newStartOffset));
+                progress.setAttribute('width', String(adjustedWidth * dependentTask.progress / 100));
+                this.taskRect = taskRect;
+            }
 
         } else {
             // Dragging end handle
             const newWidth = this.initialWidth + deltaX;
             taskRect.setAttribute('width', String(newWidth));
             progress.setAttribute('width', String(newWidth * dependentTask.progress / 100));
+            this.taskRect = taskRect;
         }
-        this.taskRect = taskRect;
+
     }
 
     handleMouseUp(taskRect: SVGRectElement, dependentTask: ITask | ISubTask, tasks: ISubTask[] | ITask [], dateInfo: IDateInfo, allTasks = null) {
@@ -519,6 +523,7 @@ export default class GanttChart {
     }
 
     stopDrag() {
+        this.taskRect = null;
         this.isDragging = false;
         document.body.classList.remove('dragging');
         document.removeEventListener('mousemove', this.dragMoveListener);
