@@ -124,17 +124,14 @@ export default class GanttChart {
             const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
             const duration = (new Date(task.end).getTime() - new Date(task.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
 
-            const rect = this.createRect(startOffset, customIndex * 40 + 40, duration, 30, '#3498db', `task-${task.id}`);
+            const rect = this.createRectElement(startOffset, customIndex * 40 + 40, duration, 30, '#3498db', `task-${task.id}`);
             taskGroup.appendChild(rect);
 
             const progressWidth = (duration * task.progress) / 100;
-            const progressRect = this.createRect(startOffset, customIndex * 40 + 40, progressWidth, 30, '#2ecc71', `task-${task.id}-progress`);
+            const progressRect = this.createRectElement(startOffset, customIndex * 40 + 40, progressWidth, 30, '#2ecc71', `task-${task.id}-progress`);
             taskGroup.appendChild(progressRect);
 
-            const text = document.createElementNS(svgNS, 'text');
-            text.setAttribute('x', String(startOffset + 5));
-            text.setAttribute('y', String(customIndex * 40 + 60));
-            text.textContent = task.name;
+            const text = this.createTextElement(startOffset + 5, customIndex * 40 + 60, task.name);
             taskGroup.appendChild(text);
 
             // Render subtasks
@@ -151,18 +148,14 @@ export default class GanttChart {
                     );
                     const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
                     const subDuration = (new Date(subtask.end).getTime() - new Date(subtask.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
-                    const subRect = this.createRect(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subDuration, 15, '#e74c3c', `subtask-${task.id}-${subtask.id}`);
+                    const subRect = this.createRectElement(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subDuration, 15, '#e74c3c', `subtask-${task.id}-${subtask.id}`);
                     subTaskGroup.appendChild(subRect);
 
                     const subProgressWidth = (subDuration * subtask.progress) / 100;
-                    const subProgressRect = this.createRect(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subProgressWidth, 15, '#c0392b', `subtask-${task.id}-${subtask.id}-progress`);
+                    const subProgressRect = this.createRectElement(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subProgressWidth, 15, '#c0392b', `subtask-${task.id}-${subtask.id}-progress`);
                     subTaskGroup.appendChild(subProgressRect);
 
-                    const subText = document.createElementNS(svgNS, 'text');
-                    subText.setAttribute('x', String(subStartOffset + 5));
-                    subText.setAttribute('y', String((subIndex + customIndex + 1) * 40 + 50));
-                    subText.textContent = subtask.name;
-                    subText.setAttribute('font-size', '10px');
+                    const subText = this.createTextElement(subStartOffset + 5, (subIndex + customIndex + 1) * 40 + 50, subtask.name, 10);
                     subTaskGroup.appendChild(subText);
 
                     // Add mouseover and mouseout event listeners
@@ -243,7 +236,7 @@ export default class GanttChart {
         });
     }
 
-    createRect(x: number, y: number, width: number, height: number, fill: string, id: string) {
+    createRectElement(x: number, y: number, width: number, height: number, fill: string, id: string) {
         const rect = document.createElementNS(svgNS, 'rect');
         rect.setAttribute('x', String(x));
         rect.setAttribute('y', String(y));
@@ -252,6 +245,16 @@ export default class GanttChart {
         rect.setAttribute('fill', fill);
         rect.setAttribute('id', id);
         return rect;
+    }
+    createTextElement(x: number, y: number, text: string , fontSize: number = null) {
+        const textElement = document.createElementNS(svgNS, 'text');
+        textElement.setAttribute('x', String(x));
+        textElement.setAttribute('y', String(y));
+        if(fontSize) {
+            textElement.setAttribute('font-size', `${fontSize}px`);
+        }
+        textElement.textContent = text;
+        return textElement;
     }
     addMouseOverOutListeners(element: SVGElement, showDetails: (e: MouseEvent) => void, hideDetails: () => void) {
         element.addEventListener('mouseover', showDetails);
