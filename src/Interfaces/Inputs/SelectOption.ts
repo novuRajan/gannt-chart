@@ -1,5 +1,5 @@
-export interface SelectOption {
+export interface ISelectOption {
 	label: string;
-	value: string;
+	value: string|string[]|number[];
 	disabled?: boolean | 0 | 1;
 }

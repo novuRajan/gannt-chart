@@ -1,10 +1,10 @@
 import { BaseInput } from "../../Interfaces/Inputs/BaseInput";
-import { SelectOption } from "../../Interfaces/Inputs/SelectOption";
+import { ISelectOption } from "../../Interfaces/Inputs/SelectOption";
 
 
 type SelectInput = Omit<BaseInput, "type"> & {
 	type: "select";
-	options: string[] | SelectOption[];
+	options: string[] | ISelectOption[];
 };
 
 type TextInput = Omit<BaseInput, "options"> & {

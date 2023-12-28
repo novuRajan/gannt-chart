@@ -64,16 +64,21 @@ export class InputHelper {
 				if (typeof option === "string") {
 					optionEL.setAttribute("value", option);
 					optionEL.setAttribute("label", option);
-					if (this.input.value === option) {
-						optionEL.setAttribute("selected", "true");
-					}
+
 				} else {
 					optionEL.setAttribute("value", option.value);
 					optionEL.setAttribute("label", option.label);
 					if (option.disabled) {
 						optionEL.setAttribute("disabled", option.disabled.toString());
 					}
-					if (this.input.value === option.value) {
+					if (typeof this.input.value === "string"){
+						if (this.input.value === option.value) {
+							optionEL.setAttribute("selected", "true");
+						}
+						return;
+					}
+					const values =<Array<string|number>>this.input.value
+					if (values.includes(option.value)) {
 						optionEL.setAttribute("selected", "true");
 					}
 				}
