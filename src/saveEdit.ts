@@ -16,6 +16,7 @@ const inputs:InputTypes[]=[
     {label:'Start Date:',id:'editStartDate',name:'start',type:'date'},
     {label:'End Date:',id:'editEndDate',name:'end',type:'date'},
     {label:'Progress:',id:'editProgress',name:'progress',type:'number'},
+    {label:'Dependencies:',id:'editDependencies',name:'dependencies',type:'select',options:[],multiple:true},
 ];
 
 
@@ -44,7 +45,9 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
     addTaskForm.innerHTML = '';
 
     // Create form elements dynamically and append them to the form
-    inputs.forEach(input=>{
+    inputs.filter(input=>{
+        return !(input.type === 'select' && input.options.length === 0);
+    }).forEach(input=>{
         const inputEL=createInputElement(input)
         addTaskForm.appendChild(inputEL)
     })
@@ -73,21 +76,21 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
 //function to update the task array
 export function addTask(tasks : ITask[] | ISubTask[]) {
     const addModal = document.getElementById('addFormModal');
-    const taskName = document.getElementById('taskName')  as HTMLInputElement;
-    const startDate = document.getElementById('startDate') as HTMLInputElement;
-    const endDate = document.getElementById('endDate') as HTMLInputElement;
+    const taskName = inputValue('name');
+    const startDate =inputValue('start');
+    const endDate = inputValue('end');
 
     // Ensure the required fields are not empty
-    if (!taskName.value || !startDate.value || !endDate.value) {
+    if (!taskName || !startDate || !endDate) {
         alert('Please fill in all fields.');
         return;
     }
 
     const newTask = {
         id: tasks.length + 1, // Incremental ID
-        name: taskName.value,
-        start: startDate.value,
-        end: endDate.value,
+        name: taskName,
+        start: startDate,
+        end: endDate,
         progress: 0, // You can set the progress as needed
         dependencies: [] // You can set dependencies as needed
     };
@@ -120,7 +123,6 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
         editTaskForm.setAttribute('id', 'editTaskForm');
         editModal.appendChild(editTaskForm);
     }
-    inputs.push({label:'Dependencies:',id:'editDependencies',name:'dependencies',type:'select',options:[],multiple:true});
     const dependenciesIndex=inputs.findIndex(input=>input.name=='dependencies')
     inputs[dependenciesIndex].options=tasks.filter((availableTask) => {
         // Check if the available task is not the current task and not dependent on the current task

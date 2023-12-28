@@ -12,12 +12,11 @@ export const updateTaskStartEndDates = (tasks: ITask[]) => {
 }
 
 function updateTaskDates(task: ITask, taskMap: Map<number, ITask>) {
-    if (task.dependencies.length === 0) {
-        return; // Base case: no dependencies, nothing to update
-    }
+    // if (task.dependencies.length === 0) {
+    //     return; // Base case: no dependencies, nothing to update
+    // }
 
     const dependentTasks = task.dependencies.map(depId => taskMap.get(depId));
-
     // Find the maximum end date among dependent tasks
     const maxEndDate = new DateHelper(dependentTasks.map(task => task.end)).latestDate();
 
