@@ -120,7 +120,7 @@ export default class GanttChart {
             taskGroup.setAttribute('class', 'tasks');
             svg.appendChild(taskGroup);
 
-            const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end).getTime()));
+            const dependentTaskEnd = this.calculateDependencyMaxEndDate(task.dependencies, tasks);
             const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
             const duration = (new Date(task.end).getTime() - new Date(task.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
 
@@ -140,12 +140,8 @@ export default class GanttChart {
                 subTaskGroup.setAttribute('class', 'subtask');
                 taskGroup.appendChild(subTaskGroup);
                 task.subTask.forEach((subtask, subIndex) => {
-                    const subDependentTaskEnd = Math.max(
-                        ...subtask.dependencies.map(depId => {
-                            const dependentSubTask = task.subTask.find(sub => sub.id === depId);
-                            return dependentSubTask ? new Date(dependentSubTask.end).getTime() : 0;
-                        })
-                    );
+                    const subDependentTaskEnd = this.calculateDependencyMaxEndDate(subtask.dependencies, task.subTask);
+
                     const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
                     const subDuration = (new Date(subtask.end).getTime() - new Date(subtask.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
                     const subRect = this.createRectElement(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subDuration, 15, '#e74c3c', `subtask-${task.id}-${subtask.id}`);
@@ -298,6 +294,15 @@ export default class GanttChart {
         if (this.isDragging) {
             this.updateTaskBarPosition(event.clientX, taskRect, progress, dependentTask, tasks, allTasks);
         }
+    }
+
+    calculateDependencyMaxEndDate(dependencies: number[] , tasks: ISubTask[] | ITask [] ): number {
+        const maxDates = dependencies.map(depId => {
+            const dependentSubTask = tasks.find(sub => sub.id === depId);
+            return dependentSubTask ? new Date(dependentSubTask.end).getTime() : 0;
+        });
+
+        return Math.max(...maxDates);
     }
 
     startDrag(event: MouseEvent, taskRect: SVGRectElement, taskProgressRect: SVGRectElement, dependentTask: ITask | ISubTask, task: ITask[] | ISubTask[], allTasks = null) {
