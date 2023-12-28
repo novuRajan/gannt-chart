@@ -16,7 +16,6 @@ const inputs:InputTypes[]=[
     {label:'Start Date:',id:'editStartDate',name:'start',type:'date'},
     {label:'End Date:',id:'editEndDate',name:'end',type:'date'},
     {label:'Progress:',id:'editProgress',name:'progress',type:'number'},
-    {label:'Dependencies:',id:'editDependencies',name:'dependencies',type:'select',options:[],multiple:true},
 ];
 
 
@@ -121,6 +120,7 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
         editTaskForm.setAttribute('id', 'editTaskForm');
         editModal.appendChild(editTaskForm);
     }
+    inputs.push({label:'Dependencies:',id:'editDependencies',name:'dependencies',type:'select',options:[],multiple:true});
     const dependenciesIndex=inputs.findIndex(input=>input.name=='dependencies')
     inputs[dependenciesIndex].options=tasks.filter((availableTask) => {
         // Check if the available task is not the current task and not dependent on the current task

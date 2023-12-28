@@ -71,6 +71,7 @@ export class InputHelper {
 					if (option.disabled) {
 						optionEL.setAttribute("disabled", option.disabled.toString());
 					}
+					if (!this.input.value)return;
 					if (typeof this.input.value === "string"){
 						if (this.input.value === option.value) {
 							optionEL.setAttribute("selected", "true");
