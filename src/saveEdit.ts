@@ -47,7 +47,7 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
     inputs.filter(input=>{
         return !(input.type === 'select' && input.options.length === 0);
     }).forEach(input=>{
-        input.value = "";
+        // input.value = "";
         const inputEL=createInputElement(input)
         addTaskForm.appendChild(inputEL)
     })
@@ -73,13 +73,17 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
     addModal.style.display = 'block';
 }
 
+
+
 //function to update the task array
 export function addTask(tasks : ITask[] | ISubTask[]) {
     const addModal = document.getElementById('addFormModal');
-    const taskName = inputValue('name');
-    const startDate =inputValue('start');
-    const endDate = inputValue('end');
-
+    const addTaskForm = document.getElementById('addTaskForm') as HTMLFormElement;
+    const formData=new FormData(addTaskForm);
+    const taskName = formData.get('name') as string|undefined;
+    const startDate =formData.get('start') as string|undefined;
+    const endDate = formData.get('end') as string|undefined;
+    const progress = formData.get('progress') as string|undefined;
     // Ensure the required fields are not empty
     if (!taskName || !startDate || !endDate) {
         alert('Please fill in all fields.');
@@ -91,7 +95,7 @@ export function addTask(tasks : ITask[] | ISubTask[]) {
         name: taskName,
         start: startDate,
         end: endDate,
-        progress: inputValue('progress')?parseInt(inputValue('progress')):0, // You can set the progress as needed
+        progress: progress?parseInt(progress):0, // You can set the progress as needed
         dependencies: [] // You can set dependencies as needed
     };
 
@@ -204,12 +208,14 @@ export function saveEditedTask(tasks: ISubTask[] | ITask [], allTasks = null) {
     // Find the task in the array and update its properties
     const editedTaskIndex = tasks.findIndex(task => task.id === taskId);
     if (editedTaskIndex !== -1) {
-        tasks[editedTaskIndex].name = inputValue('name');
-        tasks[editedTaskIndex].start = inputValue('start');
-        tasks[editedTaskIndex].end = inputValue('end');
+        const addTaskForm = document.getElementById('editTaskForm') as HTMLFormElement;
+        const formData=new FormData(addTaskForm);
+        tasks[editedTaskIndex].name = formData.get('name') as string;
+        tasks[editedTaskIndex].start = formData.get('start') as string;
+        tasks[editedTaskIndex].end = formData.get('end') as string;
 
         // Parse the progress value and ensure it's a number
-        const parsedProgress = parseInt(inputValue('progress'), 10);
+        const parsedProgress = parseInt(String(formData.get('progress')), 10);
         tasks[editedTaskIndex].progress = isNaN(parsedProgress) ? 0 : Math.min(100, parsedProgress);
         if (selectedDependencies.filter(d=>!isNaN(d)).length) {
           tasks[editedTaskIndex].dependencies = selectedDependencies;

@@ -1,8 +1,7 @@
 
 import { InputTypes } from "../../types/Inputs/InputTypes";
 import { createElement } from "./HtmlHelper";
-import { isTaskDependent } from "../../saveEdit";
-import { ISelectOption } from "../../Interfaces/Inputs/SelectOption";
+
 
 export class InputHelper {
 	private readonly input: InputTypes;
