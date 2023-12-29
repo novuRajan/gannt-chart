@@ -1,3 +1,3 @@
-export interface IChartConfig{
-  activeTasks?: boolean;
+export interface IChartConfig {
+    activeTasks?: boolean;
 }
