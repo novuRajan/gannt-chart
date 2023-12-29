@@ -1,26 +1,19 @@
 import { IDateInfo } from './Interfaces/Date/DateInfo';
 import GanttChart from './gantchart';
+import { SvgHelper } from "./lib/Svg/SvgHelper";
 
-const svgNS = 'http://www.w3.org/2000/svg';
 
 export function createGridLines(dateGroup: SVGGElement, chartWidth: number, taskCount: number) {
-    const gridLines = document.createElementNS(svgNS, 'g');
-    gridLines.classList.add('lines');
+    const gridLines = new SvgHelper().createGroup('grid-lines');
     dateGroup.appendChild(gridLines);
     for (let i = 0; i <= chartWidth; i += 50) {
-        const line = document.createElementNS(svgNS, 'line');
-        line.setAttribute('x1', String(i));
-        line.setAttribute('x2', String(i));
-        line.setAttribute('y1', String(35));
-        line.setAttribute('y2', String(taskCount * 40 + 40));
-        line.classList.add('grid-line');
+        const  line = new SvgHelper().createSvgLine(i, 35, i, taskCount * 40 + 40 ,'grid-line');
         gridLines.appendChild(line);
     }
 }
 
 export function createMonthHeadings(dateGroup: SVGGElement, dateInfo: IDateInfo, chartWidth: number) {
-    const month = document.createElementNS(svgNS, 'g');
-    month.classList.add('month');
+    const month = new SvgHelper().createGroup('month');
     dateGroup.appendChild(month);
     const months = [
         'Jan',
@@ -46,35 +39,25 @@ export function createMonthHeadings(dateGroup: SVGGElement, dateInfo: IDateInfo,
         if (monthIndex !== currentMonth) {
             currentMonth = monthIndex;
 
-            const monthHeading = document.createElementNS(svgNS, 'text');
-            monthHeading.setAttribute('x', String(i));
-            monthHeading.setAttribute('y', String(10));
+            const monthHeading = new SvgHelper().createTextElement(i, 10, months[currentMonth]);
             monthHeading.classList.add('month-heading');
-            monthHeading.textContent = months[currentMonth];
             month.appendChild(monthHeading);
         }
     }
 }
 
 export function createDateScale(dateGroup: SVGGElement, dateInfo: IDateInfo, chartWidth: number, taskCount: number) {
-    const date = document.createElementNS(svgNS, 'g');
+    const date = new SvgHelper().createGroup('date');
     dateGroup.appendChild(date);
-    date.classList.add('date');
-    const dateScale = document.createElementNS(svgNS, 'text');
-    dateScale.setAttribute('x', '0');
-    dateScale.setAttribute('y', `${taskCount}`);
+    const dateScale = new SvgHelper().createTextElement(0, taskCount, '');
     date.appendChild(dateScale);
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     for (let i = 0; i <= chartWidth; i += 50) {
         const currentDate = new Date(dateInfo.startingDate.getTime() + i / 50 * (24 * 60 * 60 * 1000));
-        const day = document.createElementNS(svgNS, 'text');
-        day.setAttribute('x', String(i - 3));
-        day.setAttribute('y', String(25));
-        day.setAttribute('font-size', '12px');
+        const day = new SvgHelper().createTextElement(i-3, 25, daysOfWeek[currentDate.getDay()], 12);
         if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
             day.setAttribute('fill', 'red');
         }
-        day.textContent = daysOfWeek[currentDate.getDay()];
         date.appendChild(day);
     }
 }
