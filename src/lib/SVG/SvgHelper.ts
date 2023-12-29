@@ -8,15 +8,15 @@ export class SvgHelper {
     this._svgNS = 'http://www.w3.org/2000/svg';
   }
 
-  createSVGElement(tag: string, attributes = {}) {
-    const element = document.createElementNS(this._svgNS, tag);
+  createSVGElement(tag: string, attributes = {}) : SVGElement {
+    const element = document.createElementNS(this._svgNS, tag) as SVGElement;
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value as string);
     }
     return element;
   }
-  createGroup(className = '') {
-    const group = this.createSVGElement('g');
+  createGroup(className = ''): SVGGElement {
+    const group = this.createSVGElement('g') as SVGGElement;
     if (className) {
       group.setAttribute('class', className);
     }
