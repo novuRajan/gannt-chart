@@ -1,6 +1,6 @@
 import { IDateInfo } from './Interfaces/Date/DateInfo';
 import GanttChart from './gantchart';
-import { SvgHelper } from "./lib/SVG/SvgHelper";
+import { SvgHelper } from "./lib/Svg/SvgHelper";
 
 
 export function createGridLines(dateGroup: SVGGElement, chartWidth: number, taskCount: number) {
