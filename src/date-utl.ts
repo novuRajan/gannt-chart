@@ -2,11 +2,9 @@ import { IDateInfo } from './Interfaces/Date/DateInfo';
 import GanttChart from './gantchart';
 import { SvgHelper } from "./lib/SVG/SvgHelper";
 
-const svgNS = 'http://www.w3.org/2000/svg';
 
 export function createGridLines(dateGroup: SVGGElement, chartWidth: number, taskCount: number) {
-    const gridLines = document.createElementNS(svgNS, 'g');
-    gridLines.classList.add('lines');
+    const gridLines = new SvgHelper().createGroup('grid-lines');
     dateGroup.appendChild(gridLines);
     for (let i = 0; i <= chartWidth; i += 50) {
         const  line = new SvgHelper().createSvgLine(i, 35, i, taskCount * 40 + 40 ,'grid-line');
@@ -15,8 +13,7 @@ export function createGridLines(dateGroup: SVGGElement, chartWidth: number, task
 }
 
 export function createMonthHeadings(dateGroup: SVGGElement, dateInfo: IDateInfo, chartWidth: number) {
-    const month = document.createElementNS(svgNS, 'g');
-    month.classList.add('month');
+    const month = new SvgHelper().createGroup('month');
     dateGroup.appendChild(month);
     const months = [
         'Jan',
@@ -50,9 +47,8 @@ export function createMonthHeadings(dateGroup: SVGGElement, dateInfo: IDateInfo,
 }
 
 export function createDateScale(dateGroup: SVGGElement, dateInfo: IDateInfo, chartWidth: number, taskCount: number) {
-    const date = document.createElementNS(svgNS, 'g');
+    const date = new SvgHelper().createGroup('date');
     dateGroup.appendChild(date);
-    date.classList.add('date');
     const dateScale = new SvgHelper().createTextElement(0, taskCount, '');
     date.appendChild(dateScale);
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
