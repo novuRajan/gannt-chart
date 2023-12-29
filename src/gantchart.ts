@@ -8,7 +8,6 @@ import { IDateInfo } from './Interfaces/Date/DateInfo';
 import { DateHelper } from './lib/Date';
 import { IChartConfig } from './Interfaces/Chart/ChartConfig';
 
-const svgNS = 'http://www.w3.org/2000/svg';
 export default class GanttChart {
     protected dateInfo: IDateInfo;
     private allTasks: ITask[];
@@ -68,7 +67,7 @@ export default class GanttChart {
     }
 
     createSVG(tasks: ITask[]) {
-        const svg = document.createElementNS(svgNS, 'svg');
+        const svg = new SvgHelper().createSVGElement('svg') ;
 
         svg.setAttribute('id', 'mySvg');
 

@@ -8,8 +8,8 @@ export class SvgHelper {
     this._svgNS = "http://www.w3.org/2000/svg";
   }
 
-  createSVGElement(tag: string, attributes = {}): SVGElement {
-    const element = document.createElementNS(this._svgNS, tag) as SVGElement;
+  createSVGElement(tag: string, attributes = {}): SVGSVGElement {
+    const element = document.createElementNS(this._svgNS, tag) as SVGSVGElement;
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value as string);
     }
