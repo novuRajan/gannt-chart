@@ -276,26 +276,24 @@ export function hideTaskDetails() {
     tooltip.style.display = 'none';
 }
 
-export function deleteTask(tasks: ISubTask[] | ITask[], allTasks: null ) {
-
+export function deleteTask(tasks: ISubTask[] | ITask[], allTasks: ISubTask[] | ITask[] | null) {
     const confirmation = window.confirm('Are you sure you want to delete this task?');
 
     if (!confirmation) {
         // If the user cancels the deletion, do nothing
         return;
     }
-    
+
     const editTaskForm = document.getElementById('editTaskForm') as HTMLFormElement;
     const taskId = parseInt(editTaskForm.getAttribute('data-task-id'), 10);
 
-    // Find the index of the task to be deleted
+    // Finding the index of the task to be deleted
     const taskIndex = tasks.findIndex(task => task.id === taskId);
 
-    // Remove the task if found
     if (taskIndex !== -1) {
-        // Remove the task ID from dependencies of other tasks
-        tasks.forEach(task => {
-            task.dependencies = task.dependencies.filter(depId => depId !== taskId);
+        // Removing the task ID from dependencies of other tasks
+        tasks.forEach(otherTask => {
+            otherTask.dependencies = otherTask.dependencies.filter(depId => depId !== taskId);
         });
 
         tasks.splice(taskIndex, 1);
@@ -303,13 +301,14 @@ export function deleteTask(tasks: ISubTask[] | ITask[], allTasks: null ) {
         // Update the Gantt chart with the new data
         updateTaskStartEndDates(tasks);
 
-        // Call the function with sample data
-        if (allTasks) {
-            GanttChart.createChart(allTasks);
-        } else {
-            GanttChart.createChart(tasks);
-        }
+        // Calling the function with sample data
+        const chartData = allTasks || tasks;
+        GanttChart.createChart(chartData);
     }
 }
+
+
+
+
 
 
