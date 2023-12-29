@@ -1,3 +1,4 @@
+import { SvgHelper } from './lib/SVG/SvgHelper';
 import { createDateScale, createDivDateScale, createGridLines, createMonthHeadings } from './date-utl';
 import { updateTaskStartEndDates } from './updatechart';
 import { editTask, hideTaskDetails, openAddModal, showTaskDetails } from './saveEdit';
@@ -17,14 +18,14 @@ export default class GanttChart {
     private isDragStart: boolean;
     private currentTaskRect: SVGRectElement;
     private currentProgressRect: SVGRectElement;
-    private dragMoveListener: () => void;
+    private dragMoveListener: (() => void);
     private length: number;
     private dependentTask: ITask | ISubTask;
     private tasks: ITask[] | ISubTask[];
     private chartWidth: number;
     private taskRect: SVGRectElement;
 
-    getTotalLength(tasks: ITask[]) {
+    getTotalLength(tasks: ITask[]) : number {
         return tasks.reduce((total, task) => {
             return total + 1 + (task.subTask ? this.getTotalLength(task.subTask) : 0);
         }, 0);
@@ -124,14 +125,14 @@ export default class GanttChart {
             const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
             const duration = (new Date(task.end).getTime() - new Date(task.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
 
-            const rect = this.createRectElement(startOffset, customIndex * 40 + 40, duration, 30, '#3498db', `task-${task.id}`);
+            const rect = new SvgHelper().createRectElement(startOffset, customIndex * 40 + 40, duration, 30, '#3498db', `task-${task.id}`);
             taskGroup.appendChild(rect);
 
             const progressWidth = (duration * task.progress) / 100;
-            const progressRect = this.createRectElement(startOffset, customIndex * 40 + 40, progressWidth, 30, '#2ecc71', `task-${task.id}-progress`);
+            const progressRect = new SvgHelper().createRectElement(startOffset, customIndex * 40 + 40, progressWidth, 30, '#2ecc71', `task-${task.id}-progress`);
             taskGroup.appendChild(progressRect);
 
-            const text = this.createTextElement(startOffset + 5, customIndex * 40 + 60, task.name);
+            const text = new SvgHelper().createTextElement(startOffset + 5, customIndex * 40 + 60, task.name);
             taskGroup.appendChild(text);
 
             // Render subtasks
@@ -144,14 +145,14 @@ export default class GanttChart {
 
                     const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
                     const subDuration = (new Date(subtask.end).getTime() - new Date(subtask.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
-                    const subRect = this.createRectElement(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subDuration, 15, '#e74c3c', `subtask-${task.id}-${subtask.id}`);
+                    const subRect = new SvgHelper().createRectElement(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subDuration, 15, '#e74c3c', `subtask-${task.id}-${subtask.id}`);
                     subTaskGroup.appendChild(subRect);
 
                     const subProgressWidth = (subDuration * subtask.progress) / 100;
-                    const subProgressRect = this.createRectElement(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subProgressWidth, 15, '#c0392b', `subtask-${task.id}-${subtask.id}-progress`);
+                    const subProgressRect = new SvgHelper().createRectElement(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subProgressWidth, 15, '#c0392b', `subtask-${task.id}-${subtask.id}-progress`);
                     subTaskGroup.appendChild(subProgressRect);
 
-                    const subText = this.createTextElement(subStartOffset + 5, (subIndex + customIndex + 1) * 40 + 50, subtask.name, 10);
+                    const subText = new SvgHelper().createTextElement(subStartOffset + 5, (subIndex + customIndex + 1) * 40 + 50, subtask.name, 10);
                     subTaskGroup.appendChild(subText);
 
                     // Add mouseover and mouseout event listeners
@@ -231,39 +232,16 @@ export default class GanttChart {
         });
     }
 
-    createRectElement(x: number, y: number, width: number, height: number, fill: string, id: string) {
-        const rect = document.createElementNS(svgNS, 'rect');
-        rect.setAttribute('x', String(x));
-        rect.setAttribute('y', String(y));
-        rect.setAttribute('width', String(width));
-        rect.setAttribute('height', String(height));
-        rect.setAttribute('fill', fill);
-        rect.setAttribute('id', id);
-        return rect;
-    }
-
-    createTextElement(x: number, y: number, text: string, fontSize: number = null) {
-        const textElement = document.createElementNS(svgNS, 'text');
-        textElement.setAttribute('x', String(x));
-        textElement.setAttribute('y', String(y));
-        if (fontSize) {
-            textElement.setAttribute('font-size', `${fontSize}px`);
-        }
-        textElement.textContent = text;
-        return textElement;
-    }
-
     addMouseOverOutListeners(element: SVGElement, showDetails: (e: MouseEvent) => void, hideDetails: () => void) {
         element.addEventListener('mouseover', showDetails);
         element.addEventListener('mouseout', hideDetails);
     }
 
-    throttle<T extends (...args: any[]) => any>(func: T, limit: number) {
+    throttle<T extends (...args: unknown[]) => void>(func: T, limit: number) {
         let inThrottle: boolean;
 
-        return function(this: any) {
-            const args = arguments;
-            const context = this;
+        return function(this: unknown, ...args: unknown[]) {
+            const context = this as typeof globalThis; // Adjust the type as needed
 
             if (!inThrottle) {
                 func.apply(context, args);
@@ -272,6 +250,8 @@ export default class GanttChart {
             }
         };
     }
+
+
 
     isExceedingDependentEndDate(startDate: Date, dependentTask: ISubTask | ITask, tasks: ITask[] | ISubTask[]) {
         const tasksWithDesiredIds = tasks.filter(task =>
@@ -448,7 +428,7 @@ export default class GanttChart {
                 const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
 
                 // Draw horizontal line
-                const lineHorizontal = this.createSvgLine(x1, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
+                const lineHorizontal = new SvgHelper().createSvgLine(x1, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2 , 'dependency-line');
                 svg.appendChild(lineHorizontal);
 
                 // Determine extra height for the vertical line
@@ -456,13 +436,13 @@ export default class GanttChart {
                 const extraHeight = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('height')) : 0;
 
                 // Draw vertical line
-                const lineVertical = this.createSvgLine(x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, parseFloat(endTaskElement.getAttribute('y')) + extraHeight);
+                const lineVertical = new SvgHelper().createSvgLine(x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, parseFloat(endTaskElement.getAttribute('y')) + extraHeight , 'dependency-line');
                 svg.appendChild(lineVertical);
 
                 // Draw arrowhead
                 const arrowheadY = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('y')) + parseFloat(endTaskElement.getAttribute('height')) : parseFloat(endTaskElement.getAttribute('y'));
                 const arrowDirection = isDependentAfterTask ? 'up' : 'down';
-                const arrowhead = this.createArrowhead(x2, arrowheadY, arrowheadSize, arrowDirection);
+                const arrowhead = new SvgHelper().creatPolygon(x2, arrowheadY, arrowheadSize, arrowDirection ,  'dependency-line');
                 svg.appendChild(arrowhead);
             }
         };
@@ -492,25 +472,6 @@ export default class GanttChart {
         });
     }
 
-    createSvgLine(x1: number, y1: number, x2: number, y2: number) {
-        const line = document.createElementNS(svgNS, 'line');
-        line.setAttribute('x1', `${x1}`);
-        line.setAttribute('y1', `${y1}`);
-        line.setAttribute('x2', `${x2}`);
-        line.setAttribute('y2', `${y2}`);
-        line.classList.add('dependency-line');
-        return line;
-    }
-
-    createArrowhead(x: number, y: number, size: number, arrowDirection: string) {
-        const arrowhead = document.createElementNS(svgNS, 'polygon');
-        const points = arrowDirection === 'down'
-            ? `${x},${y - size} ${x - size},${y - size} ${x},${y} ${x + size},${y - size}`
-            : `${x - size},${y + size} ${x},${y} ${x + size},${y + size}`;
-        arrowhead.setAttribute('points', points);
-        arrowhead.classList.add('dependency-arrowhead');
-        return arrowhead;
-    }
 
     stopDrag() {
         this.taskRect = null;
@@ -526,7 +487,7 @@ export default class GanttChart {
             const svgWidthInPixels = window.getComputedStyle(svgElement).width;
             return parseFloat(svgWidthInPixels);
         } else {
-            return null;
+            return 0;
         }
     }
 
@@ -537,7 +498,7 @@ export default class GanttChart {
             const svgHeightInPixels = window.getComputedStyle(svgElement).height;
             return parseFloat(svgHeightInPixels);
         } else {
-            return null;
+            return 0;
         }
     }
 
