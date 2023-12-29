@@ -17,7 +17,6 @@ const inputs:InputTypes[]=[
     {label:'Start Date:',id:'editStartDate',name:'start',type:'date'},
     {label:'End Date:',id:'editEndDate',name:'end',type:'date'},
     {label:'Progress:',id:'editProgress',name:'progress',type:'number'},
-    {label:'Dependencies:',id:'editDependencies',name:'dependencies',type:'select',options:[],multiple:true},
 ];
 
 
@@ -44,7 +43,6 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
 
     // Clear existing content in the form
     addTaskForm.innerHTML = '';
-alert('13')
     // Create form elements dynamically and append them to the form
     inputs.filter(input=>{
         return !(input.type === 'select' && input.options.length === 0);
@@ -87,12 +85,12 @@ export function addTask(tasks : ITask[] | ISubTask[]) {
         return;
     }
 
-    const newTask = {
+    const newTask:ITask|ISubTask = {
         id: tasks.length + 1, // Incremental ID
         name: taskName,
         start: startDate,
         end: endDate,
-        progress: inputValue('progress')??0, // You can set the progress as needed
+        progress: inputValue('progress')?parseInt(inputValue('progress')):0, // You can set the progress as needed
         dependencies: [] // You can set dependencies as needed
     };
 
@@ -124,14 +122,6 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
         editTaskForm.setAttribute('id', 'editTaskForm');
         editModal.appendChild(editTaskForm);
     }
-    const dependenciesIndex=inputs.findIndex(input=>input.name=='dependencies')
-    inputs[dependenciesIndex].options=tasks.filter((availableTask) => {
-        // Check if the available task is not the current task and not dependent on the current task
-        return availableTask.id !== task.id && !isTaskDependent(task, availableTask, tasks);
-
-    }).map((task):{label:string,value:string|number}=>{
-        return {label:task.name,value:task.id}
-    });
     // Clear existing content in the form
     editTaskForm.innerHTML = '';
     inputs.forEach(input=>{
@@ -139,8 +129,26 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
         const inputEL=createInputElement(input)
         editTaskForm.appendChild(inputEL)
     })
+    const editDependenciesSelect = document.createElement('select');
+    editDependenciesSelect.setAttribute('id', 'editDependencies');
+    editDependenciesSelect.setAttribute('multiple', 'multiple'); // Set the multiple attribute
 
 
+    // Display dependencies in the modal as select options
+    tasks.forEach((availableTask) => {
+        // Check if the available task is not the current task and not dependent on the current task
+        if (availableTask.id !== task.id && !isTaskDependent(task, availableTask, tasks)) {
+            const option = document.createElement('option');
+            option.value = `${availableTask.id}`; // Convert to string using template literal
+            option.textContent = availableTask.name;
+            if (task.dependencies.includes(availableTask.id)) {
+                // If the task is already a dependency, mark it as selected
+                option.selected = true;
+            }
+            editDependenciesSelect.appendChild(option);
+        }
+    });
+    editTaskForm.appendChild(editDependenciesSelect);
     // Store the task ID in a data attribute of the form
     editTaskForm.setAttribute('data-task-id', `${task.id}`);
 

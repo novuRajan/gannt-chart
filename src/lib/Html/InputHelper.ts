@@ -1,6 +1,8 @@
 
 import { InputTypes } from "../../types/Inputs/InputTypes";
 import { createElement } from "./HtmlHelper";
+import { isTaskDependent } from "../../saveEdit";
+import { ISelectOption } from "../../Interfaces/Inputs/SelectOption";
 
 export class InputHelper {
 	private readonly input: InputTypes;
@@ -49,6 +51,7 @@ export class InputHelper {
 		return this.inputEl;
 	}
 
+
 	private addOptionsToSelect(selectEL: HTMLSelectElement): HTMLSelectElement {
 		if (this.input.type === "select") {
 			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -77,10 +80,10 @@ export class InputHelper {
 							if (this.input.value === option.value) {
 								optionEL.setAttribute("selected", "selected");
 							}
-						} else if (Array.isArray(this.input.value)) {
-							if (this.input.value.includes(option.value)) {
-								optionEL.setAttribute("selected", "");
-							}
+						} else if (Array.isArray(this.input.value) && this.input.value.includes(option.value)) {
+
+							optionEL.setAttribute("selected", "")
+							optionEL.selected=true;
 						}
 					}
 				}
@@ -90,6 +93,7 @@ export class InputHelper {
 
 		return selectEL;
 	}
+
 
 	private assignAttribute(): this {
 		const includedAttributes: string[] = ["class", "label", "type", "value"];
@@ -151,3 +155,4 @@ export function multiSelectValue(name: string): string[] | null {
 
 	return null;
 }
+
