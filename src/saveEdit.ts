@@ -47,6 +47,7 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
     inputs.filter(input=>{
         return !(input.type === 'select' && input.options.length === 0);
     }).forEach(input=>{
+        input.value = "";
         const inputEL=createInputElement(input)
         addTaskForm.appendChild(inputEL)
     })
@@ -151,7 +152,6 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
     editTaskForm.appendChild(editDependenciesSelect);
     // Store the task ID in a data attribute of the form
     editTaskForm.setAttribute('data-task-id', `${task.id}`);
-
     // Create and append Save Changes button
     const saveChangesBtn = document.createElement('button');
     saveChangesBtn.setAttribute('type', 'button');
