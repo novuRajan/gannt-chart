@@ -468,7 +468,6 @@ export default class GanttChart {
         });
     }
 
-
     stopDrag() {
         this.taskRect = null;
         this.isDragging = false;
