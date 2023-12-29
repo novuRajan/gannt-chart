@@ -1,4 +1,4 @@
-import { SvgHelper } from './lib/SVG/SvgHelper';
+import { SvgHelper } from './lib/Svg/SvgHelper';
 import { createDateScale, createDivDateScale, createGridLines, createMonthHeadings } from './date-utl';
 import { updateTaskStartEndDates } from './updatechart';
 import { editTask, hideTaskDetails, openAddModal, showTaskDetails } from './saveEdit';
@@ -69,13 +69,12 @@ export default class GanttChart {
 
     createSVG(tasks: ITask[]) {
         const svg = document.createElementNS(svgNS, 'svg');
-        // svg.setAttribute('style', 'position: absolute; left: 10rem');
+
         svg.setAttribute('id', 'mySvg');
-        // svg.setAttribute('min-width', '100%');
-        // svg.setAttribute('height', '200%');
-        const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
-        dateGroup.setAttribute('class', 'date-groups');
+
+        const dateGroup = new SvgHelper().createGroup("date-groups"); // Create a group element for the task
         svg.appendChild(dateGroup);
+
         this.dateInfo = this.calculateDateInfo(tasks);
         const chartWidth = this.calculateChartWidth(this.dateInfo);
         this.length = this.getTotalLength(tasks);
@@ -85,6 +84,7 @@ export default class GanttChart {
         createGridLines(dateGroup, chartWidth, this.length);
         createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
         createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
+
         this.createTaskBars(svg, tasks, this.dateInfo);
         setTimeout(() => {
             this.drawDependencyLine(svg, tasks);
@@ -117,8 +117,7 @@ export default class GanttChart {
         let customIndex = 0;
 
         tasks.forEach((task) => {
-            const taskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
-            taskGroup.setAttribute('class', 'tasks');
+            const taskGroup = new SvgHelper().createGroup("tasks"); // Create a group element for the task
             svg.appendChild(taskGroup);
 
             const dependentTaskEnd = this.calculateDependencyMaxEndDate(task.dependencies, tasks);
@@ -137,8 +136,7 @@ export default class GanttChart {
 
             // Render subtasks
             if (task.subTask && task.subTask.length > 0) {
-                const subTaskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
-                subTaskGroup.setAttribute('class', 'subtask');
+                const subTaskGroup = new SvgHelper().createGroup("subtask"); // Create a group element for the task
                 taskGroup.appendChild(subTaskGroup);
                 task.subTask.forEach((subtask, subIndex) => {
                     const subDependentTaskEnd = this.calculateDependencyMaxEndDate(subtask.dependencies, task.subTask);
@@ -400,8 +398,7 @@ export default class GanttChart {
 
         this.dateInfo = this.calculateDateInfo(tasks);
         const chartWidth = this.calculateChartWidth(this.dateInfo);
-        const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
-        dateGroup.setAttribute('class', 'date-groups');
+        const dateGroup = new SvgHelper().createGroup("date-groups"); // Create a group element for the task
         svg.appendChild(dateGroup);
 
         svg.setAttribute('viewBox', `0 0 ${chartWidth} ${this.length * 40 + 40}`);
