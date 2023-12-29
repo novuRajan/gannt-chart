@@ -3,7 +3,7 @@ import GanttChart from './gantchart';
 
 import { ITask } from './Interfaces/Task/Task';
 import { ISubTask } from './Interfaces/Task/SubTask';
-import { createInputElement, inputValue } from "./lib/Html/InputHelper";
+import { createInputElement } from "./lib/Html/InputHelper";
 import { InputTypes } from "./types/Inputs/InputTypes";
 
 const tooltip = document.createElement('div');
@@ -47,7 +47,7 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
     inputs.filter(input=>{
         return !(input.type === 'select' && input.options.length === 0);
     }).forEach(input=>{
-        // input.value = "";
+        input.value = "";
         const inputEL=createInputElement(input)
         addTaskForm.appendChild(inputEL)
     })
