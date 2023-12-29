@@ -3,7 +3,7 @@ import GanttChart from './gantchart';
 
 import { ITask } from './Interfaces/Task/Task';
 import { ISubTask } from './Interfaces/Task/SubTask';
-import { createInputElement } from "./lib/Html/InputHelper";
+import { createInputElement, createButton } from "./lib/Html/InputHelper";
 import { InputTypes } from "./types/Inputs/InputTypes";
 
 const tooltip = document.createElement('div');
@@ -175,10 +175,7 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
     editTaskForm.appendChild(saveChangesBtn);
 
     // Create and append Delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.setAttribute('type', 'button');
-    deleteBtn.textContent = 'Delete Task';
-    deleteBtn.addEventListener('click', function deleteTaskHandler() {
+    const deleteBtn = createButton('Delete Task', function deleteTaskHandler() {
         deleteTask(tasks, allTasks);
         closeModal(editModal);
     });
