@@ -51,7 +51,9 @@ export function openAddModal(tasks: ITask[] | ISubTask[]) {
     cancelBtn.setAttribute('type', 'button');
     cancelBtn.textContent = 'Cancel';
     cancelBtn.addEventListener('click', function saveChangesHandler() {
-        closeModal(addModal);
+        if(addModal){
+            closeModal(addModal);
+        }
     });
     addTaskForm.appendChild(cancelBtn);
 
@@ -85,7 +87,9 @@ export function addTask(tasks: ITask[] | ISubTask[]) {
     tasks.push(newTask);
     // eslint-disable-next-line no-global-assign
     length = length + 1; //after adding of each task length should be increased
-    closeModal(addModal);
+    if(addModal){
+        closeModal(addModal);
+    }
     // Call the function with sample data
     GanttChart.createChart(tasks);
 }
@@ -152,7 +156,9 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
         // Call your function to save the edited task data
         saveEditedTask(tasks, allTasks);
         // Close the modal after saving changes
-        closeModal(editModal);
+        if(editModal){
+            closeModal(editModal);
+        }
     });
     editTaskForm.appendChild(saveChangesBtn);
 
@@ -161,7 +167,9 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
     cancelBtn.setAttribute('type', 'button');
     cancelBtn.textContent = 'Cancel';
     cancelBtn.addEventListener('click', function saveChangesHandler() {
-        closeModal(editModal);
+        if(editModal){
+            closeModal(editModal);
+        }
     });
     editTaskForm.appendChild(cancelBtn);
 
@@ -191,7 +199,7 @@ function createFormField(labelText: string, inputId: string, inputValue: string 
 
 
 // Function to check if a task is dependent on another task
-export function isTaskDependent(currentTask: ITask | ISubTask, otherTask: ITask | ISubTask, allTasks: ITask[] | ISubTask[] = null) {
+export function isTaskDependent(currentTask: ITask | ISubTask, otherTask: ITask | ISubTask, allTasks: ITask[] | ISubTask[] = []) : boolean {
     return otherTask.dependencies.includes(currentTask.id) || otherTask.dependencies.some(depId => {
         const dependentSubTask = allTasks.find(sub => sub.id === depId);
         return dependentSubTask ? isTaskDependent(currentTask, dependentSubTask, allTasks) : false;
@@ -213,8 +221,7 @@ export function saveEditedTask(tasks: ISubTask[] | ITask [], allTasks = null) {
     const editedEndDate = editEndDateInput.value;
     const progress = editProgress.value;
     // Retrieve the task ID from the data attribute
-    const taskId = parseInt(editTaskForm.getAttribute('data-task-id'), 10);
-
+    const taskId = parseInt(editTaskForm.getAttribute('data-task-id') ?? '0', 10);
     // Retrieve the selected dependencies from the updated select element
     const selectedDependencies = Array.from(editDependenciesSelect.selectedOptions).map(option => parseInt(option.value, 10));
 
@@ -243,7 +250,7 @@ export function saveEditedTask(tasks: ISubTask[] | ITask [], allTasks = null) {
     }
 }
 
-export function showTaskDetails(event: MouseEvent, task: ISubTask | ITask, allTasks: ISubTask[] | ITask [] = null) {
+export function showTaskDetails(event: MouseEvent, task: ISubTask | ITask, allTasks: ISubTask[] | ITask [] = []) {
     const dependentTaskNames = (task.dependencies.map(depId => {
             const dependentSubTask = allTasks.find(sub => sub.id === depId);
             return dependentSubTask ? dependentSubTask.name : '';
