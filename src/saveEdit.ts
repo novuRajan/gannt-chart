@@ -5,9 +5,9 @@ import { ITask } from './Interfaces/Task/Task';
 import { ISubTask } from './Interfaces/Task/SubTask';
 import { createInputElement } from "./lib/Html/InputHelper";
 import { InputTypes } from "./types/Inputs/InputTypes";
+import { createElement } from "./lib/Html/HtmlHelper";
 
-const tooltip = document.createElement('div');
-tooltip.className = 'bar-hover';
+const tooltip = createElement('div', 'bar-hover');
 document.body.appendChild(tooltip);
 
 
@@ -27,17 +27,14 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
     // Create or get the modal element
     let addModal = document.getElementById('addFormModal');
     if (!addModal) {
-        addModal = document.createElement('div');
-        addModal.setAttribute('id', 'addFormModal');
-        addModal.setAttribute('class', 'modal');
+        addModal = createElement('div', 'modal' , '' , 'addFormModal');
         document.body.appendChild(addModal);
     }
 
     // Create or get the form element
     let addTaskForm = document.getElementById('addTaskForm');
     if (!addTaskForm) {
-        addTaskForm = document.createElement('form');
-        addTaskForm.setAttribute('id', 'addTaskForm');
+        addTaskForm = createElement('form', '' , '' , 'addTaskForm');
         addModal.appendChild(addTaskForm);
     }
 
@@ -52,18 +49,14 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
         addTaskForm.appendChild(inputEL)
     })
     // Create and append Save Changes button
-    const saveChangesBtn = document.createElement('button');
-    saveChangesBtn.setAttribute('type', 'button');
-    saveChangesBtn.textContent = 'Save Changes';
+    const saveChangesBtn = createElement('button', 'save-changes-btn', 'Save Changes' ,'', 'button');
     saveChangesBtn.addEventListener('click', function saveChangesHandler() {
         addTask(tasks);
     });
     addTaskForm.appendChild(saveChangesBtn);
 
     // Create and append Cancel button
-    const cancelBtn = document.createElement('button');
-    cancelBtn.setAttribute('type', 'button');
-    cancelBtn.textContent = 'Cancel';
+    const cancelBtn = createElement('button', 'cancel-btn', 'Cancel' ,'', 'button');
     cancelBtn.addEventListener('click', function saveChangesHandler() {
         if(addModal){
             closeModal(addModal);
@@ -103,7 +96,7 @@ export function addTask(tasks : ITask[] | ISubTask[]) {
 
     // Add the new task to the existing tasks
     tasks.push(newTask);
-   
+
     length++; //after adding of each task length should be increaseD
     if(addModal){
         closeModal(addModal);
@@ -118,17 +111,14 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
     // Create or get the modal element
     let editModal = document.getElementById('editModal');
     if (!editModal) {
-        editModal = document.createElement('div');
-        editModal.setAttribute('id', 'editModal');
-        editModal.setAttribute('class', 'modal');
+        editModal = createElement('div', 'modal' , '' , 'editModal');
         document.body.appendChild(editModal);
     }
 
     // Create or get the form element
     let editTaskForm = document.getElementById('editTaskForm');
     if (!editTaskForm) {
-        editTaskForm = document.createElement('form');
-        editTaskForm.setAttribute('id', 'editTaskForm');
+        editTaskForm = createElement('form', '' , '' , 'editTaskForm');
         editModal.appendChild(editTaskForm);
     }
     // Clear existing content in the form
@@ -161,9 +151,7 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
     // Store the task ID in a data attribute of the form
     editTaskForm.setAttribute('data-task-id', `${task.id}`);
     // Create and append Save Changes button
-    const saveChangesBtn = document.createElement('button');
-    saveChangesBtn.setAttribute('type', 'button');
-    saveChangesBtn.textContent = 'Save Changes';
+    const saveChangesBtn = createElement('button', 'save-changes-btn', 'Save Changes' ,'', 'button');
     saveChangesBtn.addEventListener('click', function saveChangesHandler() {
         // Call your function to save the edited task data
         saveEditedTask(tasks, allTasks);
@@ -175,9 +163,7 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
     editTaskForm.appendChild(saveChangesBtn);
 
     // Create and append Cancel button
-    const cancelBtn = document.createElement('button');
-    cancelBtn.setAttribute('type', 'button');
-    cancelBtn.textContent = 'Cancel';
+    const cancelBtn = createElement('button', 'cancel-btn', 'Cancel' ,'', 'button');
     cancelBtn.addEventListener('click', function saveChangesHandler() {
         if(editModal){
             closeModal(editModal);

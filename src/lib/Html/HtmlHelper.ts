@@ -1,9 +1,18 @@
-export function createElement(tag: string, className: string, content?: string): HTMLElement {
+export function createElement(tag: string, className: string, content?: string , id?: string , type?: string): HTMLElement {
 	const el = document.createElement(tag);
-	el.classList.add(className);
+	if(className)
+	{
+		el.classList.add(className);
+	}
 
 	if (content) {
 		el.textContent = content;
+	}
+	if(id) {
+		el.id = id;
+	}
+	if(type) {
+		el.setAttribute('type', type);
 	}
 
 	return el;
