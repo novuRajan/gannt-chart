@@ -17,7 +17,9 @@ svg {
     stroke: black;
     stroke-width: 1.5; /* Line width */
 }
-
+.day{
+    position: absolute;
+}
 .add-button {
     display: inline-block;
     padding: 10px 20px;
