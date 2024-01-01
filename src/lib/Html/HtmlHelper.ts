@@ -34,3 +34,14 @@ export function removeElements(elements: NodeListOf<HTMLElement>): void {
 		element.remove();
 	});
 }
+
+export function createButton(className?: string, text?: string, id?: string, clickHandler?: () => void): HTMLButtonElement {
+
+	const button  = createElement('button', className, text, id, 'button');
+	if(clickHandler)
+	{
+		button.addEventListener('click', clickHandler);
+	}
+	return <HTMLButtonElement>button;
+
+}
