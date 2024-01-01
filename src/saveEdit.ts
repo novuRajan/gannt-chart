@@ -3,9 +3,9 @@ import GanttChart from './gantchart';
 
 import { ITask } from './Interfaces/Task/Task';
 import { ISubTask } from './Interfaces/Task/SubTask';
-import { createInputElement, createButton } from "./lib/Html/InputHelper";
+import { createInputElement } from "./lib/Html/InputHelper";
 import { InputTypes } from "./types/Inputs/InputTypes";
-import { createElement } from "./lib/Html/HtmlHelper";
+import { createElement , createButton } from "./lib/Html/HtmlHelper";
 
 const tooltip = createElement('div', 'bar-hover');
 document.body.appendChild(tooltip);
@@ -49,15 +49,13 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
         addTaskForm.appendChild(inputEL)
     })
     // Create and append Save Changes button
-    const saveChangesBtn = createElement('button', 'save-changes-btn', 'Save Changes' ,'', 'button');
-    saveChangesBtn.addEventListener('click', function saveChangesHandler() {
+    const saveChangesBtn = createButton('save-changes-btn' ,'Save Changes','', function saveChangesHandler() {
         addTask(tasks);
     });
     addTaskForm.appendChild(saveChangesBtn);
 
     // Create and append Cancel button
-    const cancelBtn = createElement('button', 'cancel-btn', 'Cancel' ,'', 'button');
-    cancelBtn.addEventListener('click', function saveChangesHandler() {
+    const cancelBtn = createButton('cancel-btn' ,'Cancel','', function saveChangesHandler() {
         if(addModal){
             closeModal(addModal);
         }
@@ -150,9 +148,8 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
     editTaskForm.appendChild(editDependenciesSelect);
     // Store the task ID in a data attribute of the form
     editTaskForm.setAttribute('data-task-id', `${task.id}`);
-    // Create and append Save Changes button
-    const saveChangesBtn = createElement('button', 'save-changes-btn', 'Save Changes' ,'', 'button');
-    saveChangesBtn.addEventListener('click', function saveChangesHandler() {
+
+    const saveChangesBtn = createButton('save-changes-btn' ,'Save Changes','', function saveChangesHandler() {
         // Call your function to save the edited task data
         saveEditedTask(tasks, allTasks);
         // Close the modal after saving changes
@@ -163,15 +160,14 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
     editTaskForm.appendChild(saveChangesBtn);
 
     // Create and append Delete button
-    const deleteBtn = createButton('Delete Task', function deleteTaskHandler() {
+    const deleteBtn = createButton('delete-btn' ,'Delete','', function deleteTaskHandler() {
         deleteTask(tasks, allTasks);
         closeModal(editModal);
     });
     editTaskForm.appendChild(deleteBtn);
 
     // Create and append Cancel button
-    const cancelBtn = createElement('button', 'cancel-btn', 'Cancel' ,'', 'button');
-    cancelBtn.addEventListener('click', function saveChangesHandler() {
+    const cancelBtn = createButton('cancel-btn' ,'Cancel','', function saveChangesHandler() {
         if(editModal){
             closeModal(editModal);
         }
