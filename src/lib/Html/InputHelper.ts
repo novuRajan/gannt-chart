@@ -155,11 +155,3 @@ export function multiSelectValue(name: string): string[] | null {
 	return null;
 }
 
-export function createButton(text: string, clickHandler: () => void): HTMLButtonElement {
-    const button = document.createElement('button');
-    button.setAttribute('type', 'button');
-    button.textContent = text;
-    button.addEventListener('click', clickHandler);
-    return button;
-}
-
