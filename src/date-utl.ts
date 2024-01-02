@@ -4,11 +4,11 @@ import { SvgHelper } from "./lib/Svg/SvgHelper";
 import { createElement } from "./lib/Html/HtmlHelper";
 
 
-export function createGridLines(dateGroup: SVGGElement, chartWidth: number, taskCount: number) {
+export function createGridLines(dateGroup: SVGGElement, chartWidth: number, chartHeight: number) {
     const gridLines = new SvgHelper().createGroup('grid-lines');
     dateGroup.appendChild(gridLines);
     for (let i = 0; i <= chartWidth; i += 50) {
-        const  line = new SvgHelper().createSvgLine(i, 35, i, taskCount * 40 + 40 ,'grid-line');
+        const  line = new SvgHelper().createSvgLine(i, 35, i, chartHeight ,'grid-line');
         gridLines.appendChild(line);
     }
 }

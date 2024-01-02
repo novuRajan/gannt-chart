@@ -71,20 +71,14 @@ export default class GanttChart {
         const svg = new SvgHelper().createSVGElement('svg') ;
 
         svg.setAttribute('id', 'mySvg');
-
         const dateGroup = new SvgHelper().createGroup("date-groups"); // Create a group element for the task
         svg.appendChild(dateGroup);
 
         this.dateInfo = this.calculateDateInfo(tasks);
         const chartWidth = this.calculateChartWidth(this.dateInfo);
         this.length = this.getTotalLength(tasks);
-
-        svg.setAttribute('viewBox', `0 0 ${chartWidth} ${this.length * 40 + 40}`);
-
-        createGridLines(dateGroup, chartWidth, this.length);
-        createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
-        createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
-
+        const chartHeight = this.length * 40 + 40;
+        this.svgRequiredElement(svg, dateGroup, chartWidth, chartHeight);
         this.createTaskBars(svg, tasks, this.dateInfo);
         setTimeout(() => {
             this.drawDependencyLine(svg, tasks);
@@ -92,6 +86,35 @@ export default class GanttChart {
         return svg;
     }
 
+    svgRequiredElement(svg:SVGSVGElement, dateGroup : SVGGElement, chartWidth: number, chartHeight: number) {
+
+        if(chartHeight < 250)
+        {
+            chartHeight = 450;
+            svg.setAttribute('style', 'height:100%')
+        }
+        else if(chartHeight < 450)
+        {
+            svg.setAttribute('style', 'height:100%');
+        }
+        else if(chartHeight < 650)
+        {
+            svg.setAttribute('style', 'height:150%');
+        }
+        else{
+            svg.setAttribute('style', 'height:200%');
+        }
+        if(chartWidth < 2200)
+        {
+            chartWidth = 2200;
+            this.chartWidth = 2200;
+        }
+        svg.setAttribute('viewBox', `0 0 ${chartWidth} ${chartHeight}`);
+
+        createGridLines(dateGroup, chartWidth, chartHeight);
+        createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
+        createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
+    }
     calculateDateInfo(tasks: ITask[]): IDateInfo {
         const startDates = tasks.map(task => task.start);
         const endDates = tasks.map(task => task.end);
@@ -384,7 +407,7 @@ export default class GanttChart {
 
     }
 
-    updateGanttChartContent(svg: SVGElement, tasks: ITask[]) {
+    updateGanttChartContent(svg: SVGSVGElement, tasks: ITask[]) {
         const chartContainer = document.getElementById('chart');
         //clear the existing date div
         let DateDiv = document.getElementById('div-date');
@@ -400,12 +423,8 @@ export default class GanttChart {
         const chartWidth = this.calculateChartWidth(this.dateInfo);
         const dateGroup = new SvgHelper().createGroup("date-groups"); // Create a group element for the task
         svg.appendChild(dateGroup);
-
-        svg.setAttribute('viewBox', `0 0 ${chartWidth} ${this.length * 40 + 40}`);
-
-        createGridLines(dateGroup, chartWidth, this.length);
-        createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
-        createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
+        const chartHeight = this.length * 40 + 40;
+        this.svgRequiredElement(svg, dateGroup, chartWidth, chartHeight);
         DateDiv = createDivDateScale(this.dateInfo, this.chartWidth);
         chartContainer.insertBefore(DateDiv, svg);
         this.createTaskBars(svg, tasks, this.dateInfo);
