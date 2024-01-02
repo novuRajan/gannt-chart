@@ -218,7 +218,12 @@ export function saveEditedTask(tasks: ISubTask[] | ITask [], allTasks = null) {
         }
     }
 
-
+    // if (this._configs.modalConfigs.addTask) {
+    //     this._configs.modalConfigs.addTask(task);
+    // }
+    // if (this._configs.modalConfigs.updateTask) {
+    //     this._configs.modalConfigs.updateTask(task);
+    // }
     // Update the Gantt chart with the new data
     updateTaskStartEndDates(tasks);
     // Call the function with sample data
