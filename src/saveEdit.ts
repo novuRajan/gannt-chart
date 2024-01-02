@@ -6,6 +6,7 @@ import { ISubTask } from './Interfaces/Task/SubTask';
 import { createInputElement } from "./lib/Html/InputHelper";
 import { InputTypes } from "./types/Inputs/InputTypes";
 import { createElement , createButton } from "./lib/Html/HtmlHelper";
+import stores from "./stores";
 
 const tooltip = createElement('div', 'bar-hover');
 document.body.appendChild(tooltip);
@@ -91,7 +92,10 @@ export function addTask(tasks : ITask[] | ISubTask[]) {
         progress: progress?parseInt(progress):0, // You can set the progress as needed
         dependencies: [] // You can set dependencies as needed
     };
-
+    const chartConfig=stores.chartConfig.getState();
+    if (chartConfig.add) {
+        chartConfig.add(newTask)
+    }
     // Add the new task to the existing tasks
     tasks.push(newTask);
 
@@ -218,12 +222,10 @@ export function saveEditedTask(tasks: ISubTask[] | ITask [], allTasks = null) {
         }
     }
 
-    // if (this._configs.modalConfigs.addTask) {
-    //     this._configs.modalConfigs.addTask(task);
-    // }
-    // if (this._configs.modalConfigs.updateTask) {
-    //     this._configs.modalConfigs.updateTask(task);
-    // }
+    const chartConfig=stores.chartConfig.getState();
+    if (chartConfig.update) {
+        chartConfig.update(tasks[editedTaskIndex])
+    }
     // Update the Gantt chart with the new data
     updateTaskStartEndDates(tasks);
     // Call the function with sample data
