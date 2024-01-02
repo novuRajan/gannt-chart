@@ -19,18 +19,37 @@ body.dragging {
   background-color: $success-color;
   color: #ffffff;
   border-color: $success-color;
+  cursor: pointer;
+
+  &:hover {
+    background-color: darken($success-color, 10%);
+    color: #ffffff;
+  }
 }
 
 .delete-btn {
   background-color: $danger-color;
   color: #ffffff;
   border-color: $danger-color;
+  cursor: pointer;
+
+  &:hover {
+    background-color: darken($danger-color, 10%);
+    color: #ffffff;
+  }
+
 }
 
 .cancel-btn {
   background-color: $warning-color;
   color: #ffffff;
   border-color: #a8dd14;
+  cursor: pointer;
+
+  &:hover {
+    background-color: darken($warning-color, 10%);
+    color: #ffffff;
+  }
 }
 
 svg {
