@@ -1,0 +1,117 @@
+// Variables
+$primary-color: #3498db;
+$danger-color: #f44336;
+$warning-color: #e3dc72;
+$success-color: #04AA6D;
+
+// Styles
+body.dragging {
+  cursor: e-resize;
+}
+
+.top-place {
+  position: sticky;
+  top: 0;
+  left: 0;
+}
+
+.save-changes-btn {
+  background-color: $success-color;
+  color: #ffffff;
+  border-color: $success-color;
+}
+
+.delete-btn {
+  background-color: $danger-color;
+  color: #ffffff;
+  border-color: $danger-color;
+}
+
+.cancel-btn {
+  background-color: $warning-color;
+  color: #ffffff;
+  border-color: #a8dd14;
+}
+
+svg {
+  min-width: 100%;
+  height: 200%;
+}
+
+.dependency-line {
+  stroke: black;
+  stroke-width: 1.5; /* Line width */
+}
+
+.day {
+  position: absolute;
+}
+
+.add-button {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  background-color: $primary-color;
+  color: #ffffff;
+  border: 1px solid darken($primary-color, 10%);
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: darken($primary-color, 10%);
+    color: #ffffff;
+  }
+}
+
+#chart {
+  min-width: 100%;
+  position: relative;
+  overflow-x: auto;
+  height: 400px;
+  overflow-y: auto;
+}
+
+.date-groups {
+  position: fixed;
+  top: 0;
+}
+
+.month-heading {
+  font-size: 14px;
+  fill: #333;
+  font-weight: bold;
+}
+
+.date {
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  position: sticky;
+  top: 0;
+}
+
+.grid-line {
+  stroke: #ccc;
+  stroke-width: 1;
+}
+
+.bar-hover {
+  position: absolute;
+  background-color: orange;
+  display: block;
+}
+
+/* Styles for the modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}

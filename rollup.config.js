@@ -4,6 +4,8 @@ import commonjs from '@rollup/plugin-commonjs';
 import filesize from 'rollup-plugin-filesize';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
+import sass from 'rollup-plugin-sass';
+
 
 const dev = {
   input: 'src/gantchart.ts',
@@ -14,6 +16,9 @@ const dev = {
     format: 'iife',
   },
   plugins: [
+    sass({
+      output: true,
+    }),
     peerDepsExternal(),
     nodeResolve(),
     commonjs(), // Handle CommonJS modules after resolving external dependencies
@@ -31,6 +36,9 @@ const prod = {
     format: 'iife',
   },
   plugins: [
+    sass({
+      output: true,
+    }),
     typescript(),
     terser(),
   ],
