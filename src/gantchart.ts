@@ -7,6 +7,7 @@ import { ISubTask } from './Interfaces/Task/SubTask';
 import { IDateInfo } from './Interfaces/Date/DateInfo';
 import { DateHelper } from './lib/Date';
 import { IChartConfig } from './Interfaces/Chart/ChartConfig';
+import './styles/chart.scss';
 
 export default class GanttChart {
     protected dateInfo: IDateInfo;

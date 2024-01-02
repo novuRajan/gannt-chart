@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "npm run dev",
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "build": "rollup -c rollup.config.js",
+    "dev": "rollup -c rollup.config.js -w",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .ts",
@@ -16,7 +16,10 @@
     "prettier-check": "prettier --check \"{src/*,tests/*,rollup.config}.js\""
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.5",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "babel-preset-env": "^1.7.0",
@@ -25,15 +28,10 @@
     "eslint-plugin-prettier": "^5.0.1",
     "prettier": "^3.1.1",
     "rollup": "^4.9.1",
-    "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.3.3",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.5",
     "rollup-plugin-filesize": "^10.0.0",
-    "rollup-plugin-peer-deps-external": "^2.2.4"
-  },
-  "dependencies": {
-    
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-sass": "^1.12.21",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "typescript": "^5.3.3"
   }
 }
