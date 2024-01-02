@@ -104,6 +104,11 @@ export default class GanttChart {
         else{
             svg.setAttribute('style', 'height:200%');
         }
+        if(chartWidth < 2200)
+        {
+            chartWidth = 2200;
+            this.chartWidth = 2200;
+        }
         svg.setAttribute('viewBox', `0 0 ${chartWidth} ${chartHeight}`);
 
         createGridLines(dateGroup, chartWidth, chartHeight);
