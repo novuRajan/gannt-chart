@@ -5,7 +5,7 @@ import { ITask } from './Interfaces/Task/Task';
 import { ISubTask } from './Interfaces/Task/SubTask';
 import { createInputElement } from "./lib/Html/InputHelper";
 import { InputTypes } from "./types/Inputs/InputTypes";
-import { createElement } from "./lib/Html/HtmlHelper";
+import { createElement , createButton } from "./lib/Html/HtmlHelper";
 
 const tooltip = createElement('div', 'bar-hover');
 document.body.appendChild(tooltip);
@@ -49,15 +49,13 @@ export function openAddModal(tasks : ITask[] | ISubTask[]) {
         addTaskForm.appendChild(inputEL)
     })
     // Create and append Save Changes button
-    const saveChangesBtn = createElement('button', 'save-changes-btn', 'Save Changes' ,'', 'button');
-    saveChangesBtn.addEventListener('click', function saveChangesHandler() {
+    const saveChangesBtn = createButton('save-changes-btn' ,'Save Changes','', function saveChangesHandler() {
         addTask(tasks);
     });
     addTaskForm.appendChild(saveChangesBtn);
 
     // Create and append Cancel button
-    const cancelBtn = createElement('button', 'cancel-btn', 'Cancel' ,'', 'button');
-    cancelBtn.addEventListener('click', function saveChangesHandler() {
+    const cancelBtn = createButton('cancel-btn' ,'Cancel','', function saveChangesHandler() {
         if(addModal){
             closeModal(addModal);
         }
@@ -150,9 +148,8 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
     editTaskForm.appendChild(editDependenciesSelect);
     // Store the task ID in a data attribute of the form
     editTaskForm.setAttribute('data-task-id', `${task.id}`);
-    // Create and append Save Changes button
-    const saveChangesBtn = createElement('button', 'save-changes-btn', 'Save Changes' ,'', 'button');
-    saveChangesBtn.addEventListener('click', function saveChangesHandler() {
+
+    const saveChangesBtn = createButton('save-changes-btn' ,'Save Changes','', function saveChangesHandler() {
         // Call your function to save the edited task data
         saveEditedTask(tasks, allTasks);
         // Close the modal after saving changes
@@ -162,9 +159,15 @@ export function editTask(event: MouseEvent, task: ITask | ISubTask, tasks: ITask
     });
     editTaskForm.appendChild(saveChangesBtn);
 
+    // Create and append Delete button
+    const deleteBtn = createButton('delete-btn' ,'Delete','', function deleteTaskHandler() {
+        deleteTask(tasks, allTasks);
+        closeModal(editModal);
+    });
+    editTaskForm.appendChild(deleteBtn);
+
     // Create and append Cancel button
-    const cancelBtn = createElement('button', 'cancel-btn', 'Cancel' ,'', 'button');
-    cancelBtn.addEventListener('click', function saveChangesHandler() {
+    const cancelBtn = createButton('cancel-btn' ,'Cancel','', function saveChangesHandler() {
         if(editModal){
             closeModal(editModal);
         }
@@ -248,3 +251,40 @@ export function showTaskDetails(event: MouseEvent, task: ISubTask | ITask, allTa
 export function hideTaskDetails() {
     tooltip.style.display = 'none';
 }
+
+export function deleteTask(tasks: ISubTask[] | ITask[], allTasks: ISubTask[] | ITask[] | null) {
+    const confirmation = window.confirm('Are you sure you want to delete this task?');
+
+    if (!confirmation) {
+        // If the user cancels the deletion, do nothing
+        return;
+    }
+
+    const editTaskForm = document.getElementById('editTaskForm') as HTMLFormElement;
+    const taskId = parseInt(editTaskForm.getAttribute('data-task-id'), 10);
+
+    // Finding the index of the task to be deleted
+    const taskIndex = tasks.findIndex(task => task.id === taskId);
+
+    if (taskIndex !== -1) {
+        // Removing the task ID from dependencies of other tasks
+        tasks.forEach(otherTask => {
+            otherTask.dependencies = otherTask.dependencies.filter(depId => depId !== taskId);
+        });
+
+        tasks.splice(taskIndex, 1);
+
+        // Update the Gantt chart with the new data
+        updateTaskStartEndDates(tasks);
+
+        // Calling the function with sample data
+        const chartData = allTasks || tasks;
+        GanttChart.createChart(chartData);
+    }
+}
+
+
+
+
+
+
