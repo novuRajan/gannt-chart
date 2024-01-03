@@ -18,7 +18,7 @@ class HtmlHelper{
 		const includedAttributes: string[] = ["class","content"];
 		Object.keys(this._attributes).forEach((key) => {
 			if (!includedAttributes.includes(key) && this._element) {
-				this._element.setAttribute(key, <string>this._element[key]);
+				this._element.setAttribute(key, <string>this._attributes[key]);
 			}
 		});
 
