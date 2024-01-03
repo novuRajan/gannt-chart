@@ -156,7 +156,7 @@ export default class GanttChart {
       text.textContent = task.name;
       taskGroup.appendChild(text);
       // div added for the task 
-      mainTask.setAttribute('style',`top:${(customIndex * 40 + 40)*770/(this.length * 40 + 40)}px;height:30px;`)
+      mainTask.setAttribute('style',`top:${(customIndex * 40 + 40)*770/(this.length * 40 + 40)}px;height:auto;`)
       mainTask.textContent = task.name;
       this.taskBar.appendChild(mainTask);
       // Render subtasks
@@ -199,7 +199,7 @@ export default class GanttChart {
           subTaskGroup.appendChild(subText);
           
           // div added for the subtask
-          subTask.setAttribute('style',`top:${((subIndex + customIndex + 1) * 40 + 50)*770/(this.length * 40 + 40)}px;height:15px;`)
+          subTask.setAttribute('style',`top:${((subIndex + customIndex + 1) * 40 + 50)*770/(this.length * 40 + 40)}px;height:auto;`)
           subTask.textContent = subtask.name;
           this.taskBar.appendChild(subTask);
           

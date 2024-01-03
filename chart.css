@@ -1,61 +1,71 @@
-body.dragging {
-  cursor: e-resize ;
+:root {
+  --sidebar-w: 20rem;
 }
 
-.top-place{
+body.dragging {
+  cursor: e-resize;
+}
+
+
+.top-place {
   position: sticky;
   top: 0;
   left: 0;
 }
-.top-class{
-  display : flex;
+
+.top-class {
+  display: flex;
 }
-.add-tasks{
+
+.add-tasks {
   position: fixed;
   left: 5%;
   z-index: 3;
 }
 
-svg{
+svg {
   background-color: antiquewhite;
   position: absolute;
   left: 23rem;
-  /* margin-top: 15px; */
   min-width: 100%;
   height: 200%;
 }
+
 .dependency-line {
   stroke: black;
-  stroke-width: 1.5; /* Line width */
+  stroke-width: 1.5;
+  /* Line width */
 }
-.add-button{
+
+.add-button {
   margin-left: 17px;
   display: inline-block;
   padding: 10px 20px;
   font-size: 16px;
   text-align: center;
   text-decoration: none;
-  background-color: green; 
-  color: #ffffff; 
-  border: 1px solid #2980b9; 
-  border-radius: 5px; 
+  background-color: green;
+  color: #ffffff;
+  border: 1px solid #2980b9;
+  border-radius: 5px;
   cursor: pointer;
   z-index: 3;
 }
+
 .add-button:hover {
-  background-color: darkgreen; 
-  color: #ffffff; 
+  background-color: darkgreen;
+  color: #ffffff;
 }
+
 #chart {
-  /* background-color: red; */
-  min-width: 100% ;
+  min-width: 100%;
   position: relative;
   overflow-x: auto;
   height: 400px;
   overflow-y: auto;
 }
 
-.date-groups{
+.date-groups {
   position: fixed;
   top: 0;
 }
@@ -75,7 +85,6 @@ svg{
   position: relative;
   left: 1rem;
   top: 0;
-  /* left: 0 */
 }
 
 .taskbar {
@@ -85,59 +94,61 @@ svg{
   font-size: 18px;
   text-align: center;
   vertical-align: middle;
-  width: 18rem;
-  align-items: center ;
+  width: inherit;
+  align-items: center;
   background-color: red;
   position: absolute;
   cursor: pointer;
 }
 
-.taskbar .main-task{
+.taskbar .main-task {
   justify-content: center;
   align-items: center;
-  width: 18rem;
-  /* height: 40px; */
-  background-color: #3498db;
+  width: calc(var(--sidebar-w) - 2rem);
+  background-color: rgb(63 63 70);
   color: #ffffff;
-  border: 1px solid #2980b9;
-  border-radius: 5px;
+  /* border: 1px solid #2980b9; */
+  /* border-radius: 5px; */
   cursor: pointer;
   z-index: 5;
   position: absolute;
   display: flex;
 }
-.taskbar .sub-task{
+
+.taskbar .sub-task {
   display: flex;
-  height: 15px;
+  height: auto;
   justify-content: center;
   align-items: center;
-  width: 16rem;
-  left: 2rem;
-  background-color: #1f3a4c; 
-  color: #ffffff; 
-  border: 1px solid #2980b9; 
-  border-radius: 5px; 
+  width: calc(var(--sidebar-w) - 2rem);
+  left: 10px;
+  /* background-color: #1f3a4c;  */
+  color: #ffffff;
+  border: 1px dotted #2980b9;
+  border-radius: 5px;
   cursor: pointer;
   z-index: 2;
   position: absolute;
 }
-.date .date-div{
+
+.date .date-div {
   z-index: 1;
   position: sticky;
   top: 0;
 }
+
 .sidebar {
   border-radius: 10px;
-  background-color: #ccc;
+  background-color: rgb(24 24 27);
   z-index: 2;
   display: flex;
   flex-direction: column;
   height: 770px;
-  width: 22rem;
-  /* background-color:orange; */
+  width: var(--sidebar-w);
   position: sticky;
   left: 0;
   top: 0;
+
 }
 
 .grid-line {
@@ -163,4 +174,3 @@ svg{
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 }
-  
