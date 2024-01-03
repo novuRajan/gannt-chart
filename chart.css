@@ -19,7 +19,7 @@ body.dragging {
 
 .add-tasks {
   position: fixed;
-  left: 5%;
+  /* left: 5%; */
   z-index: 3;
 }
 
@@ -37,7 +37,7 @@ svg {
   /* Line width */
 }
 
-.add-button {
+/* .add-button {
   margin-left: 17px;
   display: inline-block;
   padding: 10px 20px;
@@ -50,12 +50,12 @@ svg {
   border-radius: 5px;
   cursor: pointer;
   z-index: 3;
-}
+} */
 
-.add-button:hover {
+/* .add-button:hover {
   background-color: darkgreen;
   color: #ffffff;
-}
+} */
 
 #chart {
   min-width: 100%;
@@ -88,23 +88,23 @@ svg {
 }
 
 .taskbar {
-  display: flex;
+  width: inherit;
+  /* display: flex;
   flex-direction: column;
   left: 10px;
   font-size: 18px;
   text-align: center;
   vertical-align: middle;
-  width: inherit;
   align-items: center;
   background-color: red;
   position: absolute;
-  cursor: pointer;
+  cursor: pointer; */
 }
 
 .taskbar .main-task {
   justify-content: center;
   align-items: center;
-  width: calc(var(--sidebar-w) - 2rem);
+  width: var(--sidebar-w);
   background-color: rgb(63 63 70);
   color: #ffffff;
   /* border: 1px solid #2980b9; */
@@ -123,8 +123,9 @@ svg {
   width: calc(var(--sidebar-w) - 2rem);
   left: 10px;
   /* background-color: #1f3a4c;  */
+
   color: #ffffff;
-  border: 1px dotted #2980b9;
+  border: 1px dotted rgb(82 82 91);
   border-radius: 5px;
   cursor: pointer;
   z-index: 2;
@@ -173,4 +174,51 @@ svg {
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
+}
+
+.add-button {
+  border: none;
+  padding: 16px 6px;
+  background-color: rgb(77 124 15);
+  fill: white;
+  border-bottom-right-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  /* place-self: end; */
+  width: 100px;
+  color: white;
+  font-weight: 600;
+  letter-spacing: 1px;
+  box-shadow: 2px 2px 4px rgba(21, 206, 8, 0.3);
+  /* border-top-left-radius: 10px; */
+  transition: all .3s ease-in-out;
+}
+
+.add-button svg {
+  position: absolute;
+  background-color: transparent;
+  left: 0;
+  height: 100%;
+  top: 0px;
+}
+
+.add-button:hover {
+  width: 100px;
+}
+
+.add-button:hover::after {
+  content: "Add Task";
+  position: absolute;
+  left: 40%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  /* padding: 10px; */
+  font-size: x-small;
+
+}
+
+.add-button:hover svg {
+  display: none;
+
 }

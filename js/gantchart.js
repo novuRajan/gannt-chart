@@ -31,8 +31,22 @@ export default class GanttChart {
 
   createButton(tasks) {
     const button = document.createElement('button');
+    const btn_add_svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    // appending svg icon start
+    btn_add_svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    btn_add_svg.setAttribute('height', '10');
+    btn_add_svg.setAttribute('viewBox', '0 -960 960 960');
+    btn_add_svg.setAttribute('width', '10');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M680-80v-120H560v-80h120v-120h80v120h120v80H760v120h-80Zm-480-80q-33 0-56.5-23.5T120-240v-480q0-33 23.5-56.5T200-800h40v-80h80v80h240v-80h80v80h40q33 0 56.5 23.5T760-720v244q-20-3-40-3t-40 3v-84H200v320h280q0 20 3 40t11 40H200Zm0-480h480v-80H200v80Zm0 0v-80 80Z');
+    btn_add_svg.appendChild(path);
+    button.appendChild(btn_add_svg);
+    // appending svg icon End
+
     button.setAttribute('class', 'add-button')
-    button.textContent = 'Add Task'; // Set the button text
+    button.setAttribute('title', 'Add task');
+
+    // button.textContent = 'Add Task'; // Set the button text
     button.addEventListener('click', () => {
       openAddModal(tasks);
     });
@@ -122,12 +136,12 @@ export default class GanttChart {
 
     tasks.forEach((task, index) => {
       const sideBarDiv = this.createSideBar();
-      
+
       const taskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
       taskGroup.setAttribute('class', 'tasks');
       svg.appendChild(taskGroup);
       const mainTask = document.createElement('div');
-      mainTask.setAttribute('class', 'main-task'); 
+      mainTask.setAttribute('class', 'main-task');
       const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end)));
       const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
       const duration = (new Date(task.end) - new Date(task.start)) / (24 * 60 * 60 * 1000) * 50;
@@ -156,7 +170,7 @@ export default class GanttChart {
       text.textContent = task.name;
       taskGroup.appendChild(text);
       // div added for the task 
-      mainTask.setAttribute('style',`top:${(customIndex * 40 + 40)*770/(this.length * 40 + 40)}px;height:auto;`)
+      mainTask.setAttribute('style', `top:${(customIndex * 40 + 40) * 770 / (this.length * 40 + 40)}px;height:auto;`)
       mainTask.textContent = task.name;
       this.taskBar.appendChild(mainTask);
       // Render subtasks
@@ -166,7 +180,7 @@ export default class GanttChart {
         taskGroup.appendChild(subTaskGroup);
         task.subTask.forEach((subtask, subIndex) => {
           const subTask = document.createElement('div');
-          subTask.setAttribute('class', 'sub-task'); 
+          subTask.setAttribute('class', 'sub-task');
           const subDependentTaskEnd = Math.max(...subtask.dependencies.map(depId => new Date(task.subTask[depId - 1].end)));
           const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
           const subDuration = (new Date(subtask.end) - new Date(subtask.start)) / (24 * 60 * 60 * 1000) * 50;
@@ -197,12 +211,12 @@ export default class GanttChart {
           subText.textContent = subtask.name;
           subText.setAttribute('font-size', '10px');
           subTaskGroup.appendChild(subText);
-          
+
           // div added for the subtask
-          subTask.setAttribute('style',`top:${((subIndex + customIndex + 1) * 40 + 50)*770/(this.length * 40 + 40)}px;height:auto;`)
+          subTask.setAttribute('style', `top:${((subIndex + customIndex + 1) * 40 + 50) * 770 / (this.length * 40 + 40)}px;height:auto;`)
           subTask.textContent = subtask.name;
           this.taskBar.appendChild(subTask);
-          
+
           subText.addEventListener('mouseover', () => showTaskDetails(subtask, task.subTask));
           subRect.addEventListener('mouseover', () => showTaskDetails(subtask, task.subTask));
           subRect.addEventListener('mouseout', hideTaskDetails);
@@ -450,7 +464,7 @@ export default class GanttChart {
   drawDependencyLine(svg, tasks) {
     const svgNS = 'http://www.w3.org/2000/svg';
     const arrowheadSize = 5;
-  
+
     tasks.forEach((task, index) => {
       if (task.dependencies && task.dependencies.length > 0) {
         task.dependencies.forEach((dependencyId) => {
@@ -487,7 +501,7 @@ export default class GanttChart {
           }
         });
       }
-  
+
       if (task.subTask) {
         task.subTask.forEach((subtask, subindex) => {
           if (subtask.dependencies && subtask.dependencies.length > 0) {
@@ -496,17 +510,17 @@ export default class GanttChart {
               if (dependentTask) {
                 const startTaskElement = document.getElementById(`subtask-${task.id}-${dependentTask.id}`);
                 const endTaskElement = document.getElementById(`subtask-${task.id}-${subtask.id}`);
-  
+
                 if (startTaskElement && endTaskElement) {
                   const startOffset = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
                   const x1 = startOffset;
                   const y1 = parseFloat(startTaskElement.getAttribute('y'));
                   const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
-  
+
                   // Draw horizontal line
                   const lineHorizontal = this.createSvgLine(x1, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
                   svg.appendChild(lineHorizontal);
-  
+
                   //if blocked subtask is above the blocker task in the chart ,add extra height to the vertical line
                   const isDependentAfterTask = dependentTask.id > subtask.id;
                   const extraHeight = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('height')) : 0;
@@ -514,7 +528,7 @@ export default class GanttChart {
                   // Draw vertical line
                   const lineVertical = this.createSvgLine(x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, parseFloat(endTaskElement.getAttribute('y')) + extraHeight);
                   svg.appendChild(lineVertical);
-  
+
                   // Draw arrowhead
                   const arrowheadY = dependentTask.id > subtask.id ? parseFloat(endTaskElement.getAttribute('y')) + parseFloat(endTaskElement.getAttribute('height')) : parseFloat(endTaskElement.getAttribute('y'));
                   const arrowDirection = isDependentAfterTask ? 'up' : 'down';
@@ -528,27 +542,27 @@ export default class GanttChart {
       }
     });
   }
-  
+
   createSvgLine(x1, y1, x2, y2) {
-      const line = document.createElementNS(svgNS, 'line');
-      line.setAttribute('x1', x1);
-      line.setAttribute('y1', y1);
-      line.setAttribute('x2', x2);
-      line.setAttribute('y2', y2);
-      line.classList.add('dependency-line');
-      return line;
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.classList.add('dependency-line');
+    return line;
   }
-  
+
   createArrowhead(x, y, size, arrowDirection) {
-      const arrowhead = document.createElementNS(svgNS, 'polygon');
-      const points = arrowDirection === "down"
-        ? `${x},${y - size} ${x - size},${y - size} ${x},${y} ${x + size},${y - size}`
-        : `${x - size},${y + size} ${x},${y} ${x + size},${y + size}`;
-      arrowhead.setAttribute('points', points);
-      arrowhead.classList.add('dependency-arrowhead');
-      return arrowhead;
-  } 
-  
+    const arrowhead = document.createElementNS(svgNS, 'polygon');
+    const points = arrowDirection === "down"
+      ? `${x},${y - size} ${x - size},${y - size} ${x},${y} ${x + size},${y - size}`
+      : `${x - size},${y + size} ${x},${y} ${x + size},${y + size}`;
+    arrowhead.setAttribute('points', points);
+    arrowhead.classList.add('dependency-arrowhead');
+    return arrowhead;
+  }
+
   createSideBar() {
     const sidebar = document.createElement('div');
     sidebar.setAttribute('class', 'sidebar');

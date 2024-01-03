@@ -65,14 +65,15 @@ var Gantt = (function () {
     }
 
     function createDivDateScale(dateInfo, chartWidth, taskCount) {
+        GanttChart.returnHeight();
         const dateDiv = document.createElement('div');
         dateDiv.setAttribute('id','div-date');
         dateDiv.classList.add('date');
-        const dateScale = document.createElement('div');
-        dateScale.setAttribute('x', '0');
-        dateScale.setAttribute('y', taskCount);
-        dateDiv.appendChild(dateScale);
+        const div = document.createElement('div');
+        div.setAttribute('class','date-div');
+        document.createElement('div');
         const width = GanttChart.returnWidth();
+        console.log(width);
         for (let i = 0; i <= chartWidth; i += 50) {
             const currentDate = new Date(dateInfo.startingDate.getTime() + i / 50 * (24 * 60 * 60 * 1000));
             const day = document.createElement('div');
@@ -85,16 +86,16 @@ var Gantt = (function () {
             // day.setAttribute('y', 20);
             // day.setAttribute('font-size','10px')
             if(currentDate.getDay() === 0 || currentDate.getDay() === 6){
-                day.setAttribute('style',`position:absolute;left:${i*width/chartWidth-5}px;color:red`);
+                day.setAttribute('style',`position:absolute;left:${i*width/chartWidth}px;color:red`);
             }
             else {
-                day.setAttribute('style', `position:absolute;left:${i*width/chartWidth-5}px`);
+                day.setAttribute('style', `position:absolute;left:${i*width/chartWidth}px`);
             }
             // day.dayContent = daysOfWeek[currentDate.getDay()]
-            dateDiv.appendChild(day);
+            div.appendChild(day);
             // dateDiv.appendChild(day)
         }
-        console.log('width',width);
+        dateDiv.appendChild(div);
         return dateDiv;
     }
 
@@ -425,6 +426,7 @@ var Gantt = (function () {
         this.tasks;
         this.allTask;
         this.chartWidth;
+        this.taskBar;
       }
 
       getTotalLength(tasks) {
@@ -432,10 +434,25 @@ var Gantt = (function () {
           return total + 1 + (task.subTask ? this.getTotalLength(task.subTask) : 0);
         }, 0);
       }
+
       createButton(tasks) {
         const button = document.createElement('button');
-        button.setAttribute('class', 'top-place add-button');
-        button.textContent = 'Add Task'; // Set the button text
+        const btn_add_svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        // appending svg icon start
+        btn_add_svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        btn_add_svg.setAttribute('height', '10');
+        btn_add_svg.setAttribute('viewBox', '0 -960 960 960');
+        btn_add_svg.setAttribute('width', '10');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M680-80v-120H560v-80h120v-120h80v120h120v80H760v120h-80Zm-480-80q-33 0-56.5-23.5T120-240v-480q0-33 23.5-56.5T200-800h40v-80h80v80h240v-80h80v80h40q33 0 56.5 23.5T760-720v244q-20-3-40-3t-40 3v-84H200v320h280q0 20 3 40t11 40H200Zm0-480h480v-80H200v80Zm0 0v-80 80Z');
+        btn_add_svg.appendChild(path);
+        button.appendChild(btn_add_svg);
+        // appending svg icon End
+
+        button.setAttribute('class', 'add-button');
+        button.setAttribute('title', 'Add task');
+
+        // button.textContent = 'Add Task'; // Set the button text
         button.addEventListener('click', () => {
           openAddModal(tasks);
         });
@@ -446,19 +463,30 @@ var Gantt = (function () {
         updateTaskStartEndDates(tasks);
         const chartContainer = document.getElementById('chart');
         // Create a button element
+        const overallDiv = document.createElement('div'); // Create a div element for the SVG ,date and side bar
+        overallDiv.setAttribute('class', 'top-class');
+        overallDiv.setAttribute('id', 'overall-div');
+        const addTask = document.createElement('div');
+        addTask.setAttribute('class', 'add-tasks');
+        const sideBar = document.createElement('div');
+        sideBar.setAttribute('class', 'sidebar');
+        this.taskBar = document.createElement('div');
+        this.taskBar.setAttribute('class', 'taskbar');
+        sideBar.appendChild(this.taskBar);
         const button = this.createButton(tasks);
         let svg = chartContainer.querySelector('svg');
         // Check if the SVG element already exists
         if (!svg) {
           // Append the button to the parent container of the SVG
-          chartContainer.appendChild(button);
-          // If not, create a new SVG element
+          addTask.appendChild(button);
+          overallDiv.appendChild(addTask);
+          overallDiv.appendChild(sideBar);
+          // If not, create a new SVG da
           svg = this.createSVG(tasks);
-          chartContainer.appendChild(svg);
+          overallDiv.appendChild(svg);
+          chartContainer.appendChild(overallDiv);
           const Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
-          chartContainer.insertBefore(Datediv,svg);
-          console.log(Datediv);
-          
+          overallDiv.insertBefore(Datediv, svg);
         } else {
           this.updateGanttChartContent(svg, tasks);
         }
@@ -467,8 +495,8 @@ var Gantt = (function () {
       createSVG(tasks) {
         const svg = document.createElementNS(svgNS, 'svg');
         svg.setAttribute('id', 'mySvg');
-        svg.setAttribute('min-width', '100%');
-        svg.setAttribute('height', '200%');
+        // svg.setAttribute('min-width', '100%');
+        // svg.setAttribute('height', '200%');
         const dateGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
         dateGroup.setAttribute('class', 'date-groups');
         svg.appendChild(dateGroup);
@@ -513,10 +541,13 @@ var Gantt = (function () {
         let customIndex = 0;
 
         tasks.forEach((task, index) => {
+          this.createSideBar();
+
           const taskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
           taskGroup.setAttribute('class', 'tasks');
           svg.appendChild(taskGroup);
-
+          const mainTask = document.createElement('div');
+          mainTask.setAttribute('class', 'main-task');
           const dependentTaskEnd = Math.max(...task.dependencies.map(depId => new Date(tasks[depId - 1].end)));
           const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
           const duration = (new Date(task.end) - new Date(task.start)) / (24 * 60 * 60 * 1000) * 50;
@@ -544,13 +575,18 @@ var Gantt = (function () {
           text.setAttribute('y', customIndex * 40 + 60);
           text.textContent = task.name;
           taskGroup.appendChild(text);
-
+          // div added for the task 
+          mainTask.setAttribute('style', `top:${(customIndex * 40 + 40) * 770 / (this.length * 40 + 40)}px;height:auto;`);
+          mainTask.textContent = task.name;
+          this.taskBar.appendChild(mainTask);
           // Render subtasks
           if (task.subTask && task.subTask.length > 0) {
             const subTaskGroup = document.createElementNS(svgNS, 'g'); // Create a group element for the task
             subTaskGroup.setAttribute('class', 'subtask');
             taskGroup.appendChild(subTaskGroup);
             task.subTask.forEach((subtask, subIndex) => {
+              const subTask = document.createElement('div');
+              subTask.setAttribute('class', 'sub-task');
               const subDependentTaskEnd = Math.max(...subtask.dependencies.map(depId => new Date(task.subTask[depId - 1].end)));
               const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start) - dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50);
               const subDuration = (new Date(subtask.end) - new Date(subtask.start)) / (24 * 60 * 60 * 1000) * 50;
@@ -581,6 +617,11 @@ var Gantt = (function () {
               subText.textContent = subtask.name;
               subText.setAttribute('font-size', '10px');
               subTaskGroup.appendChild(subText);
+
+              // div added for the subtask
+              subTask.setAttribute('style', `top:${((subIndex + customIndex + 1) * 40 + 50) * 770 / (this.length * 40 + 40)}px;height:auto;`);
+              subTask.textContent = subtask.name;
+              this.taskBar.appendChild(subTask);
 
               subText.addEventListener('mouseover', () => showTaskDetails(subtask, task.subTask));
               subRect.addEventListener('mouseover', () => showTaskDetails(subtask, task.subTask));
@@ -716,7 +757,7 @@ var Gantt = (function () {
 
       updateTaskBarPosition(clientX, taskRect, progress, dependentTask, tasks, allTasks) {
         const width = this.getWidth();
-        const deltaX = (clientX - this.initialX) /(width/this.chartWidth);// Adjust the sensitivity factor 
+        const deltaX = (clientX - this.initialX) / (width / this.chartWidth);// Adjust the sensitivity factor 
         if (this.isDragStart) {
           // Dragging start handle
           const newStartOffset = (new Date(dependentTask.start) - this.dateInfo.startingDate) / (24 * 60 * 60 * 1000) * 50 + deltaX;
@@ -798,7 +839,7 @@ var Gantt = (function () {
       }
 
       updateGanttChartContent(svg, tasks) {
-        const chartContainer = document.getElementById('chart');
+        const chartContainer = document.getElementById('overall-div');
         //clear the excisting date div
         let Datediv = document.getElementById('div-date');
         chartContainer.removeChild(Datediv);
@@ -820,104 +861,83 @@ var Gantt = (function () {
         createMonthHeadings(dateGroup, this.dateInfo, chartWidth);
         createDateScale(dateGroup, this.dateInfo, chartWidth, this.length);
         Datediv = createDivDateScale(this.dateInfo, this.chartWidth, this.length);
-        chartContainer.insertBefore(Datediv,svg);
+        chartContainer.insertBefore(Datediv, svg);
         this.createTaskBars(svg, tasks, this.dateInfo);
         this.drawDependencyLine(svg, tasks);
       }
+
       drawDependencyLine(svg, tasks) {
+        const arrowheadSize = 5;
+
         tasks.forEach((task, index) => {
           if (task.dependencies && task.dependencies.length > 0) {
             task.dependencies.forEach((dependencyId) => {
               const dependentTask = tasks.find((t) => t.id === dependencyId);
               if (dependentTask) {
-
-                const svgNS = 'http://www.w3.org/2000/svg';
-
                 const startTaskElement = document.getElementById(`task-${dependentTask.id}`);
                 const endTaskElement = document.getElementById(`task-${task.id}`);
 
                 if (startTaskElement && endTaskElement) {
                   const startOffset = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
                   const x1 = startOffset;
-
                   const y1 = parseFloat(startTaskElement.getAttribute('y'));
-
                   const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
 
                   // Draw horizontal line
-                  const lineHorizontal = document.createElementNS(svgNS, 'line');
-                  lineHorizontal.setAttribute('x1', x1);
-                  lineHorizontal.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-                  lineHorizontal.setAttribute('x2', x2);
-                  lineHorizontal.setAttribute('y2', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-                  lineHorizontal.classList.add('dependency-line');
+                  const lineHorizontal = this.createSvgLine(x1, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
                   svg.appendChild(lineHorizontal);
 
+                  //if blocked task is above the blocker task in the chart ,add extra height to the vertical line
+                  const isDependentAfterTask = dependentTask.id > task.id;
+                  const extraHeight = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('height')) : 0;
+
+
                   // Draw vertical line
-                  const lineVertical = document.createElementNS(svgNS, 'line');
-                  lineVertical.setAttribute('x1', x2);
-                  lineVertical.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-                  lineVertical.setAttribute('x2', x2);
-                  lineVertical.setAttribute('y2', parseFloat(endTaskElement.getAttribute('y'))); // Adjust as needed
-                  lineVertical.classList.add('dependency-line');
+                  const lineVertical = this.createSvgLine(x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, parseFloat(endTaskElement.getAttribute('y')) + extraHeight);
                   svg.appendChild(lineVertical);
 
                   // Draw arrowhead
-                  const arrowhead = document.createElementNS(svgNS, 'polygon');
-                  const arrowheadSize = 5;
-                  arrowhead.setAttribute('points', `${x2},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2 - arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2},${parseFloat(endTaskElement.getAttribute('y'))} ${x2 + arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize}`);
-                  arrowhead.classList.add('dependency-arrowhead');
+                  const arrowheadY = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('y')) + parseFloat(endTaskElement.getAttribute('height')) : parseFloat(endTaskElement.getAttribute('y'));
+                  const arrowDirection = isDependentAfterTask ? 'up' : 'down';
+                  const arrowhead = this.createArrowhead(x2, arrowheadY, arrowheadSize, arrowDirection);
                   svg.appendChild(arrowhead);
-
                 }
               }
             });
           }
+
           if (task.subTask) {
             task.subTask.forEach((subtask, subindex) => {
               if (subtask.dependencies && subtask.dependencies.length > 0) {
                 subtask.dependencies.forEach((dependencyId) => {
                   const dependentTask = task.subTask.find((t) => t.id === dependencyId);
                   if (dependentTask) {
-
-                    const svgNS = 'http://www.w3.org/2000/svg';
-
                     const startTaskElement = document.getElementById(`subtask-${task.id}-${dependentTask.id}`);
                     const endTaskElement = document.getElementById(`subtask-${task.id}-${subtask.id}`);
 
                     if (startTaskElement && endTaskElement) {
                       const startOffset = parseFloat(startTaskElement.getAttribute('width')) + parseFloat(startTaskElement.getAttribute('x'));
                       const x1 = startOffset;
-
                       const y1 = parseFloat(startTaskElement.getAttribute('y'));
-
                       const x2 = parseFloat(endTaskElement.getAttribute('x')) + parseFloat(endTaskElement.getAttribute('width')) / 2;
 
                       // Draw horizontal line
-                      const lineHorizontal = document.createElementNS(svgNS, 'line');
-                      lineHorizontal.setAttribute('x1', x1);
-                      lineHorizontal.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-                      lineHorizontal.setAttribute('x2', x2);
-                      lineHorizontal.setAttribute('y2', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-                      lineHorizontal.classList.add('dependency-line');
+                      const lineHorizontal = this.createSvgLine(x1, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
                       svg.appendChild(lineHorizontal);
 
+                      //if blocked subtask is above the blocker task in the chart ,add extra height to the vertical line
+                      const isDependentAfterTask = dependentTask.id > subtask.id;
+                      const extraHeight = isDependentAfterTask ? parseFloat(endTaskElement.getAttribute('height')) : 0;
+
                       // Draw vertical line
-                      const lineVertical = document.createElementNS(svgNS, 'line');
-                      lineVertical.setAttribute('x1', x2);
-                      lineVertical.setAttribute('y1', y1 + parseFloat(endTaskElement.getAttribute('height')) / 2);
-                      lineVertical.setAttribute('x2', x2);
-                      lineVertical.setAttribute('y2', parseFloat(endTaskElement.getAttribute('y'))); // Adjust as needed
-                      lineVertical.classList.add('dependency-line');
+                      const lineVertical = this.createSvgLine(x2, y1 + parseFloat(endTaskElement.getAttribute('height')) / 2, x2, parseFloat(endTaskElement.getAttribute('y')) + extraHeight);
                       svg.appendChild(lineVertical);
 
                       // Draw arrowhead
-                      const arrowhead = document.createElementNS(svgNS, 'polygon');
-                      const arrowheadSize = 5;
-                      arrowhead.setAttribute('points', `${x2},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2 - arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize} ${x2},${parseFloat(endTaskElement.getAttribute('y'))} ${x2 + arrowheadSize},${parseFloat(endTaskElement.getAttribute('y')) - arrowheadSize}`);
-                      arrowhead.classList.add('dependency-arrowhead');
+                      const arrowheadY = dependentTask.id > subtask.id ? parseFloat(endTaskElement.getAttribute('y')) + parseFloat(endTaskElement.getAttribute('height')) : parseFloat(endTaskElement.getAttribute('y'));
+                      const arrowDirection = isDependentAfterTask ? 'up' : 'down';
+                      const arrowhead = this.createArrowhead(x2, arrowheadY, arrowheadSize, arrowDirection);
                       svg.appendChild(arrowhead);
-
                     }
                   }
                 });
@@ -926,21 +946,67 @@ var Gantt = (function () {
           }
         });
       }
+
+      createSvgLine(x1, y1, x2, y2) {
+        const line = document.createElementNS(svgNS, 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.classList.add('dependency-line');
+        return line;
+      }
+
+      createArrowhead(x, y, size, arrowDirection) {
+        const arrowhead = document.createElementNS(svgNS, 'polygon');
+        const points = arrowDirection === "down"
+          ? `${x},${y - size} ${x - size},${y - size} ${x},${y} ${x + size},${y - size}`
+          : `${x - size},${y + size} ${x},${y} ${x + size},${y + size}`;
+        arrowhead.setAttribute('points', points);
+        arrowhead.classList.add('dependency-arrowhead');
+        return arrowhead;
+      }
+
+      createSideBar() {
+        const sidebar = document.createElement('div');
+        sidebar.setAttribute('class', 'sidebar');
+        return sidebar;
+      }
+
       getWidth() {
         var svgElement = document.getElementById('mySvg');
 
         if (svgElement) {
-            var svgWidthInPixels = window.getComputedStyle(svgElement).width;
-            var numericWidth = parseFloat(svgWidthInPixels);
-            return numericWidth;
+          var svgWidthInPixels = window.getComputedStyle(svgElement).width;
+          var numericWidth = parseFloat(svgWidthInPixels);
+          return numericWidth;
         } else {
-            return null;
+          return null;
         }
       }
-      static returnWidth(){
+
+      getheight() {
+        var svgElement = document.getElementById('mySvg');
+
+        if (svgElement) {
+          var svgWidthInPixels = window.getComputedStyle(svgElement).height;
+          var numericWidth = parseFloat(svgWidthInPixels);
+          return numericWidth;
+        } else {
+          return null;
+        }
+      }
+
+      static returnHeight() {
+        const height = new GanttChart();
+        return height.getheight();
+      }
+
+      static returnWidth() {
         const width = new GanttChart();
         return width.getWidth();
       }
+
       static createChart(tasks) {
         const ganttChart = new GanttChart();
         ganttChart.createGanttChart(tasks);
