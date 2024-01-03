@@ -371,11 +371,21 @@ export default class GanttChart {
                 // Update the properties of the task in the array
                 tasks[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
                 tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
+
+                //return which data is updated for user side
+                const chartConfig=stores.chartConfig.getState();
+
                 // Update the Gantt chart with the new data
                 updateTaskStartEndDates(tasks);
                 if (allTasks) {
+                    if (chartConfig.change) {
+                        chartConfig.change("subtask", tasks[updatedTaskIndex])
+                    }
                     this.createGanttChart(allTasks);
                 } else {
+                    if (chartConfig.change) {
+                        chartConfig.change('task',tasks[updatedTaskIndex])
+                    }
                     this.createGanttChart(tasks);
                 }
 

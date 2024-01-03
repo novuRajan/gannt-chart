@@ -5,4 +5,5 @@ export interface IChartConfig {
     activeTasks?: boolean;
     add?: (task: ITask | ISubTask) => void;
     update?: (task: ITask | ISubTask) => void;
+    change?: (type: string, task: ITask | ISubTask) => void;
 }
