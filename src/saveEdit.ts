@@ -94,7 +94,7 @@ export function addTask(tasks : ITask[] | ISubTask[]) {
     };
     const chartConfig=stores.chartConfig.getState();
     if (chartConfig.add) {
-        chartConfig.add(newTask)
+        chartConfig.add('task',newTask)
     }
     // Add the new task to the existing tasks
     tasks.push(newTask);
@@ -217,21 +217,21 @@ export function saveEditedTask(tasks: ISubTask[] | ITask [], allTasks = null) {
         // Parse the progress value and ensure it's a number
         const parsedProgress = parseInt(String(formData.get('progress')), 10);
         tasks[editedTaskIndex].progress = isNaN(parsedProgress) ? 0 : Math.min(100, parsedProgress);
-        if (selectedDependencies.filter(d=>!isNaN(d)).length) {
-          tasks[editedTaskIndex].dependencies = selectedDependencies;
-        }
+        tasks[editedTaskIndex].dependencies = selectedDependencies;
     }
 
     const chartConfig=stores.chartConfig.getState();
-    if (chartConfig.update) {
-        chartConfig.update(tasks[editedTaskIndex])
-    }
+
     // Update the Gantt chart with the new data
     updateTaskStartEndDates(tasks);
     // Call the function with sample data
     if (allTasks) {
+        if (chartConfig.update) {
+            chartConfig.update('subtask',tasks[editedTaskIndex])
+        }
         GanttChart.createChart(allTasks);
     } else {
+        chartConfig.update('task',tasks[editedTaskIndex])
         GanttChart.createChart(tasks);
     }
 }

@@ -63,11 +63,11 @@
 
     ];
     GanttChart.createGanttChart(data,{
-        add:(data)=>{
-            console.log(data)
+        add:(type,data)=>{
+            console.log(type,data)
         },
-        update:(data)=>{
-            console.log(data)
+        update:(type,data)=>{
+            console.log(type,data)
         },
         change:(type,data)=>{
           console.log(type,data)

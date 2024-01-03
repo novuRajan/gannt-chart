@@ -3,7 +3,7 @@ import { ISubTask } from "../Task/SubTask";
 
 export interface IChartConfig {
     activeTasks?: boolean;
-    add?: (task: ITask | ISubTask) => void;
-    update?: (task: ITask | ISubTask) => void;
+    add?: (type: string, task: ITask | ISubTask) => void;
+    update?: (type: string, task: ITask | ISubTask) => void;
     change?: (type: string, task: ITask | ISubTask) => void;
 }
