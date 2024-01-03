@@ -8,6 +8,7 @@ import { IDateInfo } from './Interfaces/Date/DateInfo';
 import { DateHelper } from './lib/Date';
 import { IChartConfig } from './Interfaces/Chart/ChartConfig';
 import './styles/chart.scss';
+import stores from "./stores";
 
 export default class GanttChart {
     protected dateInfo: IDateInfo;
@@ -42,6 +43,7 @@ export default class GanttChart {
     }
 
     createGanttChart(_tasks: ITask[], _configs: IChartConfig = {}) {
+        stores.chartConfig.setState(_configs);
         let tasks: ITask[] = _tasks.filter(task => task.start !== undefined && task.end !== undefined);
         if (_configs.activeTasks) {
             tasks = _tasks.filter(task => new DateHelper().isBetween(task.start, task.end));
@@ -392,11 +394,21 @@ export default class GanttChart {
                 // Update the properties of the task in the array
                 tasks[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
                 tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
+
+                //return which data is updated for user side
+                const chartConfig=stores.chartConfig.getState();
+
                 // Update the Gantt chart with the new data
                 updateTaskStartEndDates(tasks);
                 if (allTasks) {
+                    if (chartConfig.change) {
+                        chartConfig.change("subtask", tasks[updatedTaskIndex])
+                    }
                     this.createGanttChart(allTasks);
                 } else {
+                    if (chartConfig.change) {
+                        chartConfig.change('task',tasks[updatedTaskIndex])
+                    }
                     this.createGanttChart(tasks);
                 }
 
