@@ -8,6 +8,7 @@ import { IDateInfo } from './Interfaces/Date/DateInfo';
 import { DateHelper } from './lib/Date';
 import { IChartConfig } from './Interfaces/Chart/ChartConfig';
 import './styles/chart.scss';
+import { createElement, createElementFromObject } from "./lib/Html/HtmlHelper";
 
 export default class GanttChart {
     protected dateInfo: IDateInfo;
@@ -50,12 +51,16 @@ export default class GanttChart {
         updateTaskStartEndDates(tasks);
         const chartContainer = document.getElementById('chart');
         // Create a button element
+        const headerRow=createElementFromObject('div',{
+            class:'row chart-header',
+        });
         const button = this.createButton(tasks);
         let svg = chartContainer.querySelector('svg');
         // Check if the SVG element already exists
         if (!svg) {
             // Append the button to the parent container of the SVG
-            chartContainer.appendChild(button);
+            headerRow.appendChild(button);
+            chartContainer.appendChild(headerRow);
             // If not, create a new SVG element
             svg = this.createSVG(tasks);
             chartContainer.appendChild(svg);
