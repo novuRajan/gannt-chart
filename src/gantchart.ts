@@ -93,7 +93,6 @@ export default class GanttChart {
                         tasks = _tasks.filter(task => new DateHelper().filterDateBetween(task.start , task.end ,<string>formDataObject.start, <string>formDataObject.end));
                         console.log('tasks',tasks);
                     }
-                    this.createGanttChart(tasks);
                 }
             }
         })
@@ -115,7 +114,6 @@ export default class GanttChart {
             chartContainer.insertBefore(DateDiv, svg);
 
         } else {
-            console.log('tt',tasks)
             this.updateGanttChartContent(svg, tasks);
         }
     }
