@@ -10,6 +10,8 @@ import { IChartConfig } from './Interfaces/Chart/ChartConfig';
 import './styles/chart.scss';
 import stores from "./stores";
 import {  createElementFromObject } from "./lib/Html/HtmlHelper";
+import { createInputElement } from "./lib/Html/InputHelper";
+import { formData } from "./lib/Html/FormHelper";
 
 export default class GanttChart {
     protected dateInfo: IDateInfo;
@@ -56,12 +58,46 @@ export default class GanttChart {
         const headerRow=createElementFromObject('div',{
             class:'row chart-header',
         });
+        const headerCol1=createElementFromObject('div',{
+            class:'col',
+        });
+        const headerCol2=createElementFromObject('div',{
+            class:'col filters',
+        });
+        const filterForm=createElementFromObject('form',{
+            class:'filter-form',
+            method:'post',
+        });
+        const startDateFilter= createInputElement({
+            type: 'date',
+            name: 'start',
+        })
+        const endDateFilter= createInputElement({
+            type: 'date',
+            name: 'end',
+        })
+        const filterButton = createElementFromObject('button',{
+            class: 'top-place add-button',
+            content: 'Filter',
+            events:{
+                click: (event) => {
+                    event.preventDefault();
+                    console.log(formData(filterForm as HTMLFormElement))
+                }
+            }
+        })
         const button = this.createButton(tasks);
         let svg = chartContainer.querySelector('svg');
         // Check if the SVG element already exists
         if (!svg) {
             // Append the button to the parent container of the SVG
-            headerRow.appendChild(button);
+            headerRow.appendChild(headerCol1);
+            headerRow.appendChild(headerCol2);
+            headerCol1.appendChild(button);
+            headerCol2.appendChild(filterForm);
+            filterForm.appendChild(startDateFilter);
+            filterForm.appendChild(endDateFilter);
+            filterForm.appendChild(filterButton);
             chartContainer.appendChild(headerRow);
             // If not, create a new SVG element
             svg = this.createSVG(tasks);
