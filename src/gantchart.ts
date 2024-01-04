@@ -12,6 +12,7 @@ import stores from "./stores";
 import {  createElementFromObject } from "./lib/Html/HtmlHelper";
 import { createInputElement } from "./lib/Html/InputHelper";
 import { formData } from "./lib/Html/FormHelper";
+import { InputTypes } from "./types/Inputs/InputTypes";
 
 export default class GanttChart {
     protected dateInfo: IDateInfo;
@@ -68,14 +69,24 @@ export default class GanttChart {
             class:'filter-form',
             method:'post',
         });
-        const startDateFilter= createInputElement({
-            type: 'date',
-            name: 'start',
-        })
-        const endDateFilter= createInputElement({
-            type: 'date',
-            name: 'end',
-        })
+        const filters:InputTypes[]=[
+            {
+                type: 'date',
+                name: 'start',
+                label: 'start',
+            },
+            {
+                type: 'date',
+                name: 'end',
+                label: 'end',
+            },
+            {
+                type: 'text',
+                name: 'name',
+                label: 'Search by Name',
+            },
+        ];
+
         const button = this.createButton(tasks);
         let svg = chartContainer.querySelector('svg');
         const filterButton = createElementFromObject('button',{
@@ -90,7 +101,11 @@ export default class GanttChart {
                         chartConfig.filter(formDataObject);
                     }
                     else{
-                        tasks = _tasks.filter(task => new DateHelper().filterDateBetween(task.start , task.end ,<string>formDataObject.start, <string>formDataObject.end));
+                        tasks = _tasks.filter(task => {
+                            if (formDataObject.start && formDataObject.end){
+                                return new DateHelper().filterDateBetween(task.start , task.end ,<string>formDataObject.start, <string>formDataObject.end)
+                            }
+                        });
                         console.log('tasks',tasks);
                     }
                 }
@@ -103,8 +118,9 @@ export default class GanttChart {
             headerRow.appendChild(headerCol2);
             headerCol1.appendChild(button);
             headerCol2.appendChild(filterForm);
-            filterForm.appendChild(startDateFilter);
-            filterForm.appendChild(endDateFilter);
+            filters.forEach(filter=>{
+                filterForm.appendChild(createInputElement(filter));
+            })
             filterForm.appendChild(filterButton);
             chartContainer.appendChild(headerRow);
             // If not, create a new SVG element
