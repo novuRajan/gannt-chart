@@ -3,17 +3,18 @@ $primary-color: #3498db;
 $danger-color: #f44336;
 $warning-color: #e3dc72;
 $success-color: #04AA6D;
+$sidebar-w: 20rem;
 
 // Styles
 body.dragging {
   cursor: e-resize;
 }
 
-.top-place {
-  position: sticky;
-  top: 0;
-  left: 0;
+body {
+  box-sizing: border-box;
+  margin: 0px;
 }
+
 
 .save-changes-btn {
   background-color: $success-color;
@@ -52,37 +53,6 @@ body.dragging {
   }
 }
 
-svg {
-  min-width: 100%;
-  height: 200%;
-}
-
-.dependency-line {
-  stroke: black;
-  stroke-width: 1.5; /* Line width */
-}
-
-.day {
-  position: absolute;
-}
-
-.add-button {
-  display: inline-block;
-  padding: 10px 20px;
-  font-size: 16px;
-  text-align: center;
-  text-decoration: none;
-  background-color: $primary-color;
-  color: #ffffff;
-  border: 1px solid darken($primary-color, 10%);
-  border-radius: 5px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: darken($primary-color, 10%);
-    color: #ffffff;
-  }
-}
 
 #chart {
   min-width: 100%;
@@ -90,6 +60,25 @@ svg {
   overflow-x: auto;
   height: 400px;
   overflow-y: auto;
+  display: flex;
+
+  #overall-div {
+    display: flex;
+    width: 2555px; //will adjust dynamically to the size of the container
+  }
+}
+#mySvg {
+  background-color: antiquewhite;
+  position: absolute;
+  left: 20rem;
+  min-width: 100%;
+  height: 200%;
+  padding: 20px;
+
+  .dependency-line {
+    stroke: rgb(57, 8, 255);
+    stroke-width: 2;
+  }
 }
 
 .date-groups {
@@ -103,12 +92,26 @@ svg {
   font-weight: bold;
 }
 
-.date {
+#div-date {
   font-size: 12px;
   font-weight: bold;
   display: flex;
-  position: sticky;
+  flex-direction: column;
+  position: relative;
+  left: 2rem;
   top: 0;
+
+  .day {
+    position: absolute;
+    z-index: 5;
+  }
+
+  .div-date {
+    z-index: 1;
+    position: sticky;
+    top: 0;
+  }
+
 }
 
 .grid-line {
@@ -133,4 +136,98 @@ svg {
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
+}
+
+
+
+.sidebar {
+  border-radius: 10px;
+  background-color: rgb(24 24 27);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  height: 770px;
+  width: $sidebar-w;
+  position: sticky;
+  left: 0;
+  top: 0;
+
+  .taskbar {
+    width: inherit;
+
+    .main-task {
+      justify-content: center;
+      align-items: center;
+      width: inherit;
+      background-color: rgb(63 63 70);
+      color: #ffffff;
+      cursor: pointer;
+      z-index: 5;
+      position: absolute;
+      display: flex;
+    }
+
+    .sub-task {
+      display: flex;
+      height: auto;
+      justify-content: center;
+      align-items: center;
+      width: calc($sidebar-w - 2rem);
+      left: 10px;
+      color: #ffffff;
+      border: 1px dotted rgb(82 82 91);
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 2;
+      position: absolute;
+    }
+  }
+}
+
+.add-tasks {
+  position: fixed;
+  z-index: 3;
+
+  .add-button {
+    border: none;
+    padding: 16px 6px;
+    background-color: rgb(77, 124, 15);
+    fill: white;
+    border-bottom-right-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    width: 100px;
+    color: white;
+    font-weight: 600;
+    letter-spacing: 1px;
+    box-shadow: 2px 2px 4px rgba(21, 206, 8, 0.3);
+    transition: all 0.3s ease-in;
+
+    svg {
+      position: absolute;
+      left: 0;
+      height: 100%;
+      top: 0px;
+      width: 100%;
+      height: 100%;
+    }
+
+    &:hover {
+      transition: all 3s ease-in-out;
+      
+      &::after {
+        content: "Add Task";
+        position: absolute;
+        left: 40%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: x-small;
+      }
+
+      svg {
+        display: none;
+      }
+    }
+  }
 }

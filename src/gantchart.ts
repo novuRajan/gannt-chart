@@ -9,7 +9,7 @@ import { DateHelper } from './lib/Date';
 import { IChartConfig } from './Interfaces/Chart/ChartConfig';
 import './styles/chart.scss';
 import stores from "./stores";
-import { createElementFromObject, createElement } from "./lib/Html/HtmlHelper";
+import { createElementFromObject } from "./lib/Html/HtmlHelper";
 
 export default class GanttChart {
 
@@ -77,22 +77,21 @@ export default class GanttChart {
         const svgInsideAddButton = this.createSvgButton();
         const AddTaskButton = this.createButton(tasks);
         const sidebar = createElementFromObject('div', {
-            'class' : 'sidebar',
+            'class': 'sidebar',
         });
         const taskbar = createElementFromObject('div', {
-            'class' : 'taskbar'
+            'class': 'taskbar'
         });
-        // const mainTask = createElement('div', 'main-task');
-        const mainTask = createElementFromObject('div',{
-            class:"main-task",
-            content:'Task-1',
+        const mainTask = createElementFromObject('div', {
+            class: "main-task",
+            content: 'Task-1',
         });
         const subTask = createElementFromObject('div', {
-            class:'sub-task',
-            content:'Sub Task 1'
+            class: 'sub-task',
+            content: 'Sub Task 1'
         });
 
-        
+
         let svg = chartContainer.querySelector('svg');
         // Check if the SVG element already exists
         if (!svg) {
@@ -107,9 +106,9 @@ export default class GanttChart {
             chartContainer.appendChild(headerRow);
             // If not, create a new SVG element
             svg = this.createSVG(tasks);
-            chartContainer.appendChild(svg);
+            headerRow.appendChild(svg);
             const DateDiv = createDivDateScale(this.dateInfo, this.chartWidth);
-            chartContainer.insertBefore(DateDiv, svg);
+            headerRow.insertBefore(DateDiv, svg);
 
         } else {
             this.updateGanttChartContent(svg, tasks);
