@@ -231,7 +231,9 @@ export function saveEditedTask(tasks: ISubTask[] | ITask [], allTasks = null) {
         }
         GanttChart.createChart(allTasks);
     } else {
-        chartConfig.update('task',tasks[editedTaskIndex])
+        if (chartConfig.update) {
+            chartConfig.update('task',tasks[editedTaskIndex])
+        }
         GanttChart.createChart(tasks);
     }
 }
