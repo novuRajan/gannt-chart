@@ -26,6 +26,7 @@ export default class GanttChart {
     private tasks: ITask[] | ISubTask[];
     private chartWidth: number;
     private taskRect: SVGRectElement;
+    private chartConfig: IChartConfig;
 
     getTotalLength(tasks: ITask[]) : number {
         return tasks.reduce((total, task) => {
@@ -326,6 +327,7 @@ export default class GanttChart {
         // Set the current task and progress bar
         this.currentTaskRect = taskRect;
         this.currentProgressRect = taskProgressRect;
+        this.chartConfig = stores.chartConfig.getState();
         this.dragMoveListener = this.throttle((event: { preventDefault: () => void; clientX: number; }) => {
             this.handleDragMove(event, this.currentTaskRect, this.currentProgressRect, dependentTask, task, allTasks);
         }, 16);
@@ -355,8 +357,14 @@ export default class GanttChart {
                     // Update the Gantt chart with the new data
                     updateTaskStartEndDates(tasks);
                     if (allTasks) {
+                        if (this.chartConfig.change) {
+                            this.chartConfig.change("subtask", tasks[updatedTaskIndex])
+                        }
                         this.createGanttChart(allTasks);
                     } else {
+                        if (this.chartConfig.change) {
+                            this.chartConfig.change("task", tasks[updatedTaskIndex])
+                        }
                         this.createGanttChart(tasks);
                     }
                 }
@@ -400,19 +408,16 @@ export default class GanttChart {
                 tasks[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
                 tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
 
-                //return which data is updated for user side
-                const chartConfig=stores.chartConfig.getState();
-
                 // Update the Gantt chart with the new data
                 updateTaskStartEndDates(tasks);
                 if (allTasks) {
-                    if (chartConfig.change) {
-                        chartConfig.change("subtask", tasks[updatedTaskIndex])
+                    if (this.chartConfig.change) {
+                        this.chartConfig.change("subtask", tasks[updatedTaskIndex])
                     }
                     this.createGanttChart(allTasks);
                 } else {
-                    if (chartConfig.change) {
-                        chartConfig.change('task',tasks[updatedTaskIndex])
+                    if (this.chartConfig.change) {
+                        this.chartConfig.change('task',tasks[updatedTaskIndex])
                     }
                     this.createGanttChart(tasks);
                 }
