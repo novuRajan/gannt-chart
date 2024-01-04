@@ -1,9 +1,11 @@
 import { ITask } from "../Task/Task";
 import { ISubTask } from "../Task/SubTask";
+import { IFormDataObject } from "../../lib/Html/FormHelper";
 
 export interface IChartConfig {
     activeTasks?: boolean;
-    add?: (type: string, task: ITask | ISubTask) => void;
-    update?: (type: string, task: ITask | ISubTask) => void;
-    change?: (type: string, task: ITask | ISubTask) => void;
+    add?: (task: ITask | ISubTask) => void;
+    update?: (task: ITask | ISubTask) => void;
+    change?: (task: ITask | ISubTask) => void;
+    filter?: (filterObj:IFormDataObject,tasks: (ITask | ISubTask)[]) => (ITask | ISubTask)[];
 }

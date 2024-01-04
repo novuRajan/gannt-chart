@@ -82,7 +82,13 @@ export default class GanttChart {
             events:{
                 click: (event) => {
                     event.preventDefault();
-                    console.log(formData(filterForm as HTMLFormElement))
+                    const chartConfig=stores.chartConfig.getState();
+                    console.log(chartConfig)
+                    if (chartConfig.filter) {
+                        const tasks=chartConfig.filter(formData(filterForm as HTMLFormElement),_tasks);
+                        this.tasks=tasks;
+                        console.log(tasks)
+                    }
                 }
             }
         })
@@ -443,12 +449,12 @@ export default class GanttChart {
                 updateTaskStartEndDates(tasks);
                 if (allTasks) {
                     if (chartConfig.change) {
-                        chartConfig.change("subtask", tasks[updatedTaskIndex])
+                        chartConfig.change(tasks[updatedTaskIndex])
                     }
                     this.createGanttChart(allTasks);
                 } else {
                     if (chartConfig.change) {
-                        chartConfig.change('task',tasks[updatedTaskIndex])
+                        chartConfig.change(tasks[updatedTaskIndex])
                     }
                     this.createGanttChart(tasks);
                 }
