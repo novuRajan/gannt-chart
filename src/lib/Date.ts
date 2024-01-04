@@ -32,4 +32,13 @@ export class DateHelper {
 
     return dates.filter(Boolean) as Date[];
   }
+
+  public filterDateBetween(taskStartDate:string , taskEndDate:string ,_start: string, _end: string): boolean {
+
+    const taskStart = new Date(taskStartDate)
+    const taskEnd = new Date(taskEndDate)
+    const start =  new Date(_start)
+    const end = new Date(_end)
+    return start <= taskStart &&  taskEnd <= end
+  }
 }

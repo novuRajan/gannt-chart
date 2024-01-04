@@ -7,5 +7,5 @@ export interface IChartConfig {
     add?: (task: ITask | ISubTask) => void;
     update?: (task: ITask | ISubTask) => void;
     change?: (task: ITask | ISubTask) => void;
-    filter?: (filterObj:IFormDataObject,tasks: (ITask | ISubTask)[]) => (ITask | ISubTask)[];
+    filter?: (filterObj:IFormDataObject) => void;
 }

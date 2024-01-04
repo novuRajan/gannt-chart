@@ -76,6 +76,8 @@ export default class GanttChart {
             type: 'date',
             name: 'end',
         })
+        const button = this.createButton(tasks);
+        let svg = chartContainer.querySelector('svg');
         const filterButton = createElementFromObject('button',{
             class: 'top-place add-button',
             content: 'Filter',
@@ -83,17 +85,18 @@ export default class GanttChart {
                 click: (event) => {
                     event.preventDefault();
                     const chartConfig=stores.chartConfig.getState();
-                    console.log(chartConfig)
+                    const formDataObject = (formData(filterForm as HTMLFormElement));
                     if (chartConfig.filter) {
-                        const tasks=chartConfig.filter(formData(filterForm as HTMLFormElement),_tasks);
-                        this.tasks=tasks;
-                        console.log(tasks)
+                        chartConfig.filter(formDataObject);
                     }
+                    else{
+                        tasks = _tasks.filter(task => new DateHelper().filterDateBetween(task.start , task.end ,<string>formDataObject.start, <string>formDataObject.end));
+                        console.log('tasks',tasks);
+                    }
+                    this.createGanttChart(tasks);
                 }
             }
         })
-        const button = this.createButton(tasks);
-        let svg = chartContainer.querySelector('svg');
         // Check if the SVG element already exists
         if (!svg) {
             // Append the button to the parent container of the SVG
@@ -112,6 +115,7 @@ export default class GanttChart {
             chartContainer.insertBefore(DateDiv, svg);
 
         } else {
+            console.log('tt',tasks)
             this.updateGanttChartContent(svg, tasks);
         }
     }
