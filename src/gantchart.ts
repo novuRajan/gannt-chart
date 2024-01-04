@@ -9,11 +9,11 @@ import { DateHelper } from './lib/Date';
 import { IChartConfig } from './Interfaces/Chart/ChartConfig';
 import './styles/chart.scss';
 import stores from "./stores";
-import { createElementFromObject } from "./lib/Html/HtmlHelper";
+import { createElementFromObject, createElement } from "./lib/Html/HtmlHelper";
 
 export default class GanttChart {
 
-    protected dateInfo: IDateInfo;
+    protected dateInfo: IDateInfo; u
     private allTasks: ITask[];
     private isDragging: boolean = false;
     private initialX: number;
@@ -38,6 +38,7 @@ export default class GanttChart {
     createButton(tasks: ITask[], text?: string) {
         const button = document.createElement('button');
         button.setAttribute('class', 'top-place add-button');
+        button.setAttribute('title', 'Add task');
         if (text) {
             button.textContent = text; // Set the button text
         }
@@ -66,16 +67,43 @@ export default class GanttChart {
         const chartContainer = document.getElementById('chart');
         // Create a button element
         const headerRow = createElementFromObject('div', {
-            class: 'row chart-header',
+            class: 'row chart-header top-class',
+            id: 'overall-div'
         });
+        const addButtonWrapper = createElementFromObject('div', {
+            class: "add-tasks"
+        })
+
         const svgInsideAddButton = this.createSvgButton();
         const AddTaskButton = this.createButton(tasks);
-        AddTaskButton.appendChild(svgInsideAddButton);
+        const sidebar = createElementFromObject('div', {
+            'class' : 'sidebar',
+        });
+        const taskbar = createElementFromObject('div', {
+            'class' : 'taskbar'
+        });
+        // const mainTask = createElement('div', 'main-task');
+        const mainTask = createElementFromObject('div',{
+            class:"main-task",
+            content:'Task-1',
+        });
+        const subTask = createElementFromObject('div', {
+            class:'sub-task',
+            content:'Sub Task 1'
+        });
+
+        
         let svg = chartContainer.querySelector('svg');
         // Check if the SVG element already exists
         if (!svg) {
             // Append the button to the parent container of the SVG
-            headerRow.appendChild(AddTaskButton);
+            headerRow.appendChild(addButtonWrapper);
+            addButtonWrapper.appendChild(AddTaskButton);
+            headerRow.appendChild(sidebar);
+            AddTaskButton.appendChild(svgInsideAddButton);
+            sidebar.appendChild(taskbar);
+            taskbar.appendChild(mainTask);
+            taskbar.appendChild(subTask);
             chartContainer.appendChild(headerRow);
             // If not, create a new SVG element
             svg = this.createSVG(tasks);
