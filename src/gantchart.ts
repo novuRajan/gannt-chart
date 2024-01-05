@@ -13,7 +13,7 @@ import { createElementFromObject, addEventListenerDynamic, appendChildToParent }
 
 export default class GanttChart {
 
-    protected dateInfo: IDateInfo; u
+    protected dateInfo: IDateInfo;
     private allTasks: ITask[];
     private isDragging: boolean = false;
     private initialX: number;
@@ -26,8 +26,11 @@ export default class GanttChart {
     private dependentTask: ITask | ISubTask;
     private tasks: ITask[] | ISubTask[];
     private chartWidth: number;
+    private chartHeightenPx: number;
+    private chartHeight: number;
     private taskRect: SVGRectElement;
     private chartConfig: IChartConfig;
+    private taskbarDiv: HTMLElement;
 
     getTotalLength(tasks: ITask[]): number {
         return tasks.reduce((total, task) => {
@@ -66,6 +69,7 @@ export default class GanttChart {
         }
         updateTaskStartEndDates(tasks);
         const chartContainer = document.getElementById('chart');
+        this.chartHeightenPx = parseFloat(window.getComputedStyle(chartContainer).height);
         // Create a button element
         const headerRow = createElementFromObject('div', {
             class: 'row chart-header top-class',
@@ -77,44 +81,37 @@ export default class GanttChart {
 
         const svgInsideAddButton = this.createSvgButton();
         const AddTaskButton = this.createButton(tasks);
-        const sidebar = createElementFromObject('div', {
-            'class': 'sidebar',
-        });
-        const taskbar = createElementFromObject('div', {
-            'class': 'taskbar'
-        });
-        const mainTask = createElementFromObject('div', {
-            class: "main-task",
-            content: 'Task-1',
-        });
-        const subTask = createElementFromObject('div', {
-            class: 'sub-task',
-            content: 'Sub Task 1'
+
+        this.taskbarDiv =  createElementFromObject('div', {
+            'class': 'taskbar',
+            'id': 'taskbar-div'
         });
 
-
-        let svg = chartContainer.querySelector('svg');
+        let svg : SVGSVGElement = chartContainer.querySelector('#mySvg');
         // Check if the SVG element already exists
         if (!svg) {
             // Append the button to the parent container of the SVG
-            appendChildToParent(headerRow, addButtonWrapper)
-            appendChildToParent(addButtonWrapper, AddTaskButton)
-            appendChildToParent(headerRow, sidebar)
-            appendChildToParent(AddTaskButton, svgInsideAddButton)
-            appendChildToParent(sidebar, taskbar)
-            appendChildToParent(taskbar, mainTask)
-            appendChildToParent(taskbar, subTask)
-            appendChildToParent(chartContainer, headerRow)
+            headerRow.appendChild(addButtonWrapper);
+            addButtonWrapper.appendChild(AddTaskButton);
+            AddTaskButton.appendChild(svgInsideAddButton);
 
+            chartContainer.appendChild(headerRow);
             // If not, create a new SVG element
             svg = this.createSVG(tasks);
-            appendChildToParent(headerRow, svg)
-
+            headerRow.appendChild(svg);
+            this.chartHeightenPx = this.getHeight();
+            const sidebar = createElementFromObject('div', {
+                'class': 'sidebar',
+                'id' : 'sidebar',
+                'style': 'height:' + this.chartHeightenPx + 'px'
+            });
+            sidebar.appendChild(this.taskbarDiv);
             const DateDiv = createDivDateScale(this.dateInfo, this.chartWidth);
             headerRow.insertBefore(DateDiv, svg);
+            headerRow.insertBefore(sidebar, DateDiv);
 
         } else {
-            this.updateGanttChartContent(svg, tasks);
+            this.updateGanttChartContent(svg,tasks );
         }
     }
 
@@ -129,8 +126,8 @@ export default class GanttChart {
         this.dateInfo = this.calculateDateInfo(tasks);
         const chartWidth = this.calculateChartWidth(this.dateInfo);
         this.length = this.getTotalLength(tasks);
-        const chartHeight = this.length * 40 + 40;
-        this.svgRequiredElement(svg, dateGroup, chartWidth, chartHeight);
+        this.chartHeight = this.length * 40 + 40;
+        this.svgRequiredElement(svg, dateGroup, chartWidth, this.chartHeight);
         this.createTaskBars(svg, tasks, this.dateInfo);
         setTimeout(() => {
             this.drawDependencyLine(svg, tasks);
@@ -142,16 +139,22 @@ export default class GanttChart {
 
         if (chartHeight < 250) {
             chartHeight = 450;
-            svg.setAttribute('style', 'height:100%')
+            this.chartHeight = 450; // svg height has been changed to 450
+            svg.setAttribute('style', 'height:100%');
+            this.chartHeightenPx = 100/100 * this.chartHeightenPx ; // as svg height is 100% of parent div\
+            console.log('px', this.chartHeightenPx)
         }
         else if (chartHeight < 450) {
             svg.setAttribute('style', 'height:100%');
+            this.chartHeightenPx = 100/100 * this.chartHeightenPx ;
         }
         else if (chartHeight < 650) {
             svg.setAttribute('style', 'height:150%');
+            this.chartHeightenPx = 150/100 * this.chartHeightenPx ;
         }
         else {
             svg.setAttribute('style', 'height:200%');
+            this.chartHeightenPx = 200/100 * this.chartHeightenPx ;
         }
         if (chartWidth < 2200) {
             chartWidth = 2200;
@@ -186,8 +189,16 @@ export default class GanttChart {
 
     createTaskBars(svg: SVGElement, tasks: ITask[], dateInfo: IDateInfo) {
         let customIndex = 0;
-
+        console.log('px', this.chartHeightenPx);
+        console.log('height', this.chartHeight);
         tasks.forEach((task) => {
+            const mainTask = createElementFromObject('div', {
+                class: "main-task",
+                content: task.name,
+                style: `top:${(customIndex * 40 + 40) * this.chartHeightenPx/this.chartHeight}px;height:${30 *this.chartHeightenPx/this.chartHeight }px`
+            });
+            this.taskbarDiv.appendChild(mainTask);
+
             const taskGroup = new SvgHelper().createGroup("tasks"); // Create a group element for the task
             appendChildToParent(svg, taskGroup)
 
@@ -215,6 +226,12 @@ export default class GanttChart {
                 appendChildToParent(taskGroup, subTaskGroup)
 
                 task.subTask.forEach((subtask, subIndex) => {
+                    const subTaskDiv = createElementFromObject('div', {
+                        class: 'sub-task',
+                        content: subtask.name,
+                        style: `top:${((subIndex + customIndex + 1) * 40 + 40) * this.chartHeightenPx/this.chartHeight}px;height:15px`
+                    });
+                    this.taskbarDiv.appendChild(subTaskDiv);
                     const subDependentTaskEnd = this.calculateDependencyMaxEndDate(subtask.dependencies, task.subTask);
 
                     const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
@@ -485,15 +502,16 @@ export default class GanttChart {
 
     }
 
-    updateGanttChartContent(svg: SVGSVGElement, tasks: ITask[]) {
+    updateGanttChartContent(svg: SVGSVGElement,tasks: ITask[]) {
         const chartContainer = document.getElementById('chart');
+        const headerRow = document.getElementById('overall-div');
         //clear the existing date div
         let DateDiv = document.getElementById('div-date');
-        chartContainer.removeChild(DateDiv);
-        // Clear existing content
-        while (svg.firstChild) {
-            svg.removeChild(svg.firstChild);
-        }
+        let sidebar = document.getElementById('sidebar');
+        headerRow.removeChild(sidebar);
+        headerRow.removeChild(DateDiv);
+        // svg element made empty
+        svg.innerHTML = '';
         this.length = this.getTotalLength(tasks);
         // Update the content with the new tasks
 
@@ -501,10 +519,24 @@ export default class GanttChart {
         const chartWidth = this.calculateChartWidth(this.dateInfo);
         const dateGroup = new SvgHelper().createGroup("date-groups"); // Create a group element for the task
         svg.appendChild(dateGroup);
-        const chartHeight = this.length * 40 + 40;
-        this.svgRequiredElement(svg, dateGroup, chartWidth, chartHeight);
+        this.chartHeight = this.length * 40 + 40;
+        this.svgRequiredElement(svg, dateGroup, chartWidth, this.chartHeight);
         DateDiv = createDivDateScale(this.dateInfo, this.chartWidth);
-        chartContainer.insertBefore(DateDiv, svg);
+        sidebar = createElementFromObject('div', {
+            'class': 'sidebar',
+            'id': 'sidebar',
+            'style': 'height:' + this.getHeight() + 'px'
+        });
+        this.chartHeightenPx = this.getHeight();
+        this.taskbarDiv =  createElementFromObject('div', {
+            'class': 'taskbar',
+            'id': 'taskbar-div'
+        });
+        sidebar.appendChild(this.taskbarDiv);
+        headerRow.appendChild(sidebar);
+        chartContainer.appendChild(headerRow);
+        headerRow.appendChild(svg);
+        headerRow.insertBefore(DateDiv, svg);
         this.createTaskBars(svg, tasks, this.dateInfo);
         this.drawDependencyLine(svg, tasks);
     }
