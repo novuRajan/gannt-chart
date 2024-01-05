@@ -13,7 +13,7 @@ import { createElementFromObject } from "./lib/Html/HtmlHelper";
 
 export default class GanttChart {
 
-    protected dateInfo: IDateInfo; u
+    protected dateInfo: IDateInfo;
     private allTasks: ITask[];
     private isDragging: boolean = false;
     private initialX: number;
@@ -92,7 +92,7 @@ export default class GanttChart {
         });
 
 
-        let svg = chartContainer.querySelector('svg');
+        let svg : SVGSVGElement = chartContainer.querySelector('#mySvg');
         // Check if the SVG element already exists
         if (!svg) {
             // Append the button to the parent container of the SVG
@@ -111,7 +111,7 @@ export default class GanttChart {
             headerRow.insertBefore(DateDiv, svg);
 
         } else {
-            this.updateGanttChartContent(svg, tasks);
+            this.updateGanttChartContent(svg,tasks );
         }
     }
 
@@ -467,13 +467,12 @@ export default class GanttChart {
 
     updateGanttChartContent(svg: SVGSVGElement, tasks: ITask[]) {
         const chartContainer = document.getElementById('chart');
+        const headerRow = document.getElementById('overall-div');
         //clear the existing date div
         let DateDiv = document.getElementById('div-date');
-        chartContainer.removeChild(DateDiv);
-        // Clear existing content
-        while (svg.firstChild) {
-            svg.removeChild(svg.firstChild);
-        }
+        headerRow.removeChild(DateDiv);
+        // svg element made empty
+        svg.innerHTML = '';
         this.length = this.getTotalLength(tasks);
         // Update the content with the new tasks
 
@@ -484,7 +483,9 @@ export default class GanttChart {
         const chartHeight = this.length * 40 + 40;
         this.svgRequiredElement(svg, dateGroup, chartWidth, chartHeight);
         DateDiv = createDivDateScale(this.dateInfo, this.chartWidth);
-        chartContainer.insertBefore(DateDiv, svg);
+        chartContainer.appendChild(headerRow);
+        headerRow.appendChild(svg);
+        headerRow.insertBefore(DateDiv, svg);
         this.createTaskBars(svg, tasks, this.dateInfo);
         this.drawDependencyLine(svg, tasks);
     }
