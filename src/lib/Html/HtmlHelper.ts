@@ -2,7 +2,7 @@ import { IElementAttributes } from "../../Interfaces/Html/ElementAttributes";
 
 class HtmlHelper{
 	private readonly _element: HTMLElement;
-	private _attributes: IElementAttributes;
+	private readonly _attributes: IElementAttributes;
 	constructor(_tag:string, _attributes:IElementAttributes) {
 		this._attributes=_attributes;
 		this._element=document.createElement(_tag);
@@ -109,4 +109,8 @@ export function createButton(className?: string, text?: string, id?: string, cli
 	}
 	return <HTMLButtonElement>button;
 
+}
+
+export function appendChild<T extends Node>(parent: T, child: T): void {
+	parent.appendChild(child);
 }
