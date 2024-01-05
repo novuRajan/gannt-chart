@@ -189,11 +189,12 @@ export default class GanttChart {
         let customIndex = 0;
         console.log('px', this.chartHeightenPx);
         console.log('height', this.chartHeight);
+        const heightRatio : number = this.chartHeightenPx/this.chartHeight
         tasks.forEach((task) => {
             const mainTask = createElementFromObject('div', {
                 class: "main-task",
                 content: task.name,
-                style: `top:${(customIndex * 40 + 40) * this.chartHeightenPx/this.chartHeight}px;height:${30 *this.chartHeightenPx/this.chartHeight }px`
+                style: `top:${((customIndex * 40 + 40) * heightRatio).toFixed(2)}px;height:${(30 * heightRatio).toFixed(2) }px`
             });
             this.taskbarDiv.appendChild(mainTask);
 
@@ -222,7 +223,7 @@ export default class GanttChart {
                     const subTaskDiv = createElementFromObject('div', {
                         class: 'sub-task',
                         content: subtask.name,
-                        style: `top:${((subIndex + customIndex + 1) * 40 + 40) * this.chartHeightenPx/this.chartHeight}px;height:15px`
+                        style: `top:${(((subIndex + customIndex + 1) * 40 + 40) * heightRatio).toFixed(2) }px;height:${(15 * heightRatio).toFixed(2)}`
                     });
                     this.taskbarDiv.appendChild(subTaskDiv);
                     const subDependentTaskEnd = this.calculateDependencyMaxEndDate(subtask.dependencies, task.subTask);

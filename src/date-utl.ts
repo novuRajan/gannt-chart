@@ -73,9 +73,9 @@ export function createDivDateScale(dateInfo: IDateInfo, chartWidth: number) {
 
         day.textContent = `${currentDate.getDate()}`;
         if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
-            day.setAttribute('style', `left:${i * width / chartWidth - 5}px;color:red`);
+            day.setAttribute('style', `left:${(i * width / chartWidth - 5).toFixed(2)}px;color:red`);
         } else {
-            day.setAttribute('style', `left:${i * width / chartWidth - 5}px`);
+            day.setAttribute('style', `left:${(i * width / chartWidth - 5).toFixed(2)}px`);
         }
         div.appendChild(day);
     }
