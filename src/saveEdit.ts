@@ -282,11 +282,6 @@ export function deleteTask(tasks: ISubTask[] | ITask[], allTasks: ISubTask[] | I
         });
 
         tasks.splice(taskIndex, 1);
-
-        // Update the Gantt chart with the new data
-        updateTaskStartEndDates(tasks);
-
-        // Calling the function with sample data
         const chartData = allTasks || tasks;
         GanttChart.createChart(chartData);
     }

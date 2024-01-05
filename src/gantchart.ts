@@ -37,6 +37,7 @@ export default class GanttChart {
     createButton(tasks: ITask[]) {
         const button = document.createElement('button');
         button.setAttribute('class', 'top-place add-button');
+        button.setAttribute('id', 'add-button');
         button.textContent = 'Add Task'; // Set the button text
         button.addEventListener('click', () => {
             openAddModal(tasks);
@@ -56,6 +57,7 @@ export default class GanttChart {
         // Create a button element
         const headerRow=createElementFromObject('div',{
             class:'row chart-header',
+            id:'header-row'
         });
         const button = this.createButton(tasks);
         let svg = chartContainer.querySelector('svg');
@@ -430,6 +432,7 @@ export default class GanttChart {
     }
 
     updateGanttChartContent(svg: SVGSVGElement, tasks: ITask[]) {
+        this.updateAddButton(tasks);
         const chartContainer = document.getElementById('chart');
         //clear the existing date div
         let DateDiv = document.getElementById('div-date');
@@ -451,6 +454,15 @@ export default class GanttChart {
         chartContainer.insertBefore(DateDiv, svg);
         this.createTaskBars(svg, tasks, this.dateInfo);
         this.drawDependencyLine(svg, tasks);
+    }
+
+    updateAddButton(tasks: ITask[]) {
+        const headerRow = document.getElementById('header-row');
+        const oldButton = document.getElementById('add-button');
+        headerRow.removeChild(oldButton);
+
+        const newButton = this.createButton(tasks);
+        headerRow.appendChild(newButton);
     }
 
     drawDependencyLine(svg: SVGElement, tasks: ITask[]) {
