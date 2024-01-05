@@ -1,21 +1,21 @@
 import { IElementAttributes } from "../../Interfaces/Html/ElementAttributes";
 
-class HtmlHelper{
+class HtmlHelper {
 	private readonly _element: HTMLElement;
 	private _attributes: IElementAttributes;
-	constructor(_tag:string, _attributes:IElementAttributes) {
-		this._attributes=_attributes;
-		this._element=document.createElement(_tag);
+	constructor(_tag: string, _attributes: IElementAttributes) {
+		this._attributes = _attributes;
+		this._element = document.createElement(_tag);
 		this.assignAttribute();
 		this.assignClass();
 		this.setContent();
 	}
 
-	public getElement():HTMLElement{
+	public getElement(): HTMLElement {
 		return this._element;
 	}
 	private assignAttribute(): this {
-		const includedAttributes: string[] = ["class","content"];
+		const includedAttributes: string[] = ["class", "content"];
 		Object.keys(this._attributes).forEach((key) => {
 			if (!includedAttributes.includes(key) && this._element) {
 				this._element.setAttribute(key, <string>this._attributes[key]);
@@ -24,7 +24,7 @@ class HtmlHelper{
 
 		return this;
 	}
-	private setContent():this{
+	private setContent(): this {
 		if (this._attributes.content) {
 			this._element.innerHTML = this._attributes.content;
 		}
@@ -52,24 +52,27 @@ class HtmlHelper{
 		return this;
 	}
 
+
+
+
+
 }
 
 
 
-export function createElement(tag: string, className: string, content?: string , id?: string , type?: string): HTMLElement {
+export function createElement(tag: string, className: string, content?: string, id?: string, type?: string): HTMLElement {
 	const el = document.createElement(tag);
-	if(className)
-	{
+	if (className) {
 		el.classList.add(className);
 	}
 
 	if (content) {
 		el.textContent = content;
 	}
-	if(id) {
+	if (id) {
 		el.id = id;
 	}
-	if(type) {
+	if (type) {
 		el.setAttribute('type', type);
 	}
 
@@ -78,8 +81,8 @@ export function createElement(tag: string, className: string, content?: string ,
 
 
 
-export function createElementFromObject(tag: string,attributes:IElementAttributes){
-	return new HtmlHelper(tag,attributes).getElement();
+export function createElementFromObject(tag: string, attributes: IElementAttributes) {
+	return new HtmlHelper(tag, attributes).getElement();
 }
 
 
@@ -102,11 +105,21 @@ export function removeElements(elements: NodeListOf<HTMLElement>): void {
 
 export function createButton(className?: string, text?: string, id?: string, clickHandler?: () => void): HTMLButtonElement {
 
-	const button  = createElement('button', className, text, id, 'button');
-	if(clickHandler)
-	{
+	const button = createElement('button', className, text, id, 'button');
+	if (clickHandler) {
 		button.addEventListener('click', clickHandler);
 	}
 	return <HTMLButtonElement>button;
 
+}
+export function addEventListenerDynamic<K extends keyof HTMLElementEventMap>(
+	element: HTMLElement | SVGElement | Document,
+	event: K,
+	handler: (event: HTMLElementEventMap[K]) => void
+): void {
+	element.addEventListener(event, handler);
+}
+
+export function appendChildToParent<T extends Node>(parent: T, child: Node): void {
+	parent.appendChild(child);
 }
