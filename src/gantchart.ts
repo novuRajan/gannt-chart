@@ -9,7 +9,7 @@ import { DateHelper } from './lib/Date';
 import { IChartConfig } from './Interfaces/Chart/ChartConfig';
 import './styles/chart.scss';
 import stores from "./stores";
-import { createElementFromObject } from "./lib/Html/HtmlHelper";
+import { createElementFromObject, addEventListenerDynamic, appendChildToParent } from "./lib/Html/HtmlHelper";
 
 export default class GanttChart {
 
@@ -39,23 +39,24 @@ export default class GanttChart {
     }
 
     createButton(tasks: ITask[], text?: string) {
-        const button = document.createElement('button');
-        button.setAttribute('class', 'top-place add-button');
-        button.setAttribute('title', 'Add task');
+        const button = createElementFromObject('button', {
+            class: 'top-place add-button',
+            title: 'Add Task'
+        })
         if (text) {
             button.textContent = text; // Set the button text
         }
-        button.addEventListener('click', () => {
-            openAddModal(tasks);
-        });
+        addEventListenerDynamic(button, 'click', () => openAddModal(tasks));
         return button;
     }
 
     createSvgButton() //create svg inside add-task button
     {
+        const coordinate = 'M680-80v-120H560v-80h120v-120h80v120h120v80H760v120h-80Zm-480-80q-33 0-56.5-23.5T120-240v-480q0-33 23.5-56.5T200-800h40v-80h80v80h240v-80h80v80h40q33 0 56.5 23.5T760-720v244q-20-3-40-3t-40 3v-84H200v320h280q0 20 3 40t11 40H200Zm0-480h480v-80H200v80Zm0 0v-80 80Z';
+
         const btnSvg = new SvgHelper().createSVGElement('svg', { height: '10', viewBox: "0 -960 960 960", width: '10' });
-        const btnPath = new SvgHelper().createSVGElement('path', { d: 'M680-80v-120H560v-80h120v-120h80v120h120v80H760v120h-80Zm-480-80q-33 0-56.5-23.5T120-240v-480q0-33 23.5-56.5T200-800h40v-80h80v80h240v-80h80v80h40q33 0 56.5 23.5T760-720v244q-20-3-40-3t-40 3v-84H200v320h280q0 20 3 40t11 40H200Zm0-480h480v-80H200v80Zm0 0v-80 80Z' });
-        btnSvg.appendChild(btnPath);
+        const btnPath = new SvgHelper().createSVGElement('path', { d: coordinate });
+        appendChildToParent(btnSvg, btnPath);
         return btnSvg;
     }
 
@@ -119,7 +120,8 @@ export default class GanttChart {
 
         svg.setAttribute('id', 'mySvg');
         const dateGroup = new SvgHelper().createGroup("date-groups"); // Create a group element for the task
-        svg.appendChild(dateGroup);
+        appendChildToParent(svg, dateGroup)
+
 
         this.dateInfo = this.calculateDateInfo(tasks);
         const chartWidth = this.calculateChartWidth(this.dateInfo);
@@ -199,26 +201,31 @@ export default class GanttChart {
             this.taskbarDiv.appendChild(mainTask);
 
             const taskGroup = new SvgHelper().createGroup("tasks"); // Create a group element for the task
-            svg.appendChild(taskGroup);
+            appendChildToParent(svg, taskGroup)
+
 
             const dependentTaskEnd = this.calculateDependencyMaxEndDate(task.dependencies, tasks);
             const startOffset = Math.max((dependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(task.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
             const duration = (new Date(task.end).getTime() - new Date(task.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
 
             const rect = new SvgHelper().createRectElement(startOffset, customIndex * 40 + 40, duration, 30, '#3498db', `task-${task.id}`);
-            taskGroup.appendChild(rect);
+            appendChildToParent(taskGroup, rect)
+
 
             const progressWidth = (duration * task.progress) / 100;
             const progressRect = new SvgHelper().createRectElement(startOffset, customIndex * 40 + 40, progressWidth, 30, '#2ecc71', `task-${task.id}-progress`);
-            taskGroup.appendChild(progressRect);
+            appendChildToParent(taskGroup, progressRect)
+
 
             const text = new SvgHelper().createTextElement(startOffset + 5, customIndex * 40 + 60, task.name);
-            taskGroup.appendChild(text);
+            appendChildToParent(taskGroup, text)
+
 
             // Render subtasks
             if (task.subTask && task.subTask.length > 0) {
                 const subTaskGroup = new SvgHelper().createGroup("subtask"); // Create a group element for the task
-                taskGroup.appendChild(subTaskGroup);
+                appendChildToParent(taskGroup, subTaskGroup)
+
                 task.subTask.forEach((subtask, subIndex) => {
                     const subTaskDiv = createElementFromObject('div', {
                         class: 'sub-task',
@@ -231,14 +238,17 @@ export default class GanttChart {
                     const subStartOffset = Math.max((subDependentTaskEnd - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50, (new Date(subtask.start).getTime() - dateInfo.startingDate.getTime()) / (24 * 60 * 60 * 1000) * 50);
                     const subDuration = (new Date(subtask.end).getTime() - new Date(subtask.start).getTime()) / (24 * 60 * 60 * 1000) * 50;
                     const subRect = new SvgHelper().createRectElement(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subDuration, 15, '#e74c3c', `subtask-${task.id}-${subtask.id}`);
-                    subTaskGroup.appendChild(subRect);
+                    appendChildToParent(subTaskGroup, subRect)
+
 
                     const subProgressWidth = (subDuration * subtask.progress) / 100;
                     const subProgressRect = new SvgHelper().createRectElement(subStartOffset, (subIndex + customIndex + 1) * 40 + 40, subProgressWidth, 15, '#c0392b', `subtask-${task.id}-${subtask.id}-progress`);
-                    subTaskGroup.appendChild(subProgressRect);
+                    appendChildToParent(subTaskGroup, subProgressRect);
+
 
                     const subText = new SvgHelper().createTextElement(subStartOffset + 5, (subIndex + customIndex + 1) * 40 + 50, subtask.name, 10);
-                    subTaskGroup.appendChild(subText);
+                    appendChildToParent(subTaskGroup, subText);
+
 
                     // Add mouseover and mouseout event listeners
                     this.addMouseOverOutListeners(subText, (e) => showTaskDetails(e, subtask, task.subTask), hideTaskDetails);
@@ -276,20 +286,26 @@ export default class GanttChart {
             this.addContextMenuListener(text, task, tasks);
 
             // Add event listeners for dragging to edit start and end dates
-            rect.addEventListener('mousedown', (event) => {
+            addEventListenerDynamic(rect, 'mousedown', (event) => {
                 event.preventDefault();
                 this.startDrag(event, rect, progressRect, task, tasks);
             });
-            progressRect.addEventListener('mousedown', (event) => {
+            addEventListenerDynamic(rect, 'mousedown', (event) => {
                 event.preventDefault();
                 this.startDrag(event, rect, progressRect, task, tasks);
             });
-            text.addEventListener('mousedown', (event) => {
+            addEventListenerDynamic(progressRect, 'mousedown', (event) => {
                 event.preventDefault();
                 this.startDrag(event, rect, progressRect, task, tasks);
             });
+         
+            addEventListenerDynamic(text, 'mousedown', (event) => {
+                event.preventDefault();
+                this.startDrag(event, rect, progressRect, task, tasks);
+            });
+
             // Remove the existing event listener before adding a new one
-            document.addEventListener('mouseup', () => {
+            addEventListenerDynamic(document, 'mouseup', () => {
                 if (this.taskRect) {
                     return this.handleMouseUp(this.taskRect, this.dependentTask, this.tasks, this.dateInfo, this.allTasks);
                 } else {
@@ -307,19 +323,21 @@ export default class GanttChart {
     // Function to add context menu event listener
     addContextMenuListener(element: SVGElement, task: ITask | ISubTask, tasks: ITask[] | ISubTask[], allTasks: ITask[] = null) {
         this.allTasks = allTasks;
-        element.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
+        addEventListenerDynamic(element, 'contextmenu', (e) => {
+            e.preventDefault();
             if (allTasks) {
-                editTask(event, task, tasks, allTasks);
+                editTask(e, task, tasks, allTasks);
             } else {
-                editTask(event, task, tasks);
+                editTask(e, task, tasks);
             }
         });
+
     }
 
     addMouseOverOutListeners(element: SVGElement, showDetails: (e: MouseEvent) => void, hideDetails: () => void) {
-        element.addEventListener('mouseover', showDetails);
-        element.addEventListener('mouseout', hideDetails);
+        addEventListenerDynamic(element, 'mouseover', showDetails);
+        addEventListenerDynamic(element, 'mouseout', hideDetails);
+
     }
 
     throttle<T extends (...args: unknown[]) => void>(func: T, limit: number) {
