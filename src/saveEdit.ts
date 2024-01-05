@@ -88,7 +88,7 @@ export function addTask(tasks : ITask[] | ISubTask[]) {
     const newTaskId = Math.max(...existingIds, 0) + 1;
 
     const newTask:ITask|ISubTask = {
-        id: newTaskId, // Incremental ID
+        id: newTaskId,
         name: taskName,
         start: startDate,
         end: endDate,
