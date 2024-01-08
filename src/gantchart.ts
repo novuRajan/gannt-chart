@@ -78,8 +78,8 @@ export default class GanttChart {
             class: 'row chart-header top-class',
             id: 'overall-div'
         });
-        const headerCol1=createElementFromObject('div',{
-            class:'col',
+        const filterHeader = createElementFromObject('div', {
+            class: 'row chart-header top-class',
         });
         const headerCol2=createElementFromObject('div',{
             class:'col filters',
@@ -124,6 +124,7 @@ export default class GanttChart {
             content: 'Filter',
             events:{
                 click: (event) => {
+                    console.log(event)
                     event.preventDefault();
                     const chartConfig=stores.chartConfig.getState();
                     const formDataObject = (formData(filterForm as HTMLFormElement));
@@ -149,18 +150,19 @@ export default class GanttChart {
         // Check if the SVG element already exists
         if (!svg) {
             // Append the button to the parent container of the SVG
-            headerRow.appendChild(headerCol1);
-            headerRow.appendChild(headerCol2);
+            filterHeader.appendChild(headerCol2);
             headerCol2.appendChild(filterForm);
             filters.forEach(filter=>{
                 filterForm.appendChild(createInputElement(filter));
             })
             filterForm.appendChild(filterButton);
-            headerRow.appendChild(addButtonWrapper);
+            filterHeader.appendChild(addButtonWrapper);
             addButtonWrapper.appendChild(AddTaskButton);
             AddTaskButton.appendChild(svgInsideAddButton);
 
+            chartContainer.appendChild(filterHeader);
             chartContainer.appendChild(headerRow);
+            console.log(chartContainer)
             // If not, create a new SVG element
             svg = this.createSVG(tasks);
             headerRow.appendChild(svg);
