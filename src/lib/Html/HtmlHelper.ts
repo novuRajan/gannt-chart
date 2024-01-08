@@ -70,7 +70,8 @@ class HtmlHelper {
 
 export function createElement(tag: string, className: string, content?: string, id?: string, type?: string): HTMLElement {
 	const el = document.createElement(tag);
-	if (className) {
+	if (className) 
+	{
 		el.classList.add(className);
 	}
 

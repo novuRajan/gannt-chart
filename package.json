@@ -7,7 +7,9 @@
   "scripts": {
     "start": "npm run dev",
     "build": "rollup -c rollup.config.js",
-    "dev": "rollup -c rollup.config.js -w",
+    "dev": "npm run start-ts & npm run start-server",
+    "start-ts": "rollup -c rollup.config.js -w",
+    "start-server": "http-server -c-1 -o",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .ts",
@@ -32,6 +34,7 @@
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-sass": "^1.12.21",
     "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "http-server": "^14.1.1"
   }
 }

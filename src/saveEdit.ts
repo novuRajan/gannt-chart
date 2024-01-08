@@ -91,8 +91,11 @@ export function addTask(tasks: ITask[] | ISubTask[]) {
         return;
     }
 
-    const newTask: ITask | ISubTask = {
-        id: tasks.length + 1, // Incremental ID
+    const existingIds = tasks.map((task: ITask | ISubTask) => task.id);
+    const newTaskId = Math.max(...existingIds, 0) + 1;
+
+    const newTask:ITask|ISubTask = {
+        id: newTaskId,
         name: taskName,
         start: startDate,
         end: endDate,
@@ -299,11 +302,6 @@ export function deleteTask(tasks: ISubTask[] | ITask[], allTasks: ISubTask[] | I
         });
 
         tasks.splice(taskIndex, 1);
-
-        // Update the Gantt chart with the new data
-        updateTaskStartEndDates(tasks);
-
-        // Calling the function with sample data
         const chartData = allTasks || tasks;
         GanttChart.createChart(chartData);
     }
