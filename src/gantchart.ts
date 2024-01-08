@@ -64,7 +64,9 @@ export default class GanttChart {
     }
 
     createGanttChart(_tasks: ITask[], _configs: IChartConfig = {}) {
+        // const chartConfig={ ..._configs,displayFilter:true,activeTasks:false };
         stores.chartConfig.setState(_configs);
+        const chartConfig=stores.chartConfig.getState();
         let tasks: ITask[] = _tasks.filter(task => task.start !== undefined && task.end !== undefined);
         if (_configs.activeTasks) {
             tasks = _tasks.filter(task => new DateHelper().isBetween(task.start, task.end));
@@ -78,6 +80,54 @@ export default class GanttChart {
             class: 'row chart-header top-class',
             id: 'overall-div'
         });
+
+
+        const addButtonWrapper = createElementFromObject('div', {
+            class: "add-tasks"
+        })
+
+        const svgInsideAddButton = this.createSvgButton();
+        const AddTaskButton = this.createButton(tasks);
+
+        this.taskbarDiv =  createElementFromObject('div', {
+            'class': 'taskbar',
+            'id': 'taskbar-div'
+        });
+
+        let svg : SVGSVGElement = chartContainer.querySelector('#mySvg');
+
+        // Check if the SVG element already exists
+        if (!svg) {
+            // Append the button to the parent container of the SVG
+
+            addButtonWrapper.appendChild(AddTaskButton);
+            AddTaskButton.appendChild(svgInsideAddButton);
+
+            if (chartConfig.displayFilter){
+                chartContainer.appendChild(this.filters(_tasks));
+            }
+            chartContainer.appendChild(headerRow);
+            // If not, create a new SVG element
+            svg = this.createSVG(tasks);
+            headerRow.appendChild(svg);
+            this.chartHeightenPx = this.getHeight();
+            const sidebar = createElementFromObject('div', {
+                'class': 'sidebar',
+                'id' : 'sidebar',
+                'style': 'height:' + this.chartHeightenPx + 'px'
+            });
+            sidebar.appendChild(this.taskbarDiv);
+            const DateDiv = createDivDateScale(this.dateInfo, this.chartWidth);
+            headerRow.insertBefore(DateDiv, svg);
+            headerRow.insertBefore(sidebar, DateDiv);
+
+        } else {
+            this.updateGanttChartContent(svg,tasks );
+        }
+    }
+
+    filters(_tasks:ITask[]):HTMLElement{
+        const chartConfig=stores.chartConfig.getState();
         const filterHeader = createElementFromObject('div', {
             class: 'row chart-header top-class',
         });
@@ -105,20 +155,6 @@ export default class GanttChart {
                 label: 'Search by Name',
             },
         ];
-
-        const addButtonWrapper = createElementFromObject('div', {
-            class: "add-tasks"
-        })
-
-        const svgInsideAddButton = this.createSvgButton();
-        const AddTaskButton = this.createButton(tasks);
-
-        this.taskbarDiv =  createElementFromObject('div', {
-            'class': 'taskbar',
-            'id': 'taskbar-div'
-        });
-
-        let svg : SVGSVGElement = chartContainer.querySelector('#mySvg');
         const filterButton = createElementFromObject('button',{
             class: 'top-place add-button',
             content: 'Filter',
@@ -126,13 +162,12 @@ export default class GanttChart {
                 click: (event) => {
                     console.log(event)
                     event.preventDefault();
-                    const chartConfig=stores.chartConfig.getState();
                     const formDataObject = (formData(filterForm as HTMLFormElement));
                     if (chartConfig.filter) {
                         chartConfig.filter(formDataObject);
                     }
                     else{
-                        tasks = _tasks.filter(task => {
+                        const tasks = _tasks.filter(task => {
                             let filter=true;
                             if (formDataObject.start && formDataObject.end){
                                 filter= new DateHelper().filterDateBetween(task.start , task.end ,<string>formDataObject.start, <string>formDataObject.end)
@@ -147,39 +182,13 @@ export default class GanttChart {
                 }
             }
         })
-        // Check if the SVG element already exists
-        if (!svg) {
-            // Append the button to the parent container of the SVG
-            filterHeader.appendChild(headerCol2);
-            headerCol2.appendChild(filterForm);
-            filters.forEach(filter=>{
-                filterForm.appendChild(createInputElement(filter));
-            })
-            filterForm.appendChild(filterButton);
-            filterHeader.appendChild(addButtonWrapper);
-            addButtonWrapper.appendChild(AddTaskButton);
-            AddTaskButton.appendChild(svgInsideAddButton);
-
-            chartContainer.appendChild(filterHeader);
-            chartContainer.appendChild(headerRow);
-            console.log(chartContainer)
-            // If not, create a new SVG element
-            svg = this.createSVG(tasks);
-            headerRow.appendChild(svg);
-            this.chartHeightenPx = this.getHeight();
-            const sidebar = createElementFromObject('div', {
-                'class': 'sidebar',
-                'id' : 'sidebar',
-                'style': 'height:' + this.chartHeightenPx + 'px'
-            });
-            sidebar.appendChild(this.taskbarDiv);
-            const DateDiv = createDivDateScale(this.dateInfo, this.chartWidth);
-            headerRow.insertBefore(DateDiv, svg);
-            headerRow.insertBefore(sidebar, DateDiv);
-
-        } else {
-            this.updateGanttChartContent(svg,tasks );
-        }
+        filterHeader.appendChild(headerCol2);
+        headerCol2.appendChild(filterForm);
+        filters.forEach(filter=>{
+            filterForm.appendChild(createInputElement(filter));
+        })
+        filterForm.appendChild(filterButton);
+        return filterHeader;
     }
 
     createSVG(tasks: ITask[]) {
