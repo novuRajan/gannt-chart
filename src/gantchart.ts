@@ -77,7 +77,8 @@ export default class GanttChart {
             id: 'overall-div'
         });
         const addButtonWrapper = createElementFromObject('div', {
-            class: "add-tasks"
+            class: "add-tasks",
+            'id': 'add-tasks-div'
         })
 
         const svgInsideAddButton = this.createSvgButton();
@@ -299,7 +300,7 @@ export default class GanttChart {
                 event.preventDefault();
                 this.startDrag(event, rect, progressRect, task, tasks);
             });
-         
+
             addEventListenerDynamic(text, 'mousedown', (event) => {
                 event.preventDefault();
                 this.startDrag(event, rect, progressRect, task, tasks);
@@ -545,12 +546,12 @@ export default class GanttChart {
     }
 
     updateAddButton(tasks: ITask[]) {
-        const headerRow = document.getElementById('header-row');
+        const addButtonDiv = document.getElementById('add-tasks-div');
         const oldButton = document.getElementById('add-button');
-        headerRow.removeChild(oldButton);
+        addButtonDiv.removeChild(oldButton);
 
         const newButton = this.createButton(tasks);
-        headerRow.appendChild(newButton);
+        addButtonDiv.appendChild(newButton);
     }
 
     drawDependencyLine(svg: SVGElement, tasks: ITask[]) {
