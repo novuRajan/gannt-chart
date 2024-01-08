@@ -7,7 +7,9 @@
   "scripts": {
     "start": "npm run dev",
     "build": "rollup -c rollup.config.js",
-    "dev": "rollup -c rollup.config.js -w",
+    "dev": "npm run start-ts & npm run start-server",
+    "start-ts": "rollup -c rollup.config.js -w",
+    "start-server": "http-server -c-1 -o",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .ts",
