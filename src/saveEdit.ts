@@ -18,8 +18,8 @@ appendChildToParent(document.body, tooltip)
 
 const inputs: InputTypes[] = [
     { label: 'Task Name:', id: 'editTaskName', name: 'name', type: 'text', validations:["required"] },
-    { label: 'Start Date:', id: 'editStartDate', name: 'start', type: 'date' },
-    { label: 'End Date:', id: 'editEndDate', name: 'end', type: 'date' },
+    { label: 'Start Date:', id: 'editStartDate', name: 'start', type: 'date',validations:["required", "date:end,<"] },
+    { label: 'End Date:', id: 'editEndDate', name: 'end', type: 'date',validations:["required","date:start,>"] },
     { label: 'Progress:', id: 'editProgress', name: 'progress', type: 'number' },
 ];
 
