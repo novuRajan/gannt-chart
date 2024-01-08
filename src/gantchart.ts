@@ -29,6 +29,7 @@ export default class GanttChart {
     private tasks: ITask[] | ISubTask[];
     private chartWidth: number;
     private taskRect: SVGRectElement;
+    private chartConfig: IChartConfig;
 
     getTotalLength(tasks: ITask[]) : number {
         return tasks.reduce((total, task) => {
@@ -386,6 +387,7 @@ export default class GanttChart {
         // Set the current task and progress bar
         this.currentTaskRect = taskRect;
         this.currentProgressRect = taskProgressRect;
+        this.chartConfig = stores.chartConfig.getState();
         this.dragMoveListener = this.throttle((event: { preventDefault: () => void; clientX: number; }) => {
             this.handleDragMove(event, this.currentTaskRect, this.currentProgressRect, dependentTask, task, allTasks);
         }, 16);
