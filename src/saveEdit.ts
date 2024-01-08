@@ -5,9 +5,10 @@ import { ITask } from './Interfaces/Task/Task';
 import { ISubTask } from './Interfaces/Task/SubTask';
 import { createInputElement } from "./lib/Html/InputHelper";
 import { InputTypes } from "./types/Inputs/InputTypes";
-import { createElement, createButton } from "./lib/Html/HtmlHelper";
+import { createElement, createButton, removeElements } from "./lib/Html/HtmlHelper";
 import stores from "./stores";
 import { appendChildToParent, createElementFromObject } from "./lib/Html/HtmlHelper";
+import { Validations } from './lib/validations';
 
 
 const tooltip = createElement('div', 'bar-hover');
@@ -16,7 +17,7 @@ appendChildToParent(document.body, tooltip)
 
 
 const inputs: InputTypes[] = [
-    { label: 'Task Name:', id: 'editTaskName', name: 'name', type: 'text' },
+    { label: 'Task Name:', id: 'editTaskName', name: 'name', type: 'text', validations:["required"] },
     { label: 'Start Date:', id: 'editStartDate', name: 'start', type: 'date' },
     { label: 'End Date:', id: 'editEndDate', name: 'end', type: 'date' },
     { label: 'Progress:', id: 'editProgress', name: 'progress', type: 'number' },
@@ -86,14 +87,13 @@ export function addTask(tasks: ITask[] | ISubTask[]) {
     const endDate = formData.get('end') as string | undefined;
     const progress = formData.get('progress') as string | undefined;
     // Ensure the required fields are not empty
-    if (!taskName || !startDate || !endDate) {
-        alert('Please fill in all fields.');
-        return;
-    }
+    // if (!taskName || !startDate || !endDate) {
+       
+    // }
 
     const existingIds = tasks.map((task: ITask | ISubTask) => task.id);
     const newTaskId = Math.max(...existingIds, 0) + 1;
-
+    
     const newTask:ITask|ISubTask = {
         id: newTaskId,
         name: taskName,
@@ -102,6 +102,10 @@ export function addTask(tasks: ITask[] | ISubTask[]) {
         progress: progress ? parseInt(progress) : 0, // You can set the progress as needed
         dependencies: [] // You can set dependencies as needed
     };
+    if(!_validate(newTask)){
+        return;
+    }
+
     const chartConfig = stores.chartConfig.getState();
     if (chartConfig.add) {
         chartConfig.add('task', newTask)
@@ -307,6 +311,22 @@ export function deleteTask(tasks: ISubTask[] | ITask[], allTasks: ISubTask[] | I
     }
 }
 
+function _validate(task: ITask): boolean {
+    // const inputs = this._configs.modalConfigs.inputs;
+
+    removeElements(document.querySelectorAll("span.error"));
+    const validation = new Validations(task, inputs);
+    validation.errors().forEach((error) => {
+        const errorMessage = error.messages;
+        const errorEl = createElement("span", "error", errorMessage.join());
+        const inputEl = document.querySelector(`[name='${error.field}']`) as HTMLElement;
+        if (inputEl.parentNode) {
+            inputEl.parentNode.appendChild(errorEl);
+        }
+    });
+
+    return validation.errors().length === 0;
+}
 
 
 
