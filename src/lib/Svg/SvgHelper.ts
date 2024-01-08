@@ -69,4 +69,8 @@ export class SvgHelper {
     }
     return polygon;
   }
+
+  // createSvgPath():SVGElement{
+  // const path=this.createSVGElement('path')
+  // }
 }
