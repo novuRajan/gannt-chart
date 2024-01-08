@@ -88,6 +88,7 @@ export function createDivDateScale(dateInfo: IDateInfo, chartWidth: number) {
 
     }
     appendChildToParent(dateDiv, div);
-
+    const overallDiv = document.getElementById('overall-div');
+    overallDiv.setAttribute('style', 'width:' + width + 'px')
     return dateDiv;
 }
