@@ -102,7 +102,7 @@ export default class GanttChart {
         // Check if the SVG element already exists
         if (!svg) {
             // Append the button to the parent container of the SVG
-
+            headerRow.appendChild(addButtonWrapper);
             addButtonWrapper.appendChild(AddTaskButton);
             AddTaskButton.appendChild(svgInsideAddButton);
 
