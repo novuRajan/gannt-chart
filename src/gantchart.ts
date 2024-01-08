@@ -103,9 +103,17 @@ export default class GanttChart {
                     }
                     else{
                         tasks = _tasks.filter(task => {
-                            if (formDataObject.start && formDataObject.end){
-                                return new DateHelper().filterDateBetween(task.start , task.end ,<string>formDataObject.start, <string>formDataObject.end)
-                            }
+                            tasks = _tasks.filter(task => {
+                                let filter=true;
+                                if (formDataObject.start && formDataObject.end){
+                                    filter= new DateHelper().filterDateBetween(task.start , task.end ,<string>formDataObject.start, <string>formDataObject.end)
+                                }
+                                if (formDataObject.name){
+                                    filter=task.name.toLowerCase().includes(String(formDataObject.name).toLowerCase())
+                                }
+                                return filter;
+                            });
+                            this.createGanttChart(tasks);
                         });
                         console.log('tasks',tasks);
                     }
