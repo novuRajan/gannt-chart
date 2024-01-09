@@ -17,10 +17,10 @@ appendChildToParent(document.body, tooltip)
 
 
 const inputs: InputTypes[] = [
-    { label: 'Task Name:', id: 'editTaskName', name: 'name', type: 'text', validations:["required"] },
-    { label: 'Start Date:', id: 'editStartDate', name: 'start', type: 'date',validations:["required", "date:end,<"] },
-    { label: 'End Date:', id: 'editEndDate', name: 'end', type: 'date',validations:["required","date:start,>"] },
-    { label: 'Progress:', id: 'editProgress', name: 'progress', type: 'number' },
+    { label: 'Task Name:', id: 'editTaskName', name: 'name', type: 'text', validations:["required"] , wrapperClass : 'form-element' },
+    { label: 'Start Date:', id: 'editStartDate', name: 'start', type: 'date',validations:["required", "date:end,<"], wrapperClass : 'form-element'  },
+    { label: 'End Date:', id: 'editEndDate', name: 'end', type: 'date',validations:["required","date:start,>"] , wrapperClass : 'form-element' },
+    { label: 'Progress:', id: 'editProgress', name: 'progress', type: 'number', wrapperClass : 'form-element' },
 ];
 
 
@@ -88,12 +88,12 @@ export function addTask(tasks: ITask[] | ISubTask[]) {
     const progress = formData.get('progress') as string | undefined;
     // Ensure the required fields are not empty
     // if (!taskName || !startDate || !endDate) {
-       
+
     // }
 
     const existingIds = tasks.map((task: ITask | ISubTask) => task.id);
     const newTaskId = Math.max(...existingIds, 0) + 1;
-    
+
     const newTask:ITask|ISubTask = {
         id: newTaskId,
         name: taskName,
