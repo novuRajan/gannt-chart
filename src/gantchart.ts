@@ -67,6 +67,9 @@ export default class GanttChart {
     createGanttChart(_tasks: ITask[], _configs: IChartConfig = {}) {
         stores.chartConfig.setState(_configs);
         this.chartConfig=stores.chartConfig.getState();
+        if (!stores.tasks.getState().tasks.length){
+            stores.tasks.setState({ tasks:_tasks })
+        }
         let tasks: ITask[] = _tasks.filter(task => task.start !== undefined && task.end !== undefined);
         if (_configs.activeTasks) {
             tasks = _tasks.filter(task => new DateHelper().isBetween(task.start, task.end));
@@ -104,7 +107,7 @@ export default class GanttChart {
             AddTaskButton.appendChild(svgInsideAddButton);
 
             if (this.chartConfig.displayFilter){
-                chartContainer.appendChild(this.filters(_tasks));
+                chartContainer.appendChild(this.filters());
             }
             chartContainer.appendChild(headerRow);
             // If not, create a new SVG element
@@ -130,7 +133,7 @@ export default class GanttChart {
         }
     }
 
-    filters(_tasks:ITask[]):HTMLElement{
+    filters():HTMLElement{
         const filterHeader = createElementFromObject('div', {
             class: 'row chart-header top-class',
         });
@@ -153,7 +156,8 @@ export default class GanttChart {
                         this.chartConfig.filter(formDataObject);
                     }
                     else{
-                        const tasks = _tasks.filter(task => {
+                        console.log(stores.tasks.getState())
+                        const tasks = stores.tasks.getState().tasks.filter(task => {
                             let filterValue =true;
                             for (let i=0; i<filters.length; i++) {
                                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
