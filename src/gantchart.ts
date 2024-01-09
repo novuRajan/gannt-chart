@@ -11,8 +11,7 @@ import './styles/chart.scss';
 import stores from "./stores";
 import { createElementFromObject, addEventListenerDynamic, appendChildToParent } from "./lib/Html/HtmlHelper";
 import { createInputElement } from "./lib/Html/InputHelper";
-import { formData, IFormDataObject } from "./lib/Html/FormHelper";
-import { InputTypes } from "./types/Inputs/InputTypes";
+import { formData } from "./lib/Html/FormHelper";
 import { FilterInputTypes } from "./types/Inputs/FilterInputTypes";
 
 export default class GanttChart {
@@ -66,9 +65,8 @@ export default class GanttChart {
     }
 
     createGanttChart(_tasks: ITask[], _configs: IChartConfig = {}) {
-        // const chartConfig={ ..._configs,displayFilter:true,activeTasks:false };
         stores.chartConfig.setState(_configs);
-        const chartConfig=stores.chartConfig.getState();
+        this.chartConfig=stores.chartConfig.getState();
         let tasks: ITask[] = _tasks.filter(task => task.start !== undefined && task.end !== undefined);
         if (_configs.activeTasks) {
             tasks = _tasks.filter(task => new DateHelper().isBetween(task.start, task.end));
@@ -106,7 +104,7 @@ export default class GanttChart {
             addButtonWrapper.appendChild(AddTaskButton);
             AddTaskButton.appendChild(svgInsideAddButton);
 
-            if (chartConfig.displayFilter){
+            if (this.chartConfig.displayFilter){
                 chartContainer.appendChild(this.filters(_tasks));
             }
             chartContainer.appendChild(headerRow);
@@ -130,7 +128,6 @@ export default class GanttChart {
     }
 
     filters(_tasks:ITask[]):HTMLElement{
-        const chartConfig=stores.chartConfig.getState();
         const filterHeader = createElementFromObject('div', {
             class: 'row chart-header top-class',
         });
@@ -141,38 +138,7 @@ export default class GanttChart {
             class:'filter-form',
             method:'post',
         });
-        const filters:FilterInputTypes[]=[
-            {
-                type: 'date',
-                name: 'start',
-                label: 'start',
-                filter:(task:ITask,filterData:IFormDataObject):boolean=>{
-                    if (filterData.start && filterData.end) {
-                        return new DateHelper().filterDateBetween(task.start, task.end, <string>filterData.start, <string>filterData.end);
-                    }
-                    return true;
-                }
-            },
-            {
-                type: 'date',
-                name: 'end',
-                label: 'end',
-                filter:(task:ITask,filterData:IFormDataObject):boolean=>{
-                    if (filterData.start && filterData.end) {
-                        return new DateHelper().filterDateBetween(task.start, task.end, <string>filterData.start, <string>filterData.end);
-                    }
-                    return true;
-                }
-            },
-            {
-                type: 'text',
-                name: 'name',
-                label: 'Search by Name',
-                filter:(task:ITask,filterData:IFormDataObject):boolean=>{
-                    return task.name.toLowerCase().includes(String(filterData.name).toLowerCase());
-                }
-            },
-        ];
+        const filters:FilterInputTypes[]=this.chartConfig.filters;
         const filterButton = createElementFromObject('button',{
             class: 'top-place add-button',
             content: 'Filter',
@@ -180,8 +146,8 @@ export default class GanttChart {
                 click: (event) => {
                     event.preventDefault();
                     const formDataObject = (formData(filterForm as HTMLFormElement));
-                    if (chartConfig.filter) {
-                        chartConfig.filter(formDataObject);
+                    if (this.chartConfig.filter) {
+                        this.chartConfig.filter(formDataObject);
                     }
                     else{
                         const tasks = _tasks.filter(task => {
