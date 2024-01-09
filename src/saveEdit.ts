@@ -111,6 +111,8 @@ export function addTask(tasks: ITask[] | ISubTask[]) {
         chartConfig.add(newTask)
     }
     // Add the new task to the existing tasks
+
+    tasks = stores.tasks.getState().tasks;
     tasks.push(newTask);
 
     length++; //after adding of each task length should be increaseD
@@ -231,6 +233,7 @@ export function saveEditedTask(tasks: ISubTask[] | ITask[], allTasks = null) {
     const selectedDependencies = Array.from(editDependenciesSelect.selectedOptions).map(option => parseInt(option.value, 10));
 
     // Find the task in the array and update its properties
+    tasks = stores.tasks.getState().tasks;
     const editedTaskIndex = tasks.findIndex(task => task.id === taskId);
     if (editedTaskIndex !== -1) {
         const addTaskForm = document.getElementById('editTaskForm') as HTMLFormElement;
