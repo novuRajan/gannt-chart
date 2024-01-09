@@ -233,7 +233,11 @@ export function saveEditedTask(tasks: ISubTask[] | ITask[], allTasks = null) {
     const selectedDependencies = Array.from(editDependenciesSelect.selectedOptions).map(option => parseInt(option.value, 10));
 
     // Find the task in the array and update its properties
-    tasks = stores.tasks.getState().tasks;
+    if (!allTasks) {
+        tasks = stores.tasks.getState().tasks;
+    }else {
+        allTasks = stores.tasks.getState().tasks;
+    }
     const editedTaskIndex = tasks.findIndex(task => task.id === taskId);
     if (editedTaskIndex !== -1) {
         const addTaskForm = document.getElementById('editTaskForm') as HTMLFormElement;
@@ -247,7 +251,8 @@ export function saveEditedTask(tasks: ISubTask[] | ITask[], allTasks = null) {
         tasks[editedTaskIndex].progress = isNaN(parsedProgress) ? 0 : Math.min(100, parsedProgress);
         tasks[editedTaskIndex].dependencies = selectedDependencies;
     }
-    stores.tasks.setState({tasks})
+
+    stores.tasks.setState({ tasks:allTasks ?? tasks })
     const chartConfig = stores.chartConfig.getState();
 
     // Update the Gantt chart with the new data
