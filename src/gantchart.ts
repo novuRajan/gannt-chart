@@ -10,6 +10,9 @@ import { IChartConfig } from './Interfaces/Chart/ChartConfig';
 import './styles/chart.scss';
 import stores from "./stores";
 import { createElementFromObject, addEventListenerDynamic, appendChildToParent } from "./lib/Html/HtmlHelper";
+import { createInputElement } from "./lib/Html/InputHelper";
+import { formData } from "./lib/Html/FormHelper";
+import { FilterInputTypes } from "./types/Inputs/FilterInputTypes";
 
 export default class GanttChart {
 
@@ -63,6 +66,10 @@ export default class GanttChart {
 
     createGanttChart(_tasks: ITask[], _configs: IChartConfig = {}) {
         stores.chartConfig.setState(_configs);
+        this.chartConfig=stores.chartConfig.getState();
+        if (!stores.tasks.getState().tasks.length){
+            stores.tasks.setState({ tasks:_tasks })
+        }
         let tasks: ITask[] = _tasks.filter(task => task.start !== undefined && task.end !== undefined);
         if (_configs.activeTasks) {
             tasks = _tasks.filter(task => new DateHelper().isBetween(task.start, task.end));
@@ -75,6 +82,8 @@ export default class GanttChart {
             class: 'row chart-header top-class',
             id: 'overall-div'
         });
+
+
         const addButtonWrapper = createElementFromObject('div', {
             class: "add-tasks",
             'id': 'add-tasks-div'
@@ -89,6 +98,7 @@ export default class GanttChart {
         });
 
         let svg : SVGSVGElement = chartContainer.querySelector('#mySvg');
+
         // Check if the SVG element already exists
         if (!svg) {
             // Append the button to the parent container of the SVG
@@ -96,6 +106,9 @@ export default class GanttChart {
             addButtonWrapper.appendChild(AddTaskButton);
             AddTaskButton.appendChild(svgInsideAddButton);
 
+            if (this.chartConfig.displayFilter){
+                chartContainer.appendChild(this.filters());
+            }
             chartContainer.appendChild(headerRow);
             // If not, create a new SVG element
             svg = this.createSVG(tasks);
@@ -118,6 +131,55 @@ export default class GanttChart {
         } else {
             this.updateGanttChartContent(svg,tasks );
         }
+    }
+
+    filters():HTMLElement{
+        const filterHeader = createElementFromObject('div', {
+            class: 'row chart-header top-class',
+        });
+        const headerCol2=createElementFromObject('div',{
+            class:'col filters',
+        });
+        const filterForm=createElementFromObject('form',{
+            class:'filter-form',
+            method:'post',
+        });
+        const filters:FilterInputTypes[]=this.chartConfig.filters;
+        const filterButton = createElementFromObject('button',{
+            class: 'top-place add-button',
+            content: 'Filter',
+            events:{
+                click: (event) => {
+                    event.preventDefault();
+                    const formDataObject = (formData(filterForm as HTMLFormElement));
+                    if (this.chartConfig.filter) {
+                        this.chartConfig.filter(formDataObject);
+                    }
+                    else{
+                        console.log(stores.tasks.getState())
+                        const tasks = stores.tasks.getState().tasks.filter(task => {
+                            let filterValue =true;
+                            for (let i=0; i<filters.length; i++) {
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                // @ts-expect-error
+                                if (typeof filters[i].filter&& !filters[i].filter(task,formDataObject)){
+                                    filterValue=false;
+                                }
+                            }
+                            return filterValue;
+                        });
+                        this.createGanttChart(tasks);
+                    }
+                }
+            }
+        })
+        filterHeader.appendChild(headerCol2);
+        headerCol2.appendChild(filterForm);
+        filters.forEach(filter=>{
+            filterForm.appendChild(createInputElement(filter));
+        })
+        filterForm.appendChild(filterButton);
+        return filterHeader;
     }
 
     createSVG(tasks: ITask[]) {
@@ -422,14 +484,8 @@ export default class GanttChart {
                     // Update the Gantt chart with the new data
                     updateTaskStartEndDates(tasks);
                     if (allTasks) {
-                        if (this.chartConfig.change) {
-                            this.chartConfig.change("subtask", tasks[updatedTaskIndex])
-                        }
                         this.createGanttChart(allTasks);
                     } else {
-                        if (this.chartConfig.change) {
-                            this.chartConfig.change("task", tasks[updatedTaskIndex])
-                        }
                         this.createGanttChart(tasks);
                     }
                 }
@@ -473,16 +529,19 @@ export default class GanttChart {
                 tasks[updatedTaskIndex].start = newStartDate.toISOString().split('T')[0];
                 tasks[updatedTaskIndex].end = newEndDate.toISOString().split('T')[0];
 
+                //return which data is updated for user side
+                const chartConfig=stores.chartConfig.getState();
+
                 // Update the Gantt chart with the new data
                 updateTaskStartEndDates(tasks);
                 if (allTasks) {
-                    if (this.chartConfig.change) {
-                        this.chartConfig.change("subtask", tasks[updatedTaskIndex])
+                    if (chartConfig.change) {
+                        chartConfig.change(tasks[updatedTaskIndex])
                     }
                     this.createGanttChart(allTasks);
                 } else {
-                    if (this.chartConfig.change) {
-                        this.chartConfig.change('task', tasks[updatedTaskIndex])
+                    if (chartConfig.change) {
+                        chartConfig.change( tasks[updatedTaskIndex])
                     }
                     this.createGanttChart(tasks);
                 }

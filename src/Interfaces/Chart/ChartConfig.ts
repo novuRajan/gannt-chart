@@ -1,9 +1,14 @@
 import { ITask } from "../Task/Task";
 import { ISubTask } from "../Task/SubTask";
+import { IFormDataObject } from "../../lib/Html/FormHelper";
+import { FilterInputTypes } from "../../types/Inputs/FilterInputTypes";
 
 export interface IChartConfig {
     activeTasks?: boolean;
-    add?: (type: string, task: ITask | ISubTask) => void;
-    update?: (type: string, task: ITask | ISubTask) => void;
-    change?: (type: string, task: ITask | ISubTask) => void;
+    filters?: FilterInputTypes[];
+    displayFilter?: boolean;
+    add?: (task: ITask | ISubTask) => void;
+    update?: (task: ITask | ISubTask) => void;
+    change?: (task: ITask | ISubTask) => void;
+    filter?: (filterObj:IFormDataObject) => void;
 }

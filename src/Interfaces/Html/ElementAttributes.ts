@@ -1,5 +1,8 @@
+import { IHtmlEvents } from "./HtmlEvents";
+
 export interface IElementAttributes {
   class?: string|string[];
   content?: string;
-  [key: string]:string|string[];
+  events?: IHtmlEvents;
+  [key: string]:string|string[]|IHtmlEvents;
 }

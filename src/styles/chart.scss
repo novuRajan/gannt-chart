@@ -15,7 +15,10 @@ body {
   margin: 0;
 }
 
-
+.filter-form{
+  display: flex;
+  margin:10px;
+}
 .save-changes-btn {
   background-color: $success-color;
   color: #ffffff;

@@ -2,20 +2,21 @@ import { IElementAttributes } from "../../Interfaces/Html/ElementAttributes";
 
 class HtmlHelper {
 	private readonly _element: HTMLElement;
-	private _attributes: IElementAttributes;
+	private readonly _attributes: IElementAttributes;
 	constructor(_tag: string, _attributes: IElementAttributes) {
 		this._attributes = _attributes;
 		this._element = document.createElement(_tag);
 		this.assignAttribute();
 		this.assignClass();
 		this.setContent();
+		this.applyEvents();
 	}
 
 	public getElement(): HTMLElement {
 		return this._element;
 	}
 	private assignAttribute(): this {
-		const includedAttributes: string[] = ["class", "content"];
+		const includedAttributes: string[] = ["class","content","events"];
 		Object.keys(this._attributes).forEach((key) => {
 			if (!includedAttributes.includes(key) && this._element) {
 				this._element.setAttribute(key, <string>this._attributes[key]);
@@ -23,6 +24,13 @@ class HtmlHelper {
 		});
 
 		return this;
+	}
+	private applyEvents(){
+		if (this._attributes.events){
+			Object.entries(this._attributes.events).forEach(([key, value]) => {
+				this._element.addEventListener(key,value)
+			});
+		}
 	}
 	private setContent(): this {
 		if (this._attributes.content) {

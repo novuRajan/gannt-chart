@@ -108,15 +108,18 @@ export function addTask(tasks: ITask[] | ISubTask[]) {
 
     const chartConfig = stores.chartConfig.getState();
     if (chartConfig.add) {
-        chartConfig.add('task', newTask)
+        chartConfig.add(newTask)
     }
     // Add the new task to the existing tasks
+
+    tasks = stores.tasks.getState().tasks;
     tasks.push(newTask);
 
     length++; //after adding of each task length should be increaseD
     if (addModal) {
         closeModal(addModal);
     }
+    stores.tasks.setState({tasks})
     // Call the function with sample data
     GanttChart.createChart(tasks);
 }
@@ -230,6 +233,11 @@ export function saveEditedTask(tasks: ISubTask[] | ITask[], allTasks = null) {
     const selectedDependencies = Array.from(editDependenciesSelect.selectedOptions).map(option => parseInt(option.value, 10));
 
     // Find the task in the array and update its properties
+    if (!allTasks) {
+        tasks = stores.tasks.getState().tasks;
+    }else {
+        allTasks = stores.tasks.getState().tasks;
+    }
     const editedTaskIndex = tasks.findIndex(task => task.id === taskId);
     if (editedTaskIndex !== -1) {
         const addTaskForm = document.getElementById('editTaskForm') as HTMLFormElement;
@@ -244,6 +252,7 @@ export function saveEditedTask(tasks: ISubTask[] | ITask[], allTasks = null) {
         tasks[editedTaskIndex].dependencies = selectedDependencies;
     }
 
+    stores.tasks.setState({ tasks:allTasks ?? tasks })
     const chartConfig = stores.chartConfig.getState();
 
     // Update the Gantt chart with the new data
@@ -251,12 +260,12 @@ export function saveEditedTask(tasks: ISubTask[] | ITask[], allTasks = null) {
     // Call the function with sample data
     if (allTasks) {
         if (chartConfig.update) {
-            chartConfig.update('subtask', tasks[editedTaskIndex])
+            chartConfig.update(tasks[editedTaskIndex])
         }
         GanttChart.createChart(allTasks);
     } else {
         if (chartConfig.update) {
-            chartConfig.update('task', tasks[editedTaskIndex])
+            chartConfig.update(tasks[editedTaskIndex])
         }
         GanttChart.createChart(tasks);
     }
