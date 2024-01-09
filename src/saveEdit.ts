@@ -117,6 +117,7 @@ export function addTask(tasks: ITask[] | ISubTask[]) {
     if (addModal) {
         closeModal(addModal);
     }
+    stores.tasks.setState({tasks})
     // Call the function with sample data
     GanttChart.createChart(tasks);
 }
@@ -243,7 +244,7 @@ export function saveEditedTask(tasks: ISubTask[] | ITask[], allTasks = null) {
         tasks[editedTaskIndex].progress = isNaN(parsedProgress) ? 0 : Math.min(100, parsedProgress);
         tasks[editedTaskIndex].dependencies = selectedDependencies;
     }
-
+    stores.tasks.setState({tasks})
     const chartConfig = stores.chartConfig.getState();
 
     // Update the Gantt chart with the new data
