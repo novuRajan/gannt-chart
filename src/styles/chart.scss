@@ -52,7 +52,51 @@ body {
     color: #ffffff;
   }
 }
+.form-element {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
 
+  label {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+
+  input {
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  select {
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .error {
+    color: $danger-color;
+    font-size: 12px;
+    font-weight: bold;
+  }
+}
+
+select{
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  width: inherit;
+}
 
 #chart {
   min-width: 100%;
