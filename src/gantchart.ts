@@ -198,6 +198,7 @@ export default class GanttChart {
         if (chartHeight < 450) {
             chartHeight = 450;
             svg.setAttribute('style', 'height:100%');
+            this.chartHeight = 450;
         }
         else if (chartHeight < 650) {
             svg.setAttribute('style', 'height:150%');
