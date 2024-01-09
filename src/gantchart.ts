@@ -70,7 +70,6 @@ export default class GanttChart {
         }
         updateTaskStartEndDates(tasks);
         const chartContainer = document.getElementById('chart');
-        this.chartHeightenPx = parseFloat(window.getComputedStyle(chartContainer).height);
         // Create a button element
         const headerRow = createElementFromObject('div', {
             class: 'row chart-header top-class',
@@ -102,6 +101,10 @@ export default class GanttChart {
             svg = this.createSVG(tasks);
             headerRow.appendChild(svg);
             this.chartHeightenPx = this.getHeight();
+            this.createTaskBars(svg, tasks, this.dateInfo);
+            setTimeout(() => {
+                this.drawDependencyLine(svg, tasks);
+            }, 0);
             const sidebar = createElementFromObject('div', {
                 'class': 'sidebar',
                 'id' : 'sidebar',
@@ -130,33 +133,20 @@ export default class GanttChart {
         this.length = this.getTotalLength(tasks);
         this.chartHeight = this.length * 40 + 40;
         this.svgRequiredElement(svg, dateGroup, chartWidth, this.chartHeight);
-        this.createTaskBars(svg, tasks, this.dateInfo);
-        setTimeout(() => {
-            this.drawDependencyLine(svg, tasks);
-        }, 0);
         return svg;
     }
 
     svgRequiredElement(svg: SVGSVGElement, dateGroup: SVGGElement, chartWidth: number, chartHeight: number) {
-
-        if (chartHeight < 250) {
+        if (chartHeight < 450) {
             chartHeight = 450;
-            this.chartHeight = 450; // svg height has been changed to 450
             svg.setAttribute('style', 'height:100%');
-            this.chartHeightenPx = 100/100 * this.chartHeightenPx ; // as svg height is 100% of parent div\
-            console.log('px', this.chartHeightenPx)
-        }
-        else if (chartHeight < 450) {
-            svg.setAttribute('style', 'height:100%');
-            this.chartHeightenPx = 100/100 * this.chartHeightenPx ;
         }
         else if (chartHeight < 650) {
             svg.setAttribute('style', 'height:150%');
-            this.chartHeightenPx = 150/100 * this.chartHeightenPx ;
         }
         else {
             svg.setAttribute('style', 'height:200%');
-            this.chartHeightenPx = 200/100 * this.chartHeightenPx ;
+
         }
         if (chartWidth < 2200) {
             chartWidth = 2200;
@@ -191,8 +181,6 @@ export default class GanttChart {
 
     createTaskBars(svg: SVGElement, tasks: ITask[], dateInfo: IDateInfo) {
         let customIndex = 0;
-        console.log('px', this.chartHeightenPx);
-        console.log('height', this.chartHeight);
         const heightRatio : number = this.chartHeightenPx/this.chartHeight
         tasks.forEach((task) => {
             const mainTask = createElementFromObject('div', {
