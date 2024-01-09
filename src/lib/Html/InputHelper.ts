@@ -130,7 +130,7 @@ export class InputHelper {
 
 export function createInputElement(input: InputTypes): HTMLElement {
 	const inputHelper = new InputHelper(input);
-	const wrap = createElement("div", "row");
+	const wrap = createElement("div", "form-element");
 	if (input.label) {
 		wrap.appendChild(createElement("label", "label", <string>input.label));
 	}
